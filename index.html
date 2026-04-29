@@ -289,6 +289,12 @@
     </div>
 
     <div class="field">
+      <label>ZIP code <span class="hint">auto-fills population</span></label>
+      <input type="text" id="in-zip" maxlength="5" inputmode="numeric" pattern="\d{5}" placeholder="e.g. 33602">
+      <div class="note" id="zip-display"></div>
+    </div>
+
+    <div class="field">
       <label>Service-area population <span class="req">*</span></label>
       <input type="number" id="in-pop" min="0" step="1000" value="500000">
       <div class="note" id="pop-display">Mid-size county scale</div>
@@ -410,7 +416,7 @@
 
 <footer>
   <div style="display:flex; justify-content:space-between; align-items:center; max-width:1600px; margin:0 auto; padding:0 40px; flex-wrap:wrap; gap:12px;">
-    <div>MD Ally Technologies · Calculator <strong id="ver">v1.6</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
+    <div>MD Ally Technologies · Calculator <strong id="ver">v1.7</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
     <div>
       <button id="btn-feedback" style="background:var(--gold); color:var(--navy-deep); border:none; padding:12px 22px; border-radius:8px; font-family:inherit; font-size:16px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(229,168,23,0.3); transition:all 0.15s;">💡 Suggest an enhancement</button>
       &nbsp;&nbsp;
@@ -422,6 +428,7 @@
   <div id="changelog-box" style="display:none; max-width:800px; margin:16px auto 0; background:var(--white); border:1px solid var(--rule); border-radius:8px; padding:16px 20px; text-align:left; font-size:12px; color:var(--muted); line-height:1.6;">
     <strong style="color:var(--navy); font-size:13px;">Changelog</strong>
     <ul style="margin:8px 0 0 18px;">
+      <li><strong>v1.7</strong> (2026-04-29) · ZIP code field auto-fills service-area population from US Census ACS 5-year (2022 vintage) with growth projection to current year. Manual override still works.</li>
       <li><strong>v1.6</strong> (2026-04-29) · Daily-call factor updated to 0.0077 × pop; per-call cost line removed (cost is now flat platform + modules + BUILD).</li>
       <li><strong>v1.5</strong> (2026-04-29) · MD Ally logo, in-header booking CTA, prospect-close CTA banner under results, Railway-deployed live URL.</li>
       <li><strong>v1.4</strong> (2026-04-22) · Rebuilt enhancement form with bulletproof inline styles; bigger, more prominent "Suggest" button.</li>
@@ -945,6 +952,7 @@ function calculate() {
 function updateURL() {
   const params = new URLSearchParams();
   params.set('name', $('in-name').value);
+  params.set('zip', $('in-zip').value);
   params.set('pop', $('in-pop').value);
   params.set('area', getAreaType());
   params.set('calls', $('in-calls').value);
@@ -955,9 +963,54 @@ function updateURL() {
   window.history.replaceState({}, '', url);
 }
 
+// ========== CENSUS ZIP LOOKUP ==========
+const CENSUS = {
+  acs_year: 2022,           // Latest ACS 5-year estimate vintage
+  growth_rate_yr: 0.005,    // 0.5%/yr default population growth (US national avg)
+};
+async function lookupZip(zip) {
+  if (!/^\d{5}$/.test(zip)) return null;
+  const url = `https://api.census.gov/data/${CENSUS.acs_year}/acs/acs5?get=NAME,B01003_001E&for=zip%20code%20tabulation%20area:${zip}`;
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error(`Census API ${resp.status}`);
+  const data = await resp.json();
+  if (!Array.isArray(data) || data.length < 2) throw new Error('ZIP not in Census ZCTA');
+  const popDataYear = parseInt(data[1][1]);
+  if (!popDataYear || popDataYear < 0) throw new Error('No population data');
+  const currentYear = new Date().getFullYear();
+  const yearsSince = Math.max(0, currentYear - CENSUS.acs_year);
+  const growth = Math.pow(1 + CENSUS.growth_rate_yr, yearsSince);
+  const projectedPop = Math.round(popDataYear * growth);
+  return {
+    zip,
+    name: data[1][0],
+    popDataYear,
+    projectedPop,
+    dataYear: CENSUS.acs_year,
+    currentYear,
+    growthPct: ((growth - 1) * 100),
+  };
+}
+async function onZipChange() {
+  const zip = $('in-zip').value.trim();
+  const display = $('zip-display');
+  if (!zip) { display.textContent = ''; return; }
+  if (!/^\d{5}$/.test(zip)) { display.textContent = 'Enter a 5-digit ZIP'; return; }
+  display.textContent = 'Looking up Census ZCTA...';
+  try {
+    const r = await lookupZip(zip);
+    $('in-pop').value = r.projectedPop;
+    display.innerHTML = `${r.name}: ${fmtNum(r.popDataYear)} (${r.dataYear} ACS) · projected to ${r.currentYear} <strong>${fmtNum(r.projectedPop)}</strong> (+${r.growthPct.toFixed(1)}%)`;
+    calculate();
+  } catch(err) {
+    display.textContent = `Census lookup failed: ${err.message}. Enter population manually.`;
+  }
+}
+
 function loadFromURL() {
   const params = new URLSearchParams(window.location.search);
   if (params.get('name')) $('in-name').value = params.get('name');
+  if (params.get('zip')) $('in-zip').value = params.get('zip');
   if (params.get('pop')) $('in-pop').value = params.get('pop');
   if (params.get('area')) {
     const r = document.querySelector(`input[name="area"][value="${params.get('area')}"]`);
@@ -1002,8 +1055,16 @@ function wire() {
     }
   });
   $('btn-print').addEventListener('click', () => window.print());
+  // ZIP: prevent the live "input" handler from running calculate() before lookup completes;
+  // we trigger calculate() ourselves after auto-fill.
+  $('in-zip').addEventListener('blur', onZipChange);
+  $('in-zip').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); onZipChange(); }
+  });
   $('btn-reset').addEventListener('click', () => {
     $('in-name').value = '';
+    $('in-zip').value = '';
+    $('zip-display').textContent = '';
     $('in-pop').value = '500000';
     document.querySelector('input[name="area"][value="suburban"]').checked = true;
     $('in-calls').value = '';
