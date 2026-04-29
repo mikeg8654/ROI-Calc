@@ -1,0 +1,12 @@
+node_modules/
+.env
+.env.local
+.env.*.local
+npm-debug.log*
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+calc_candidates/
+mdally_calc_suggestions_*.json

@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MD Ally · ROI Calculator</title>
+<style>
+  :root {
+    --navy:#1B2A4A;
+    --navy-deep:#0F1B33;
+    --navy-ink:#16223D;
+    --blue:#2F6FBF;
+    --blue-light:#4A8FDE;
+    --teal:#1FA595;
+    --teal-light:#2BBFAB;
+    --ink:#0F1B33;
+    --muted:#5E6B85;
+    --muted-light:#8895B0;
+    --rule:#D6DCE6;
+    --bg:#F4F6FA;
+    --bg-deeper:#E9EDF4;
+    --white:#FFFFFF;
+    --gold:#E5A817;
+    --gold-light:#F5C13F;
+    --red:#B2483D;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body {
+    font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    font-size:15px;
+    line-height:1.45;
+    min-height:100vh;
+  }
+  /* ===== HEADER ===== */
+  header {
+    background:linear-gradient(90deg, var(--navy-deep) 0%, var(--navy) 100%);
+    color:var(--white);
+    padding:20px 40px;
+    display:flex; align-items:center; justify-content:space-between;
+    border-bottom:3px solid var(--gold);
+  }
+  header .brand { display:flex; align-items:center; gap:16px; }
+  header .logo {
+    width:40px; height:40px;
+    background:var(--white); color:var(--navy);
+    display:flex; align-items:center; justify-content:center;
+    font-weight:800; font-size:14px; letter-spacing:0.08em;
+    border-radius:8px;
+  }
+  header h1 { font-size:22px; font-weight:700; letter-spacing:-0.01em; }
+  header h1 small { display:block; font-size:12px; color:#A9B4CC; font-weight:400; letter-spacing:0.1em; text-transform:uppercase; margin-top:2px; }
+  header .actions { display:flex; gap:10px; }
+  header button {
+    background:rgba(255,255,255,0.1); color:var(--white);
+    border:1px solid rgba(255,255,255,0.2);
+    padding:8px 14px; border-radius:6px;
+    font-size:13px; cursor:pointer; font-family:inherit; font-weight:500;
+    transition:all 0.15s;
+  }
+  header button:hover { background:rgba(255,255,255,0.2); }
+  header button.primary { background:var(--gold); border-color:var(--gold); color:var(--navy-deep); font-weight:700; }
+  header button.primary:hover { background:var(--gold-light); }
+
+  /* ===== MAIN LAYOUT ===== */
+  .wrap {
+    max-width:1600px; margin:0 auto;
+    padding:28px 40px 60px;
+    display:grid; grid-template-columns:380px 1fr; gap:28px;
+  }
+
+  /* ===== INPUT PANEL ===== */
+  .inputs {
+    background:var(--white);
+    border-radius:12px;
+    padding:24px;
+    box-shadow:0 2px 10px rgba(15,27,51,0.06);
+    position:sticky; top:20px;
+    align-self:start;
+  }
+  .inputs h2 {
+    font-size:13px; letter-spacing:0.14em;
+    color:var(--navy); font-weight:700;
+    margin-bottom:6px; text-transform:uppercase;
+  }
+  .inputs .subtitle { font-size:13px; color:var(--muted); margin-bottom:22px; }
+  .field { margin-bottom:18px; }
+  .field label {
+    display:block; font-size:12px; font-weight:600;
+    color:var(--navy); margin-bottom:6px;
+    letter-spacing:0.04em; text-transform:uppercase;
+  }
+  .field label .req { color:var(--red); margin-left:2px; }
+  .field label .hint { color:var(--muted); font-weight:400; text-transform:none; letter-spacing:0; font-size:11px; margin-left:6px; font-style:italic; }
+  .field input, .field select {
+    width:100%; padding:10px 12px;
+    border:1px solid var(--rule); border-radius:8px;
+    font-family:inherit; font-size:15px; color:var(--ink);
+    background:var(--white);
+    transition:border-color 0.15s, box-shadow 0.15s;
+  }
+  .field input:focus, .field select:focus {
+    outline:none; border-color:var(--blue);
+    box-shadow:0 0 0 3px rgba(47,111,191,0.12);
+  }
+  .field .note { font-size:11px; color:var(--muted); margin-top:4px; }
+  .segmented {
+    display:grid; grid-template-columns:1fr 1fr 1fr;
+    border:1px solid var(--rule); border-radius:8px;
+    overflow:hidden; background:var(--bg);
+  }
+  .segmented label {
+    display:block; text-align:center; padding:10px 8px;
+    font-size:12px; font-weight:600; cursor:pointer;
+    border-right:1px solid var(--rule);
+    transition:all 0.15s;
+    text-transform:none; letter-spacing:0; margin:0; color:var(--muted);
+  }
+  .segmented label:last-child { border-right:none; }
+  .segmented input[type="radio"] { display:none; }
+  .segmented input[type="radio"]:checked + span { background:var(--navy); color:var(--white); }
+  .segmented span { display:block; padding:10px 8px; transition:all 0.15s; }
+
+  .modules {
+    display:grid; grid-template-columns:1fr 1fr; gap:6px;
+    margin-top:6px;
+  }
+  .module-chip {
+    padding:8px 12px; border:1px solid var(--rule);
+    border-radius:6px; font-size:12px; font-weight:600;
+    cursor:pointer; text-align:center;
+    background:var(--bg); color:var(--muted);
+    transition:all 0.15s;
+  }
+  .module-chip input { display:none; }
+  .module-chip.active { background:var(--teal); color:var(--white); border-color:var(--teal); }
+
+  .reset-btn {
+    margin-top:14px; width:100%;
+    padding:10px; background:transparent;
+    border:1px solid var(--rule);
+    color:var(--muted); border-radius:8px;
+    font-family:inherit; font-size:13px; cursor:pointer;
+    transition:all 0.15s;
+  }
+  .reset-btn:hover { background:var(--bg); color:var(--navy); }
+
+  /* ===== OUTPUT AREA ===== */
+  .outputs { display:flex; flex-direction:column; gap:20px; }
+
+  .headline {
+    background:linear-gradient(135deg, var(--gold), var(--gold-light));
+    color:var(--navy-deep);
+    padding:28px 32px; border-radius:14px;
+    display:flex; align-items:center; gap:28px;
+    box-shadow:0 4px 16px rgba(229,168,23,0.25);
+  }
+  .headline .ratio {
+    font-size:64px; font-weight:800; line-height:1;
+    letter-spacing:-0.02em;
+  }
+  .headline .ratio-desc { flex:1; font-size:17px; font-weight:600; line-height:1.35; }
+  .headline .ratio-desc small { display:block; font-size:12px; font-weight:400; margin-top:8px; opacity:0.7; }
+
+  /* SCENARIO TABLE */
+  .scenarios {
+    background:var(--white); border-radius:12px;
+    overflow:hidden; box-shadow:0 2px 10px rgba(15,27,51,0.06);
+  }
+  .scenarios table { width:100%; border-collapse:collapse; }
+  .scenarios th {
+    padding:14px 18px; text-align:right; font-size:12px;
+    letter-spacing:0.14em; font-weight:700;
+    background:var(--navy-deep); color:var(--white);
+    text-transform:uppercase;
+  }
+  .scenarios th:first-child { text-align:left; }
+  .scenarios th.cons { background:#5E6B85; }
+  .scenarios th.exp { background:var(--blue); }
+  .scenarios th.asp { background:var(--teal); }
+  .scenarios td {
+    padding:11px 18px; border-bottom:1px solid var(--rule);
+    text-align:right; font-size:15px;
+    font-variant-numeric: tabular-nums;
+  }
+  .scenarios td:first-child { text-align:left; color:var(--navy); font-weight:500; }
+  .scenarios tr.accent td { background:#F7F9FD; font-weight:700; color:var(--navy-deep); }
+  .scenarios tr.total td {
+    background:var(--navy-deep); color:var(--white);
+    font-weight:800; font-size:17px; border-bottom:none;
+    padding:16px 18px;
+  }
+  .scenarios tr.total td:first-child { color:var(--white); }
+
+  /* PANELS ROW */
+  .panel-row { display:grid; grid-template-columns:1.2fr 1fr; gap:20px; }
+  .panel {
+    background:var(--white); border-radius:12px;
+    padding:22px 24px; box-shadow:0 2px 10px rgba(15,27,51,0.06);
+  }
+  .panel h3 {
+    font-size:12px; letter-spacing:0.14em;
+    color:var(--navy); font-weight:700;
+    margin-bottom:14px; text-transform:uppercase;
+  }
+  .panel.cost { background:var(--navy-deep); color:var(--white); }
+  .panel.cost h3 { color:var(--gold); }
+  .cost .amount-range {
+    font-size:40px; font-weight:800; line-height:1;
+    letter-spacing:-0.01em; color:var(--white);
+    font-variant-numeric: tabular-nums;
+  }
+  .cost .amount-range small { display:block; font-size:13px; font-weight:500; color:#A9B4CC; margin-top:4px; letter-spacing:0.06em; text-transform:uppercase; }
+  .cost .breakdown { margin-top:16px; font-size:13px; color:#C6CEDF; line-height:1.6; }
+  .cost .breakdown .line { display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px dashed rgba(255,255,255,0.1); }
+  .cost .breakdown .line:last-child { border-bottom:none; }
+  .cost .breakdown strong { color:var(--white); font-variant-numeric:tabular-nums; }
+
+  .payback .stat-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .stat-box {
+    background:var(--bg); border-radius:8px;
+    padding:14px 16px; text-align:center;
+  }
+  .stat-box .num { font-size:28px; font-weight:800; color:var(--navy-deep); font-variant-numeric:tabular-nums; line-height:1; }
+  .stat-box .label { font-size:11px; color:var(--muted); margin-top:6px; letter-spacing:0.1em; text-transform:uppercase; font-weight:600; }
+
+  /* ASSUMPTIONS STRIP */
+  .assumptions {
+    background:var(--white); border-radius:12px; padding:18px 22px;
+    box-shadow:0 2px 10px rgba(15,27,51,0.06);
+    font-size:11px; color:var(--muted); line-height:1.55;
+  }
+  .assumptions strong { color:var(--navy); }
+  .assumptions .grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px 24px; }
+
+  /* FOOTER */
+  footer {
+    text-align:center; padding:24px;
+    color:var(--muted-light); font-size:12px;
+  }
+  footer a { color:var(--blue); text-decoration:none; }
+
+  /* PRINT */
+  @media print {
+    header { background:var(--navy-deep) !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    header .actions, .inputs .reset-btn { display:none !important; }
+    .wrap { grid-template-columns:260px 1fr !important; padding:12px !important; gap:12px !important; }
+    .headline { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .scenarios th { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .panel.cost { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    body { background:white !important; font-size:12px; }
+    .inputs { position:static !important; box-shadow:none; }
+    @page { size: landscape; margin: 0.25in; }
+  }
+
+  @media (max-width: 1100px) {
+    .wrap { grid-template-columns:1fr; }
+    .inputs { position:static; }
+    .panel-row { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo">MDA</div>
+    <h1>MD Ally ROI Calculator<small>Public Safety · Year-1 Impact + Program Cost</small></h1>
+  </div>
+  <div class="actions">
+    <button id="btn-share">🔗 Copy Link</button>
+    <button id="btn-print" class="primary">📄 Export PDF</button>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ===== INPUTS ===== -->
+  <aside class="inputs">
+    <h2>Your Agency</h2>
+    <p class="subtitle">Minimum inputs return a coarse range. Add detail to tighten.</p>
+
+    <div class="field">
+      <label>Agency name <span class="hint">optional</span></label>
+      <input type="text" id="in-name" placeholder="e.g. Hillsborough County Fire Rescue">
+    </div>
+
+    <div class="field">
+      <label>Service-area population <span class="req">*</span></label>
+      <input type="number" id="in-pop" min="0" step="1000" value="500000">
+      <div class="note" id="pop-display">Mid-size county scale</div>
+    </div>
+
+    <div class="field">
+      <label>Area type</label>
+      <div class="segmented" id="seg-area">
+        <label><input type="radio" name="area" value="rural"><span>Rural</span></label>
+        <label><input type="radio" name="area" value="suburban" checked><span>Suburban</span></label>
+        <label><input type="radio" name="area" value="urban"><span>Urban</span></label>
+      </div>
+      <div class="note">Drives runs-per-1K, EMS hours per call, unit count estimates.</div>
+    </div>
+
+    <div class="field">
+      <label>Annual 911 medical calls <span class="hint">blank = auto-estimate</span></label>
+      <input type="number" id="in-calls" min="0" step="100" placeholder="Auto from population">
+      <div class="note" id="calls-display"></div>
+    </div>
+
+    <div class="field">
+      <label>Annual transport volume <span class="hint">optional, sharpens ROI</span></label>
+      <input type="number" id="in-transports" min="0" step="100" placeholder="Leave blank if unknown">
+    </div>
+
+    <div class="field">
+      <label>CAD integration depth</label>
+      <div class="segmented" id="seg-depth">
+        <label><input type="radio" name="depth" value="parallel" checked><span>Parallel</span></label>
+        <label><input type="radio" name="depth" value="uni"><span>Unidirectional</span></label>
+        <label><input type="radio" name="depth" value="bi"><span>Bi-directional</span></label>
+      </div>
+      <div class="note" id="depth-note">Day-1 parallel = no CAD changes, $0 BUILD uplift, 45–60d go-live.</div>
+    </div>
+
+    <div class="field">
+      <label>Optional modules</label>
+      <div class="modules" id="modules">
+        <label class="module-chip" data-module="terf"><input type="checkbox" value="terf">TERF</label>
+        <label class="module-chip" data-module="path"><input type="checkbox" value="path">PATH</label>
+        <label class="module-chip" data-module="apm"><input type="checkbox" value="apm">APM</label>
+        <label class="module-chip" data-module="vamc"><input type="checkbox" value="vamc">VAMC</label>
+      </div>
+      <div class="note">Core stack always includes BUILD + PRIME + CASE.</div>
+    </div>
+
+    <button class="reset-btn" id="btn-reset">Reset to defaults</button>
+  </aside>
+
+  <!-- ===== OUTPUTS ===== -->
+  <main class="outputs">
+
+    <div class="headline">
+      <div class="ratio" id="out-ratio">$21 : $1</div>
+      <div class="ratio-desc">
+        In agency operational savings for every $1 invested
+        <small id="out-ratio-context">Expected-scenario, Year 1 · before patient-side value or new revenue</small>
+      </div>
+    </div>
+
+    <div class="scenarios">
+      <table>
+        <thead>
+          <tr>
+            <th>Inputs / Outputs</th>
+            <th class="cons">Conservative</th>
+            <th class="exp">Expected</th>
+            <th class="asp">Aspirational</th>
+          </tr>
+        </thead>
+        <tbody id="scenario-tbody">
+          <!-- populated by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel-row">
+      <div class="panel cost">
+        <h3>Program Cost · Year 1</h3>
+        <div class="amount-range" id="out-cost">$150K – $450K</div>
+        <div class="amount-range" style="font-size:13px; font-weight:500; color:#A9B4CC; margin-top:6px;" id="out-cost-sub">Typical scope for an agency this size</div>
+        <div class="breakdown" id="out-cost-breakdown"></div>
+      </div>
+      <div class="panel payback">
+        <h3>Payback + Scale</h3>
+        <div class="stat-row">
+          <div class="stat-box"><div class="num" id="out-payback">~3 wks</div><div class="label">Agency Payback</div></div>
+          <div class="stat-box"><div class="num" id="out-unitdays">286</div><div class="label">Unit-Days Returned</div></div>
+          <div class="stat-box"><div class="num" id="out-diversions">2,749</div><div class="label">Diversions / Year</div></div>
+          <div class="stat-box"><div class="num" id="out-3yr">$21M</div><div class="label">3-Year Agency Value</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="assumptions">
+      <div class="grid">
+        <div><strong>0.0077% × pop</strong> daily 911 medical call volume (MD Ally baseline)</div>
+        <div><strong>23%</strong> IAED Alpha/Omega eligible share of total 911 medical</div>
+        <div><strong>85% / 84% / 65%</strong> consent / diversion / full resolution</div>
+        <div><strong>$2,673</strong> EMS run cost · GAPDS/CMS</div>
+        <div><strong>$1,481</strong> transport · <strong>$2,453</strong> ED visit · CMS benchmarks</div>
+        <div><strong>1.48h</strong> urban/suburban · <strong>3.0h</strong> rural · EMS hrs/run (NEMSIS)</div>
+        <div><strong>$100K</strong> Platform & Maintenance base fee</div>
+        <div><strong>Per-call tiered</strong> $32–$48 by committed volume</div>
+        <div><strong>BUILD uplift</strong> $0 / $7.5K / $22.5K by integration depth</div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<footer>
+  <div style="display:flex; justify-content:space-between; align-items:center; max-width:1600px; margin:0 auto; padding:0 40px; flex-wrap:wrap; gap:12px;">
+    <div>MD Ally Technologies · Calculator <strong id="ver">v1.4</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
+    <div>
+      <button id="btn-feedback" style="background:var(--gold); color:var(--navy-deep); border:none; padding:12px 22px; border-radius:8px; font-family:inherit; font-size:16px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(229,168,23,0.3); transition:all 0.15s;">💡 Suggest an enhancement</button>
+      &nbsp;&nbsp;
+      <a href="#" id="btn-view-suggestions" style="color:var(--muted); text-decoration:none; font-size:14px;">📋 View suggestions (<span id="sug-count">0</span>)</a>
+      &nbsp;·&nbsp;
+      <a href="#" id="btn-changelog" style="color:var(--muted); text-decoration:none; font-size:14px;">What's new</a>
+    </div>
+  </div>
+  <div id="changelog-box" style="display:none; max-width:800px; margin:16px auto 0; background:var(--white); border:1px solid var(--rule); border-radius:8px; padding:16px 20px; text-align:left; font-size:12px; color:var(--muted); line-height:1.6;">
+    <strong style="color:var(--navy); font-size:13px;">Changelog</strong>
+    <ul style="margin:8px 0 0 18px;">
+      <li><strong>v1.4</strong> (2026-04-22) — Rebuilt enhancement form with bulletproof inline styles; bigger, more prominent "Suggest" button.</li>
+      <li><strong>v1.3</strong> (2026-04-22) — Simplified enhancement form — just What + Why + priority. No name/email/category fields.</li>
+      <li><strong>v1.2</strong> (2026-04-22) — In-browser suggestion capture form with localStorage queue, webhook POST, and one-click export-for-autobuild.</li>
+      <li><strong>v1.1</strong> (2026-04-22) — Corrected daily-call formula to 0.0077% × pop.</li>
+      <li><strong>v1.0</strong> (2026-04-21) — Initial build.</li>
+    </ul>
+  </div>
+</footer>
+
+<!-- ============ SUGGESTION MODAL ============ -->
+<div id="sug-overlay" style="display:none; position:fixed; inset:0; background:rgba(15,27,51,0.65); z-index:1000; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(4px);">
+  <div style="background:var(--white); border-radius:14px; max-width:620px; width:100%; max-height:92vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.4);">
+    <div style="background:linear-gradient(135deg, var(--navy-deep), var(--navy)); color:var(--white); padding:22px 28px; border-radius:14px 14px 0 0; display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <h3 style="margin:0; font-size:19px;">💡 Suggest an enhancement</h3>
+        <p style="margin:4px 0 0; font-size:13px; color:#A9B4CC;">Context auto-captures. Just tell us what should change.</p>
+      </div>
+      <button id="sug-close" style="background:rgba(255,255,255,0.1); color:var(--white); border:1px solid rgba(255,255,255,0.25); padding:6px 12px; border-radius:6px; cursor:pointer; font-size:18px;">&times;</button>
+    </div>
+    <form id="sug-form" style="padding:24px 28px;">
+      <div style="margin-bottom:18px;">
+        <div style="font-size:12px; font-weight:700; color:#1B2A4A; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:6px;">What should change? <span style="color:#B2483D;">*</span></div>
+        <textarea name="what" required rows="4" placeholder="e.g. Add 'Uninsured %' as an input — currently hardcoded to 30%" style="display:block; width:100%; padding:10px 12px; border:1px solid #D6DCE6; border-radius:6px; font-family:inherit; font-size:14px; color:#0F1B33; background:#FFFFFF; resize:vertical; box-sizing:border-box;"></textarea>
+      </div>
+      <div style="margin-bottom:18px;">
+        <div style="font-size:12px; font-weight:700; color:#1B2A4A; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:6px;">Why <span style="font-weight:400; text-transform:none; letter-spacing:0; color:#5E6B85; font-style:italic;">— optional</span></div>
+        <textarea name="why" rows="2" placeholder="e.g. 30% default overstates savings for rural areas" style="display:block; width:100%; padding:10px 12px; border:1px solid #D6DCE6; border-radius:6px; font-family:inherit; font-size:14px; color:#0F1B33; background:#FFFFFF; resize:vertical; box-sizing:border-box;"></textarea>
+      </div>
+      <div style="margin-bottom:18px;">
+        <div style="font-size:12px; font-weight:700; color:#1B2A4A; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:6px;">Priority</div>
+        <div id="prio-group" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px;">
+          <button type="button" data-prio="high" class="prio-btn" style="padding:10px; border:1px solid #D6DCE6; border-radius:6px; font-family:inherit; font-size:13px; font-weight:600; background:#F4F6FA; color:#5E6B85; cursor:pointer;">High</button>
+          <button type="button" data-prio="medium" class="prio-btn active" style="padding:10px; border:1px solid #E5A817; border-radius:6px; font-family:inherit; font-size:13px; font-weight:600; background:#E5A817; color:#0F1B33; cursor:pointer;">Medium</button>
+          <button type="button" data-prio="low" class="prio-btn" style="padding:10px; border:1px solid #D6DCE6; border-radius:6px; font-family:inherit; font-size:13px; font-weight:600; background:#F4F6FA; color:#5E6B85; cursor:pointer;">Low</button>
+        </div>
+        <input type="hidden" name="priority" value="medium">
+      </div>
+      <details style="background:#F4F6FA; border-radius:6px; padding:10px 14px; margin-bottom:18px;">
+        <summary style="cursor:pointer; font-size:11px; font-weight:600; color:#5E6B85;">🔍 Auto-captured context</summary>
+        <div id="sug-context-preview" style="margin-top:10px; font-size:11px; color:#5E6B85; line-height:1.5; font-family:ui-monospace, Consolas, monospace; white-space:pre-wrap;"></div>
+      </details>
+      <div style="display:flex; gap:10px; justify-content:flex-end;">
+        <button type="button" id="sug-cancel" style="background:transparent; color:#5E6B85; border:1px solid #D6DCE6; padding:10px 18px; border-radius:6px; font-family:inherit; font-size:14px; cursor:pointer;">Cancel</button>
+        <button type="submit" style="background:#E5A817; color:#0F1B33; border:none; padding:10px 26px; border-radius:6px; font-family:inherit; font-size:14px; font-weight:700; cursor:pointer;">Submit</button>
+      </div>
+      <div id="sug-status" style="display:none; padding:10px 14px; border-radius:6px; font-size:13px; margin-top:14px;"></div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ SUGGESTION LIST MODAL ============ -->
+<div id="list-overlay" style="display:none; position:fixed; inset:0; background:rgba(15,27,51,0.65); z-index:1000; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(4px);">
+  <div style="background:var(--white); border-radius:14px; max-width:880px; width:100%; max-height:92vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.4);">
+    <div style="background:var(--navy-deep); color:var(--white); padding:22px 28px; border-radius:14px 14px 0 0; display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <h3 style="margin:0; font-size:19px;">📋 Captured suggestions</h3>
+        <p style="margin:4px 0 0; font-size:13px; color:#A9B4CC;">Queue for auto-build. Export for processing.</p>
+      </div>
+      <button id="list-close" style="background:rgba(255,255,255,0.1); color:var(--white); border:1px solid rgba(255,255,255,0.25); padding:6px 12px; border-radius:6px; cursor:pointer; font-size:18px;">&times;</button>
+    </div>
+    <div style="padding:22px 28px;">
+      <div style="display:flex; gap:10px; margin-bottom:16px;">
+        <button id="btn-export-json" style="background:var(--blue); color:var(--white); border:none; padding:10px 16px; border-radius:6px; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer;">⬇ Export as JSON (for auto-build)</button>
+        <button id="btn-clear-queue" style="background:transparent; color:var(--red); border:1px solid var(--red); padding:10px 16px; border-radius:6px; font-family:inherit; font-size:13px; cursor:pointer;">Clear queue</button>
+      </div>
+      <div id="list-content" style="font-size:13px;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ SUGGESTION CAPTURE SYSTEM ============
+const SUG_STORAGE_KEY = 'mdally_calc_suggestions';
+const SUG_WEBHOOK_URL = ''; // PASTE webhook URL here (Make.com, Zapier, HubSpot, n8n) — leave blank for offline-only
+
+function getInputSnapshot() {
+  return {
+    agency: document.getElementById('in-name').value || null,
+    population: document.getElementById('in-pop').value || null,
+    area_type: (document.querySelector('input[name="area"]:checked')||{}).value,
+    annual_calls_entered: document.getElementById('in-calls').value || null,
+    annual_transports_entered: document.getElementById('in-transports').value || null,
+    integration_depth: (document.querySelector('input[name="depth"]:checked')||{}).value,
+    modules: Array.from(document.querySelectorAll('#modules input:checked')).map(cb => cb.value),
+    calculator_version: document.getElementById('ver').textContent,
+    url: window.location.href,
+    timestamp: new Date().toISOString(),
+    user_agent: navigator.userAgent.substring(0, 150),
+  };
+}
+
+function loadSuggestions() {
+  try { return JSON.parse(localStorage.getItem(SUG_STORAGE_KEY) || '[]'); }
+  catch(e) { return []; }
+}
+
+function saveSuggestion(sug) {
+  const list = loadSuggestions();
+  list.push(sug);
+  localStorage.setItem(SUG_STORAGE_KEY, JSON.stringify(list));
+  updateSuggestionCount();
+}
+
+function updateSuggestionCount() {
+  document.getElementById('sug-count').textContent = loadSuggestions().length;
+}
+
+// Pre-populate context preview on modal open
+function updateContextPreview() {
+  try {
+    const ctx = getInputSnapshot();
+    const lines = Object.entries(ctx).map(([k,v]) => `${k}: ${Array.isArray(v) ? v.join(', ') || '(none)' : (v || '(blank)')}`);
+    const el = document.getElementById('sug-context-preview');
+    if (el) el.textContent = lines.join('\n');
+  } catch(err) {
+    console.warn('Context preview failed:', err);
+  }
+}
+
+// Open modal
+document.getElementById('btn-feedback').addEventListener('click', (e) => {
+  e.preventDefault();
+  updateContextPreview();
+  const overlay = document.getElementById('sug-overlay');
+  overlay.style.display = 'flex';
+  document.querySelector('textarea[name="what"]').focus();
+});
+
+// Priority button toggle
+const PRIO_COLORS = {
+  high:   {bg:'#B2483D', border:'#B2483D', text:'#FFFFFF'},
+  medium: {bg:'#E5A817', border:'#E5A817', text:'#0F1B33'},
+  low:    {bg:'#5E6B85', border:'#5E6B85', text:'#FFFFFF'},
+};
+document.querySelectorAll('.prio-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const prio = btn.dataset.prio;
+    document.querySelector('input[name="priority"]').value = prio;
+    document.querySelectorAll('.prio-btn').forEach(b => {
+      if (b === btn) {
+        const c = PRIO_COLORS[prio];
+        b.classList.add('active');
+        b.style.background = c.bg;
+        b.style.borderColor = c.border;
+        b.style.color = c.text;
+      } else {
+        b.classList.remove('active');
+        b.style.background = '#F4F6FA';
+        b.style.borderColor = '#D6DCE6';
+        b.style.color = '#5E6B85';
+      }
+    });
+  });
+});
+// Close modal
+['sug-close', 'sug-cancel'].forEach(id => {
+  document.getElementById(id).addEventListener('click', () => {
+    document.getElementById('sug-overlay').style.display = 'none';
+    document.getElementById('sug-status').style.display = 'none';
+  });
+});
+// Esc to close
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    document.getElementById('sug-overlay').style.display = 'none';
+    document.getElementById('list-overlay').style.display = 'none';
+  }
+});
+
+// Submit handler
+document.getElementById('sug-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const suggestion = {
+    id: 'sug_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+    priority: fd.get('priority') || 'medium',
+    what: fd.get('what'),
+    why: fd.get('why') || '',
+    status: 'pending',
+    context: getInputSnapshot(),
+  };
+
+  const statusEl = document.getElementById('sug-status');
+  statusEl.style.display = 'block';
+  statusEl.style.background = '#F4F6FA';
+  statusEl.style.color = 'var(--muted)';
+  statusEl.textContent = 'Submitting...';
+
+  // Always save to localStorage first (offline-safe)
+  saveSuggestion(suggestion);
+  let webhookSuccess = false;
+
+  // Try webhook if configured
+  if (SUG_WEBHOOK_URL) {
+    try {
+      const r = await fetch(SUG_WEBHOOK_URL, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(suggestion),
+        mode: 'no-cors',
+      });
+      webhookSuccess = true;
+    } catch(err) {
+      console.warn('Webhook failed, saved locally:', err);
+    }
+  }
+
+  statusEl.style.background = '#E3F4EE';
+  statusEl.style.color = 'var(--teal)';
+  statusEl.innerHTML = webhookSuccess
+    ? '✓ Submitted! Your request is in the build queue and synced to webhook.'
+    : '✓ Saved locally! ' + (SUG_WEBHOOK_URL ? 'Webhook failed — will retry on next submission.' : 'Configure webhook URL in the HTML to auto-sync to team systems.');
+
+  setTimeout(() => {
+    document.getElementById('sug-overlay').style.display = 'none';
+    document.getElementById('sug-status').style.display = 'none';
+    e.target.reset();
+  }, 2200);
+});
+
+// View suggestions modal
+document.getElementById('btn-view-suggestions').addEventListener('click', (e) => {
+  e.preventDefault();
+  renderSuggestionList();
+  document.getElementById('list-overlay').style.display = 'flex';
+});
+document.getElementById('list-close').addEventListener('click', () => {
+  document.getElementById('list-overlay').style.display = 'none';
+});
+
+function renderSuggestionList() {
+  const list = loadSuggestions();
+  const el = document.getElementById('list-content');
+  if (list.length === 0) {
+    el.innerHTML = '<div style="padding:40px; text-align:center; color:var(--muted); background:var(--bg); border-radius:8px;">No suggestions captured yet.<br>Click <strong>💡 Suggest an enhancement</strong> above to log your first.</div>';
+    return;
+  }
+  el.innerHTML = list.map((s, i) => `
+    <div style="background:var(--bg); border-radius:8px; padding:14px 18px; margin-bottom:10px; border-left:4px solid ${s.priority === 'high' ? 'var(--red)' : s.priority === 'medium' ? 'var(--gold)' : 'var(--muted)'};">
+      <div style="display:flex; justify-content:space-between; align-items:start; gap:12px;">
+        <div style="flex:1;">
+          <div style="font-size:14px; color:var(--navy-deep); line-height:1.4;">${escapeHtml(s.what)}</div>
+          ${s.why ? `<div style="font-size:12px; color:var(--muted); line-height:1.5; margin-top:6px; padding-top:6px; border-top:1px dashed var(--rule);"><strong style="color:var(--navy);">Why:</strong> ${escapeHtml(s.why)}</div>` : ''}
+          <div style="font-size:10px; color:var(--muted-light); margin-top:8px; letter-spacing:0.05em;">
+            <span style="background:${s.priority === 'high' ? 'var(--red)' : s.priority === 'medium' ? 'var(--gold)' : 'var(--muted)'}; color:${s.priority === 'medium' ? 'var(--navy-deep)' : 'var(--white)'}; padding:2px 8px; border-radius:10px; font-weight:700; text-transform:uppercase;">${s.priority}</span>
+            · ${new Date(s.context.timestamp).toLocaleString()}
+            ${s.context.agency ? ' · ' + escapeHtml(s.context.agency) : ''}
+          </div>
+        </div>
+        <button onclick="deleteSuggestion('${s.id}')" style="background:transparent; border:1px solid var(--rule); color:var(--muted); padding:4px 10px; border-radius:4px; cursor:pointer; font-size:11px;">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function escapeHtml(s) { return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+
+function deleteSuggestion(id) {
+  if (!confirm('Delete this suggestion?')) return;
+  const list = loadSuggestions().filter(s => s.id !== id);
+  localStorage.setItem(SUG_STORAGE_KEY, JSON.stringify(list));
+  updateSuggestionCount();
+  renderSuggestionList();
+}
+window.deleteSuggestion = deleteSuggestion;
+
+// Export all suggestions as JSON (for auto-build Python script)
+document.getElementById('btn-export-json').addEventListener('click', () => {
+  const list = loadSuggestions();
+  if (list.length === 0) { alert('No suggestions to export.'); return; }
+  const blob = new Blob([JSON.stringify(list, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `mdally_calc_suggestions_${new Date().toISOString().split('T')[0]}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+// Clear queue
+document.getElementById('btn-clear-queue').addEventListener('click', () => {
+  if (!confirm('Clear all captured suggestions from this browser? Export first if you need them.')) return;
+  localStorage.removeItem(SUG_STORAGE_KEY);
+  updateSuggestionCount();
+  renderSuggestionList();
+});
+
+// Changelog toggle
+document.getElementById('btn-changelog').addEventListener('click', (e) => {
+  e.preventDefault();
+  const box = document.getElementById('changelog-box');
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+});
+
+// Init count on load
+updateSuggestionCount();
+</script>
+
+<script>
+// ========== CONSTANTS (from Impact Calculator + Price Book) ==========
+const C = {
+  daily_call_factor: 0.000077,       // 0.0077% × pop = daily 911 medical call volume (MD Ally baseline)
+  iaed_eligible_pct: 0.23,           // IAED Alpha+Omega of total 911 medical calls
+  days_per_year: 365,
+  cost_per_ems_run: 2673,
+  cost_per_transport: 1481,
+  cost_per_ed_visit: 2453,
+  hrs_per_unit_day: 14.256,
+  runs_per_1k: { rural:75, suburban:125, urban:250 },  // area-type density (EMS reference; not used for call volume)
+  hrs_per_run: { rural:3.0, suburban:1.48, urban:1.48 },
+
+  // Pricing
+  platform_fee: 100000,
+  per_call_tiers: [                 // [upper_bound, rate]
+    [1875, 48.17], [3750, 45.76], [5625, 43.13],
+    [10000, 40.15], [25000, 36.69], [43750, 32.57], [Infinity, 29.00]
+  ],
+  // BUILD one-time by integration depth
+  build_base: 23245,               // from Colorado Springs quote
+  build_uplift: { parallel:0, uni:7500, bi:22500 },
+
+  // Optional modules annual (simplified population tiers)
+  terf_tiers: [
+    [150000, 15000],[330000, 18650],[450000, 22118],[800000, 25412],
+    [2000000, 28541],[3500000, 31514],[5000000, 34338],[Infinity, 37021]
+  ],
+  vamc_tiers: [
+    [450000, 15000],[1100000, 21500],[1750000, 28000],[2400000, 34000],
+    [3050000, 40000],[3700000, 44500],[4350000, 50000],[Infinity, 55000]
+  ],
+  path_pct_of_base: 0.11,    // ~11% of annual core per CO Springs ratio
+  apm_pct_of_base: 0.17,     // ~17% of annual core per CO Springs ratio
+};
+
+// Scenarios
+const SCENARIOS = {
+  Conservative: { consent:0.70, diversion:0.70, full:0.55 },
+  Expected:     { consent:0.85, diversion:0.84, full:0.65 },
+  Aspirational: { consent:0.90, diversion:0.88, full:0.70 },
+};
+
+// ========== HELPERS ==========
+const $ = (id) => document.getElementById(id);
+function fmtUSD(n, abbr=true) {
+  if (abbr) {
+    if (Math.abs(n) >= 1e6) return '$' + (n/1e6).toFixed(2) + 'M';
+    if (Math.abs(n) >= 1e3) return '$' + (n/1e3).toFixed(0) + 'K';
+  }
+  return '$' + Math.round(n).toLocaleString();
+}
+function fmtNum(n) { return Math.round(n).toLocaleString(); }
+function tierRate(call_volume) {
+  for (const [bound, rate] of C.per_call_tiers) {
+    if (call_volume <= bound) return rate;
+  }
+  return 29;
+}
+function popTier(pop, tiers) {
+  for (const [bound, price] of tiers) {
+    if (pop <= bound) return price;
+  }
+  return tiers[tiers.length-1][1];
+}
+function getAreaType() {
+  const el = document.querySelector('input[name="area"]:checked');
+  return el ? el.value : 'suburban';
+}
+function getDepth() {
+  const el = document.querySelector('input[name="depth"]:checked');
+  return el ? el.value : 'parallel';
+}
+function getModules() {
+  const mods = [];
+  document.querySelectorAll('#modules input[type="checkbox"]').forEach(cb => {
+    if (cb.checked) mods.push(cb.value);
+  });
+  return mods;
+}
+
+// ========== CORE CALCULATION ==========
+function calculate() {
+  const pop = Math.max(0, parseInt($('in-pop').value || 0));
+  const area = getAreaType();
+  const userCalls = parseInt($('in-calls').value) || null;
+  const userTransports = parseInt($('in-transports').value) || null;
+  const depth = getDepth();
+  const modules = getModules();
+
+  // Auto-estimate total 911 medical calls if not provided
+  // Formula (MD Ally baseline): daily calls = 0.0077% × pop; annual = daily × 365
+  const dailyCalls = pop * C.daily_call_factor;
+  const estTotalCalls = dailyCalls * C.days_per_year;
+  const totalCalls = userCalls || estTotalCalls;
+  $('calls-display').textContent = userCalls
+    ? `Using entered value: ${fmtNum(totalCalls)}/yr (${fmtNum(totalCalls/365)}/day)`
+    : `Auto-estimated: ${fmtNum(estTotalCalls)}/yr · ${fmtNum(dailyCalls)}/day (0.0077% × pop)`;
+
+  // Eligible calls = IAED Alpha/Omega share of total 911 medical calls
+  const eligibleCalls = totalCalls * C.iaed_eligible_pct;
+
+  // Pop display
+  if (pop) {
+    let popLabel = 'Mid-size';
+    if (pop < 100000) popLabel = 'Small rural/suburban';
+    else if (pop < 500000) popLabel = 'Mid-size county';
+    else if (pop < 1500000) popLabel = 'Large metro';
+    else popLabel = 'Major metro';
+    $('pop-display').textContent = popLabel + ` · ~${fmtNum(estTotalCalls)}/yr est. 911 medical · ~${fmtNum(dailyCalls)}/day`;
+  }
+
+  // Depth note
+  const depthNotes = {
+    parallel: 'Day-1 parallel = no CAD changes, $0 BUILD uplift, 45–60d go-live.',
+    uni:      'Unidirectional CAD feed = +$7.5K BUILD, 60–90d go-live. Removes dispatcher friction.',
+    bi:       'Bi-directional CAD = +$22.5K BUILD, 90–120d go-live. Full automation + ePCR reconciliation.',
+  };
+  $('depth-note').textContent = depthNotes[depth];
+
+  // Scenarios
+  const hrsPerRun = C.hrs_per_run[area];
+  const rows = [];
+  const scenResults = {};
+
+  for (const [name, s] of Object.entries(SCENARIOS)) {
+    const consented = eligibleCalls * s.consent;
+    const diversions = consented * s.diversion;
+    const fullDiv = diversions * s.full;
+    const emsHrsAvoided = diversions * hrsPerRun;
+    const unitDays = emsHrsAvoided / C.hrs_per_unit_day;
+    const emsRunCost = diversions * C.cost_per_ems_run;
+    const transCost = diversions * C.cost_per_transport;
+    const edCost = fullDiv * C.cost_per_ed_visit;
+    const totalImpact = emsRunCost + transCost + edCost;
+
+    scenResults[name] = {
+      diversions, fullDiv, emsHrsAvoided, unitDays,
+      emsRunCost, transCost, edCost, totalImpact,
+    };
+  }
+
+  // Render scenario table
+  const tbody = $('scenario-tbody');
+  tbody.innerHTML = '';
+  const cons = scenResults.Conservative, exp = scenResults.Expected, asp = scenResults.Aspirational;
+
+  const rowData = [
+    { label:'Eligible 911 calls', cons:fmtNum(eligibleCalls), exp:fmtNum(eligibleCalls), asp:fmtNum(eligibleCalls) },
+    { label:'Consent rate',       cons:'70%', exp:'85%', asp:'90%' },
+    { label:'Diversion rate',     cons:'70%', exp:'84%', asp:'88%' },
+    { label:'Total diversions', accent:true, cons:fmtNum(cons.diversions), exp:fmtNum(exp.diversions), asp:fmtNum(asp.diversions) },
+    { label:'Staffed unit-days returned', cons:fmtNum(cons.unitDays), exp:fmtNum(exp.unitDays), asp:fmtNum(asp.unitDays) },
+    { label:'EMS run-cost avoided (agency)', accent:true, cons:fmtUSD(cons.emsRunCost), exp:fmtUSD(exp.emsRunCost), asp:fmtUSD(asp.emsRunCost) },
+    { label:'Transport cost avoided (community)', cons:fmtUSD(cons.transCost), exp:fmtUSD(exp.transCost), asp:fmtUSD(asp.transCost) },
+    { label:'ED visit cost avoided (community)', cons:fmtUSD(cons.edCost), exp:fmtUSD(exp.edCost), asp:fmtUSD(asp.edCost) },
+    { label:'Total Year-1 Impact', total:true, cons:fmtUSD(cons.totalImpact), exp:fmtUSD(exp.totalImpact), asp:fmtUSD(asp.totalImpact) },
+  ];
+  for (const r of rowData) {
+    const cls = r.total ? 'total' : (r.accent ? 'accent' : '');
+    tbody.innerHTML += `<tr class="${cls}"><td>${r.label}</td><td>${r.cons}</td><td>${r.exp}</td><td>${r.asp}</td></tr>`;
+  }
+
+  // === Program cost ===
+  const rate = tierRate(eligibleCalls);
+  const baseArr = C.platform_fee + (eligibleCalls * rate);
+  const buildCost = C.build_base + C.build_uplift[depth];
+  let moduleArr = 0;
+  const moduleLines = [];
+  if (modules.includes('terf')) {
+    const p = popTier(pop, C.terf_tiers); moduleArr += p; moduleLines.push(['TERF (surge)', p]);
+  }
+  if (modules.includes('vamc')) {
+    const p = popTier(pop, C.vamc_tiers); moduleArr += p; moduleLines.push(['VAMC (law-enforcement)', p]);
+  }
+  if (modules.includes('path')) {
+    const p = baseArr * C.path_pct_of_base; moduleArr += p; moduleLines.push(['PATH (alt-transport)', p]);
+  }
+  if (modules.includes('apm')) {
+    const p = baseArr * C.apm_pct_of_base; moduleArr += p; moduleLines.push(['APM (performance mgmt)', p]);
+  }
+  const annualTotal = baseArr + moduleArr;
+  const year1Total = annualTotal + buildCost;
+  const lowRange = year1Total * 0.85, highRange = year1Total * 1.15;
+
+  $('out-cost').textContent = `${fmtUSD(lowRange)} – ${fmtUSD(highRange)}`;
+  $('out-cost-sub').textContent = `Year-1 total · typical range (±15%)`;
+
+  const breakdown = [
+    ['Platform & Maintenance', C.platform_fee],
+    [`Per-call × ${fmtNum(eligibleCalls)} @ $${rate.toFixed(2)}`, eligibleCalls * rate],
+    ...moduleLines,
+    [`BUILD one-time (${depth})`, buildCost],
+  ];
+  $('out-cost-breakdown').innerHTML = breakdown.map(([k,v]) =>
+    `<div class="line"><span>${k}</span><strong>${fmtUSD(v)}</strong></div>`
+  ).join('');
+
+  // === Payback + scale ===
+  const agencySavings = exp.emsRunCost;
+  const paybackWeeks = (year1Total / agencySavings) * 52;
+  $('out-payback').textContent = paybackWeeks < 1 ? '< 1 wk' :
+                                  paybackWeeks < 52 ? `~${Math.round(paybackWeeks)} wks` :
+                                  `~${(paybackWeeks/52).toFixed(1)} yrs`;
+  $('out-unitdays').textContent = fmtNum(exp.unitDays);
+  $('out-diversions').textContent = fmtNum(exp.diversions);
+  const threeYrValue = (exp.emsRunCost * 3) - year1Total;
+  $('out-3yr').textContent = fmtUSD(threeYrValue);
+
+  // === Ratio headline ===
+  const ratio = agencySavings / year1Total;
+  $('out-ratio').textContent = `$${ratio.toFixed(0)} : $1`;
+  $('out-ratio-context').textContent = `Expected-scenario · Year 1 · before community value (transport/ED) or new revenue`;
+
+  // Update URL (shareable) without reload
+  updateURL();
+}
+
+// ========== URL SHARING ==========
+function updateURL() {
+  const params = new URLSearchParams();
+  params.set('name', $('in-name').value);
+  params.set('pop', $('in-pop').value);
+  params.set('area', getAreaType());
+  params.set('calls', $('in-calls').value);
+  params.set('transports', $('in-transports').value);
+  params.set('depth', getDepth());
+  params.set('mods', getModules().join(','));
+  const url = window.location.pathname + '?' + params.toString();
+  window.history.replaceState({}, '', url);
+}
+
+function loadFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('name')) $('in-name').value = params.get('name');
+  if (params.get('pop')) $('in-pop').value = params.get('pop');
+  if (params.get('area')) {
+    const r = document.querySelector(`input[name="area"][value="${params.get('area')}"]`);
+    if (r) r.checked = true;
+  }
+  if (params.get('calls')) $('in-calls').value = params.get('calls');
+  if (params.get('transports')) $('in-transports').value = params.get('transports');
+  if (params.get('depth')) {
+    const r = document.querySelector(`input[name="depth"][value="${params.get('depth')}"]`);
+    if (r) r.checked = true;
+  }
+  if (params.get('mods')) {
+    params.get('mods').split(',').forEach(m => {
+      const cb = document.querySelector(`#modules input[value="${m}"]`);
+      if (cb) { cb.checked = true; cb.parentElement.classList.add('active'); }
+    });
+  }
+}
+
+// ========== EVENT LISTENERS ==========
+function wire() {
+  document.querySelectorAll('input, select').forEach(el => {
+    el.addEventListener('input', calculate);
+    el.addEventListener('change', calculate);
+  });
+  // Module chip active-class toggle
+  document.querySelectorAll('.module-chip').forEach(chip => {
+    const cb = chip.querySelector('input');
+    cb.addEventListener('change', () => {
+      chip.classList.toggle('active', cb.checked);
+    });
+  });
+  $('btn-share').addEventListener('click', async () => {
+    updateURL();
+    const url = window.location.href;
+    try {
+      await navigator.clipboard.writeText(url);
+      $('btn-share').textContent = '✓ Copied!';
+      setTimeout(() => $('btn-share').innerHTML = '🔗 Copy Link', 1800);
+    } catch(e) {
+      prompt('Copy this URL:', url);
+    }
+  });
+  $('btn-print').addEventListener('click', () => window.print());
+  $('btn-reset').addEventListener('click', () => {
+    $('in-name').value = '';
+    $('in-pop').value = '500000';
+    document.querySelector('input[name="area"][value="suburban"]').checked = true;
+    $('in-calls').value = '';
+    $('in-transports').value = '';
+    document.querySelector('input[name="depth"][value="parallel"]').checked = true;
+    document.querySelectorAll('#modules input').forEach(cb => {
+      cb.checked = false;
+      cb.parentElement.classList.remove('active');
+    });
+    calculate();
+  });
+}
+
+// ========== INIT ==========
+document.addEventListener('DOMContentLoaded', () => {
+  wire();
+  loadFromURL();
+  calculate();
+});
+</script>
+</body>
+</html>
