@@ -204,7 +204,19 @@
     font-size:12px; letter-spacing:0.14em;
     color:var(--navy); font-weight:700;
     margin-bottom:14px; text-transform:uppercase;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
   }
+  .scenario-pills { display:inline-flex; gap:0; background:var(--bg); border-radius:6px; padding:2px; }
+  .scenario-pills button {
+    border:none; background:transparent; font-family:inherit;
+    padding:5px 11px; border-radius:4px; cursor:pointer;
+    font-size:10px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--muted); transition:all 0.15s;
+  }
+  .scenario-pills button.active { background:var(--white); color:var(--navy-deep); box-shadow:0 1px 3px rgba(15,27,51,0.1); }
+  .scenario-pills button.active.cons { color:#3D4A6B; }
+  .scenario-pills button.active.exp  { color:var(--blue); }
+  .scenario-pills button.active.asp  { color:var(--teal); }
   .panel.cost { background:var(--navy-deep); color:var(--white); }
   .panel.cost h3 { color:var(--gold); }
   .cost .amount-range {
@@ -226,14 +238,13 @@
   .stat-box .num { font-size:28px; font-weight:800; color:var(--navy-deep); font-variant-numeric:tabular-nums; line-height:1; }
   .stat-box .label { font-size:11px; color:var(--muted); margin-top:6px; letter-spacing:0.1em; text-transform:uppercase; font-weight:600; }
 
-  /* ASSUMPTIONS STRIP */
+  /* SOURCES STRIP (subtle, single-line) */
   .assumptions {
-    background:var(--white); border-radius:12px; padding:18px 22px;
-    box-shadow:0 2px 10px rgba(15,27,51,0.06);
-    font-size:11px; color:var(--muted); line-height:1.55;
+    background:transparent;
+    padding:6px 4px;
+    font-size:10.5px; color:var(--muted); line-height:1.5;
   }
-  .assumptions strong { color:var(--navy); }
-  .assumptions .grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px 24px; }
+  .assumptions strong { color:var(--navy); font-weight:700; }
 
   /* FOOTER */
   footer {
@@ -388,7 +399,14 @@
         <div class="breakdown" id="out-cost-breakdown"></div>
       </div>
       <div class="panel payback">
-        <h3>Payback + Scale</h3>
+        <h3>
+          <span>Payback + Scale</span>
+          <span class="scenario-pills" id="scen-pills">
+            <button type="button" data-scen="Conservative" class="cons">Conservative</button>
+            <button type="button" data-scen="Expected" class="exp active">Expected</button>
+            <button type="button" data-scen="Aspirational" class="asp">Aspirational</button>
+          </span>
+        </h3>
         <div class="stat-row">
           <div class="stat-box"><div class="num" id="out-payback">~3 wks</div><div class="label">Agency Payback</div></div>
           <div class="stat-box"><div class="num" id="out-unitdays">286</div><div class="label">Unit-Days Returned</div></div>
@@ -398,21 +416,20 @@
       </div>
     </div>
 
-    <div style="margin-top:24px; background:linear-gradient(135deg, var(--navy) 0%, var(--navy-deep) 100%); border-radius:12px; padding:28px 32px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; box-shadow:0 4px 14px rgba(15,27,51,0.12);">
-      <div style="color:var(--white); flex:1; min-width:280px;">
-        <div style="font-size:18px; font-weight:700; letter-spacing:-0.01em;">Want a tailored scoping for your agency?</div>
-        <div style="font-size:14px; color:#A9B4CC; margin-top:6px; line-height:1.5;">A 30-minute conversation gets you a real Year-1 model based on your call volume, CAD, and protocols. Modeled estimates only; actual quotes scoped during discovery.</div>
-      </div>
-      <a href="https://outlook.office.com/bookwithme/user/81b4be3503e34b2d8911a7ce2a100372@mdally.com?anonymous&ep=signature&ismsaljsauthenabled" target="_blank" rel="noopener" style="background:var(--gold); color:var(--navy-deep); padding:14px 28px; border-radius:8px; font-weight:700; font-size:15px; text-decoration:none; box-shadow:0 2px 8px rgba(229,168,23,0.3); white-space:nowrap;">📅 Book a meeting with Mike</a>
+    <div class="assumptions">
+      <span style="font-weight:600; color:var(--navy); margin-right:6px;">Sources:</span>
+      <span><strong>$2,673</strong> EMS run · <strong>$1,481</strong> transport · <strong>$2,453</strong> ED · CMS / GAPDS</span>
+      <span style="margin-left:12px;"><strong>1.48h</strong> urban-suburban · <strong>3.0h</strong> rural · NEMSIS</span>
     </div>
 
-    <div class="assumptions">
-      <div style="font-size:11px; font-weight:700; color:var(--navy); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:8px;">Source data (public benchmarks)</div>
-      <div class="grid">
-        <div><strong>$2,673</strong> EMS run cost · GAPDS / CMS</div>
-        <div><strong>$1,481</strong> transport · <strong>$2,453</strong> ED visit · CMS benchmarks</div>
-        <div><strong>1.48h</strong> urban/suburban · <strong>3.0h</strong> rural · EMS hrs/run (NEMSIS)</div>
+    <div id="cta-bottom" style="background:linear-gradient(135deg, var(--navy) 0%, var(--navy-deep) 100%); border-radius:12px; padding:20px 28px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; box-shadow:0 4px 14px rgba(15,27,51,0.12);">
+      <div style="color:var(--white); flex:1; min-width:280px; display:flex; align-items:center; gap:18px; flex-wrap:wrap;">
+        <div>
+          <div style="font-size:16px; font-weight:700; letter-spacing:-0.01em;">Want a tailored scoping for your agency?</div>
+          <div style="font-size:13px; color:#A9B4CC; margin-top:3px;">30-minute conversation. Real Year-1 model. Modeled estimates only; actual quotes scoped during discovery.</div>
+        </div>
       </div>
+      <a href="https://outlook.office.com/bookwithme/user/81b4be3503e34b2d8911a7ce2a100372@mdally.com?anonymous&ep=signature&ismsaljsauthenabled" target="_blank" rel="noopener" style="background:var(--gold); color:var(--navy-deep); padding:13px 26px; border-radius:8px; font-weight:700; font-size:14px; text-decoration:none; box-shadow:0 2px 8px rgba(229,168,23,0.3); white-space:nowrap;">📅 Book a meeting with Mike</a>
     </div>
 
   </main>
@@ -420,7 +437,7 @@
 
 <footer>
   <div style="display:flex; justify-content:space-between; align-items:center; max-width:1600px; margin:0 auto; padding:0 40px; flex-wrap:wrap; gap:12px;">
-    <div>MD Ally Technologies · Calculator <strong id="ver">v1.16</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
+    <div>MD Ally Technologies · Calculator <strong id="ver">v1.17</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
     <div>
       <button id="btn-feedback" style="background:var(--gold); color:var(--navy-deep); border:none; padding:12px 22px; border-radius:8px; font-family:inherit; font-size:16px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(229,168,23,0.3); transition:all 0.15s;">💡 Suggest an enhancement</button>
       &nbsp;&nbsp;
@@ -432,7 +449,8 @@
   <div id="changelog-box" style="display:none; max-width:800px; margin:16px auto 0; background:var(--white); border:1px solid var(--rule); border-radius:8px; padding:16px 20px; text-align:left; font-size:12px; color:var(--muted); line-height:1.6;">
     <strong style="color:var(--navy); font-size:13px;">Changelog</strong>
     <ul style="margin:8px 0 0 18px;">
-      <li><strong>v1.16</strong> (2026-04-29) · Cost panel now uses Direct ARR price book formula (Public Safety Offering, "Direct ARR Inputs" tab). Inputs: population + partner discount (max 20%). MSRP shown by default; discount slider adjusts. National-avg uninsured = 10.3% (was price-book default 30%). Payback/ROI/3-yr now reflect actual computed price.</li>
+      <li><strong>v1.17</strong> (2026-04-29) · Scenario pills (Conservative / Expected / Aspirational) drive the Payback + Scale stats and ROI ratio. Booking CTA moved to bottom of page (horizontal). Sources strip moved up and toned down. Uninsured corrected to 10.0% per workbook.</li>
+      <li><strong>v1.16</strong> (2026-04-29) · Cost panel now uses Direct ARR price book formula (Public Safety Offering, "Direct ARR Inputs" tab). Inputs: population + partner discount (max 20%). MSRP shown by default; discount slider adjusts. National-avg uninsured = 10% (was price-book default 30%). Payback/ROI/3-yr now reflect actual computed price.</li>
       <li><strong>v1.15</strong> (2026-04-29) · Optional "Annual medical 911 calls" override (eligibility = 12% of medical volume) for high-volume urban systems. Payback + 3-yr value + ROI ratio now anchored to displayed Year-1 range mid-point so math stays consistent with on-screen pricing.</li>
       <li><strong>v1.14</strong> (2026-04-29) · Removed redundant "Annual addressable volume" input. Population Served now drives both 5-yr growth projection and modeled addressable volume in one consolidated note.</li>
       <li><strong>v1.13</strong> (2026-04-29) · Math correction: 0.0077 × pop is annual eligible (not daily); IAED 23% multiplier dropped (already in 0.0077). Pop field renamed Population Served. Platform fee removed; Year-1 cost shows published $150K–$450K range only. Assumptions block scrubbed to public benchmarks (CMS, NEMSIS) only. Internal scenario rates hidden.</li>
@@ -957,21 +975,22 @@ function calculate() {
   }
   $('out-cost-breakdown').innerHTML = `<div class="line" style="opacity:0.75; font-size:12px;"><span>Direct ARR pricing · ${fmtNum(priced.totalCalls)} calls/yr modeled</span></div>`;
 
-  // === Payback + scale ===
-  const agencySavings = exp.emsRunCost;
+  // === Payback + scale (driven by selected scenario) ===
+  const sel = scenResults[selectedScenario] || exp;
+  const agencySavings = sel.emsRunCost;
   const paybackWeeks = year1Total > 0 ? (year1Total / agencySavings) * 52 : 0;
   $('out-payback').textContent = paybackWeeks < 1 ? '< 1 wk' :
                                   paybackWeeks < 52 ? `~${Math.round(paybackWeeks)} wks` :
                                   `~${(paybackWeeks/52).toFixed(1)} yrs`;
-  $('out-unitdays').textContent = fmtNum(exp.unitDays);
-  $('out-diversions').textContent = fmtNum(exp.diversions);
-  const threeYrValue = (exp.emsRunCost * 3) - year1Total;
+  $('out-unitdays').textContent = fmtNum(sel.unitDays);
+  $('out-diversions').textContent = fmtNum(sel.diversions);
+  const threeYrValue = (sel.emsRunCost * 3) - year1Total;
   $('out-3yr').textContent = fmtUSD(threeYrValue);
 
-  // === Ratio headline ===
+  // === Ratio headline (also tracks selected scenario) ===
   const ratio = year1Total > 0 ? agencySavings / year1Total : 0;
   $('out-ratio').textContent = `$${ratio.toFixed(0)} : $1`;
-  $('out-ratio-context').textContent = `Expected-scenario · Year 1 · before community value (transport/ED) or new revenue`;
+  $('out-ratio-context').textContent = `${selectedScenario}-scenario · Year 1 · before community value (transport/ED) or new revenue`;
 
   // Update URL (shareable) without reload
   updateURL();
@@ -990,6 +1009,18 @@ function updateURL() {
   params.set('mods', getModules().join(','));
   const url = window.location.pathname + '?' + params.toString();
   window.history.replaceState({}, '', url);
+}
+
+// ========== SCENARIO SELECTOR ==========
+let selectedScenario = 'Expected';
+function wireScenarioPills() {
+  $('scen-pills').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-scen]');
+    if (!btn) return;
+    selectedScenario = btn.dataset.scen;
+    $('scen-pills').querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.scen === selectedScenario));
+    calculate();
+  });
 }
 
 // ========== NPI AGENCY LOOKUP ==========
@@ -1373,6 +1404,7 @@ function wire() {
 // ========== INIT ==========
 document.addEventListener('DOMContentLoaded', () => {
   wire();
+  wireScenarioPills();
   loadFromURL();
   updatePopProjection();
   calculate();
