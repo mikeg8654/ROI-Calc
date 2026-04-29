@@ -43,12 +43,13 @@
   }
   header .brand { display:flex; align-items:center; gap:16px; }
   header .logo {
-    width:40px; height:40px;
-    background:var(--white); color:var(--navy);
+    height:44px;
+    background:var(--white);
     display:flex; align-items:center; justify-content:center;
-    font-weight:800; font-size:14px; letter-spacing:0.08em;
+    padding:6px 14px;
     border-radius:8px;
   }
+  header .logo img { height:100%; width:auto; display:block; }
   header h1 { font-size:22px; font-weight:700; letter-spacing:-0.01em; }
   header h1 small { display:block; font-size:12px; color:#A9B4CC; font-weight:400; letter-spacing:0.1em; text-transform:uppercase; margin-top:2px; }
   header .actions { display:flex; gap:10px; }
@@ -265,12 +266,13 @@
 
 <header>
   <div class="brand">
-    <div class="logo">MDA</div>
+    <div class="logo"><img src="assets/mdally-logo.png" alt="MD Ally" /></div>
     <h1>MD Ally ROI Calculator<small>Public Safety · Year-1 Impact + Program Cost</small></h1>
   </div>
   <div class="actions">
+    <a id="btn-book" href="https://outlook.office.com/bookwithme/user/81b4be3503e34b2d8911a7ce2a100372@mdally.com?anonymous&ep=signature&ismsaljsauthenabled" target="_blank" rel="noopener" style="background:var(--gold); border:1px solid var(--gold); color:var(--navy-deep); padding:8px 14px; border-radius:6px; font-size:13px; font-weight:700; text-decoration:none; font-family:inherit;">📅 Book a meeting</a>
     <button id="btn-share">🔗 Copy Link</button>
-    <button id="btn-print" class="primary">📄 Export PDF</button>
+    <button id="btn-print">📄 Export PDF</button>
   </div>
 </header>
 
@@ -382,6 +384,14 @@
       </div>
     </div>
 
+    <div style="margin-top:24px; background:linear-gradient(135deg, var(--navy) 0%, var(--navy-deep) 100%); border-radius:12px; padding:28px 32px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; box-shadow:0 4px 14px rgba(15,27,51,0.12);">
+      <div style="color:var(--white); flex:1; min-width:280px;">
+        <div style="font-size:18px; font-weight:700; letter-spacing:-0.01em;">Want a tailored scoping for your agency?</div>
+        <div style="font-size:14px; color:#A9B4CC; margin-top:6px; line-height:1.5;">A 30-minute conversation gets you a real Year-1 model based on your call volume, CAD, and protocols. Modeled estimates only; actual quotes scoped during discovery.</div>
+      </div>
+      <a href="https://outlook.office.com/bookwithme/user/81b4be3503e34b2d8911a7ce2a100372@mdally.com?anonymous&ep=signature&ismsaljsauthenabled" target="_blank" rel="noopener" style="background:var(--gold); color:var(--navy-deep); padding:14px 28px; border-radius:8px; font-weight:700; font-size:15px; text-decoration:none; box-shadow:0 2px 8px rgba(229,168,23,0.3); white-space:nowrap;">📅 Book a meeting with Mike</a>
+    </div>
+
     <div class="assumptions">
       <div class="grid">
         <div><strong>0.0077% × pop</strong> daily 911 medical call volume (MD Ally baseline)</div>
@@ -401,7 +411,7 @@
 
 <footer>
   <div style="display:flex; justify-content:space-between; align-items:center; max-width:1600px; margin:0 auto; padding:0 40px; flex-wrap:wrap; gap:12px;">
-    <div>MD Ally Technologies · Calculator <strong id="ver">v1.4</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
+    <div>MD Ally Technologies · Calculator <strong id="ver">v1.5</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
     <div>
       <button id="btn-feedback" style="background:var(--gold); color:var(--navy-deep); border:none; padding:12px 22px; border-radius:8px; font-family:inherit; font-size:16px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(229,168,23,0.3); transition:all 0.15s;">💡 Suggest an enhancement</button>
       &nbsp;&nbsp;
@@ -413,7 +423,8 @@
   <div id="changelog-box" style="display:none; max-width:800px; margin:16px auto 0; background:var(--white); border:1px solid var(--rule); border-radius:8px; padding:16px 20px; text-align:left; font-size:12px; color:var(--muted); line-height:1.6;">
     <strong style="color:var(--navy); font-size:13px;">Changelog</strong>
     <ul style="margin:8px 0 0 18px;">
-      <li><strong>v1.4</strong> (2026-04-22) — Rebuilt enhancement form with bulletproof inline styles; bigger, more prominent "Suggest" button.</li>
+      <li><strong>v1.5</strong> (2026-04-29) · MD Ally logo, in-header booking CTA, prospect-close CTA banner under results, Railway-deployed live URL.</li>
+      <li><strong>v1.4</strong> (2026-04-22) · Rebuilt enhancement form with bulletproof inline styles; bigger, more prominent "Suggest" button.</li>
       <li><strong>v1.3</strong> (2026-04-22) — Simplified enhancement form — just What + Why + priority. No name/email/category fields.</li>
       <li><strong>v1.2</strong> (2026-04-22) — In-browser suggestion capture form with localStorage queue, webhook POST, and one-click export-for-autobuild.</li>
       <li><strong>v1.1</strong> (2026-04-22) — Corrected daily-call formula to 0.0077% × pop.</li>
