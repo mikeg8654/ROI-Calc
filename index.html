@@ -297,6 +297,12 @@
     </div>
 
     <div class="field">
+      <label>Annual medical 911 calls <span class="hint">optional, overrides pop-based eligibility</span></label>
+      <input type="number" id="in-medical-calls" min="0" step="100" placeholder="If known, e.g. 86,000 for high-volume urban">
+      <div class="note" id="medical-display"></div>
+    </div>
+
+    <div class="field">
       <label>ZIP code <span class="hint">validates jurisdiction + projects growth</span></label>
       <input type="text" id="in-zip" maxlength="5" inputmode="numeric" pattern="\d{5}" placeholder="e.g. 33602">
       <div class="note" id="zip-display"></div>
@@ -408,7 +414,7 @@
 
 <footer>
   <div style="display:flex; justify-content:space-between; align-items:center; max-width:1600px; margin:0 auto; padding:0 40px; flex-wrap:wrap; gap:12px;">
-    <div>MD Ally Technologies · Calculator <strong id="ver">v1.14</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
+    <div>MD Ally Technologies · Calculator <strong id="ver">v1.15</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
     <div>
       <button id="btn-feedback" style="background:var(--gold); color:var(--navy-deep); border:none; padding:12px 22px; border-radius:8px; font-family:inherit; font-size:16px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(229,168,23,0.3); transition:all 0.15s;">💡 Suggest an enhancement</button>
       &nbsp;&nbsp;
@@ -420,6 +426,7 @@
   <div id="changelog-box" style="display:none; max-width:800px; margin:16px auto 0; background:var(--white); border:1px solid var(--rule); border-radius:8px; padding:16px 20px; text-align:left; font-size:12px; color:var(--muted); line-height:1.6;">
     <strong style="color:var(--navy); font-size:13px;">Changelog</strong>
     <ul style="margin:8px 0 0 18px;">
+      <li><strong>v1.15</strong> (2026-04-29) · Optional "Annual medical 911 calls" override (eligibility = 12% of medical volume) for high-volume urban systems. Payback + 3-yr value + ROI ratio now anchored to displayed Year-1 range mid-point so math stays consistent with on-screen pricing.</li>
       <li><strong>v1.14</strong> (2026-04-29) · Removed redundant "Annual addressable volume" input. Population Served now drives both 5-yr growth projection and modeled addressable volume in one consolidated note.</li>
       <li><strong>v1.13</strong> (2026-04-29) · Math correction: 0.0077 × pop is annual eligible (not daily); IAED 23% multiplier dropped (already in 0.0077). Pop field renamed Population Served. Platform fee removed; Year-1 cost shows published $150K–$450K range only. Assumptions block scrubbed to public benchmarks (CMS, NEMSIS) only. Internal scenario rates hidden.</li>
       <li><strong>v1.12</strong> (2026-04-29) · Removed "911 medical call volume" framing. 0.0077 × jurisdiction pop is now labeled "MD Ally daily addressable baseline." Cost stays decoupled from volume (since v1.6).</li>
@@ -733,8 +740,12 @@ updateSuggestionCount();
 // ========== CONSTANTS (from Impact Calculator + Price Book) ==========
 const C = {
   // INTERNAL: 0.0077 × pop = annual alpha/omega-eligible volume (already IAED-filtered).
+  // Equivalent identity: 0.12 × annual_medical_911_calls (MD Ally targets 12% of medical volume).
+  // Default uses pop because most agencies don't know their medical-call count; high-volume
+  // urban systems should enter the medical count manually to override.
   // Daily for display = annual / 365. Validated: REMSA ~520K pop → ~11/day.
   annual_eligible_factor: 0.0077,
+  md_ally_pct_of_medical: 0.12,
   days_per_year: 365,
   cost_per_ems_run: 2673,
   cost_per_transport: 1481,
@@ -810,12 +821,15 @@ function getModules() {
 function calculate() {
   const pop = Math.max(0, parseInt($('in-pop').value || 0));
   const area = getAreaType();
+  const userMedicalCalls = parseInt($('in-medical-calls').value) || null;
   const userTransports = parseInt($('in-transports').value) || null;
   const depth = getDepth();
   const modules = getModules();
 
-  // 0.0077 × pop = annual alpha/omega-eligible volume (IAED filter baked in).
-  const annualEligible = pop * C.annual_eligible_factor;
+  // Eligibility: prefer manual medical-call override (× 12%); else pop default (× 0.0077).
+  const annualEligible = userMedicalCalls
+    ? userMedicalCalls * C.md_ally_pct_of_medical
+    : pop * C.annual_eligible_factor;
   const dailyEligible = annualEligible / C.days_per_year;
   const eligibleCalls = annualEligible;
   const totalCalls = annualEligible;
@@ -888,18 +902,20 @@ function calculate() {
   $('out-cost-breakdown').innerHTML = `<div class="line" style="opacity:0.75; font-size:12px;"><span>Final pricing scoped during discovery</span></div>`;
 
   // === Payback + scale ===
+  // Anchor payback to the displayed Year-1 range mid-point so the math is consistent with what the customer sees.
+  const displayedYear1Mid = (C.display_range_low + C.display_range_high) / 2;
   const agencySavings = exp.emsRunCost;
-  const paybackWeeks = (year1Total / agencySavings) * 52;
+  const paybackWeeks = (displayedYear1Mid / agencySavings) * 52;
   $('out-payback').textContent = paybackWeeks < 1 ? '< 1 wk' :
                                   paybackWeeks < 52 ? `~${Math.round(paybackWeeks)} wks` :
                                   `~${(paybackWeeks/52).toFixed(1)} yrs`;
   $('out-unitdays').textContent = fmtNum(exp.unitDays);
   $('out-diversions').textContent = fmtNum(exp.diversions);
-  const threeYrValue = (exp.emsRunCost * 3) - year1Total;
+  const threeYrValue = (exp.emsRunCost * 3) - displayedYear1Mid;
   $('out-3yr').textContent = fmtUSD(threeYrValue);
 
   // === Ratio headline ===
-  const ratio = agencySavings / year1Total;
+  const ratio = agencySavings / displayedYear1Mid;
   $('out-ratio').textContent = `$${ratio.toFixed(0)} : $1`;
   $('out-ratio-context').textContent = `Expected-scenario · Year 1 · before community value (transport/ED) or new revenue`;
 
@@ -1190,11 +1206,22 @@ function updatePopProjection() {
   const rate = (ctx && ctx.growthRateYr) || CENSUS.growth_rate_yr;
   const pop5 = Math.round(pop * Math.pow(1 + rate, 5));
   const delta = pop5 - pop;
-  const annualElig = pop * C.annual_eligible_factor;
-  const dailyElig = annualElig / C.days_per_year;
-  note.innerHTML =
-    `5-yr contract at ${(rate*100).toFixed(2)}%/yr → <strong>${fmtNum(pop5)}</strong> (+${fmtNum(delta)})` +
-    `<br>Modeled addressable: <strong>${fmtNum(annualElig)}/yr</strong> eligible · ~${fmtNum(dailyElig)}/day`;
+  note.innerHTML = `5-yr contract at ${(rate*100).toFixed(2)}%/yr → <strong>${fmtNum(pop5)}</strong> (+${fmtNum(delta)})`;
+  updateEligibilityNote();
+}
+function updateEligibilityNote() {
+  const pop = parseInt($('in-pop').value || 0);
+  const medical = parseInt($('in-medical-calls').value) || 0;
+  const display = $('medical-display');
+  if (medical > 0) {
+    const elig = medical * C.md_ally_pct_of_medical;
+    display.innerHTML = `Eligibility from entered volume: <strong>${fmtNum(elig)}/yr</strong> (${(C.md_ally_pct_of_medical*100).toFixed(0)}% × ${fmtNum(medical)}) · ~${fmtNum(elig/365)}/day`;
+  } else if (pop > 0) {
+    const elig = pop * C.annual_eligible_factor;
+    display.innerHTML = `Default from population: <strong>${fmtNum(elig)}/yr</strong> eligible · ~${fmtNum(elig/365)}/day`;
+  } else {
+    display.textContent = '';
+  }
 }
 
 function loadFromURL() {
@@ -1226,6 +1253,7 @@ function wire() {
     el.addEventListener('change', calculate);
   });
   $('in-pop').addEventListener('input', updatePopProjection);
+  $('in-medical-calls').addEventListener('input', updateEligibilityNote);
   $('in-name').addEventListener('input', onAgencyInput);
   $('agency-results').addEventListener('click', (e) => {
     const row = e.target.closest('.agency-result');
