@@ -1,6 +1,6 @@
 {
   "name": "mdally-roi-calc",
-  "version": "1.18.0",
+  "version": "1.19.0",
   "private": true,
   "description": "MD Ally ROI Calculator. Single-page tool for live prospect ROI modeling.",
   "scripts": {

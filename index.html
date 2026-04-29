@@ -203,17 +203,20 @@
   .panel h3 {
     font-size:12px; letter-spacing:0.14em;
     color:var(--navy); font-weight:700;
-    margin-bottom:14px; text-transform:uppercase;
-    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    margin-bottom:10px; text-transform:uppercase;
   }
-  .scenario-pills { display:inline-flex; gap:0; background:var(--bg); border-radius:6px; padding:2px; }
+  .scenario-pills {
+    display:flex; gap:4px; background:var(--bg); border-radius:8px; padding:3px;
+  }
   .scenario-pills button {
+    flex:1;
     border:none; background:transparent; font-family:inherit;
-    padding:5px 11px; border-radius:4px; cursor:pointer;
-    font-size:10px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    padding:6px 10px; border-radius:5px; cursor:pointer;
+    font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
     color:var(--muted); transition:all 0.15s;
   }
-  .scenario-pills button.active { background:var(--white); color:var(--navy-deep); box-shadow:0 1px 3px rgba(15,27,51,0.1); }
+  .scenario-pills button:hover { color:var(--navy); }
+  .scenario-pills button.active { background:var(--white); color:var(--navy-deep); box-shadow:0 1px 3px rgba(15,27,51,0.12); }
   .scenario-pills button.active.cons { color:#3D4A6B; }
   .scenario-pills button.active.exp  { color:var(--blue); }
   .scenario-pills button.active.asp  { color:var(--teal); }
@@ -354,8 +357,8 @@
       <label>Optional modules</label>
       <div class="modules" id="modules">
         <label class="module-chip" data-module="terf"><input type="checkbox" value="terf">TERF</label>
-        <label class="module-chip" data-module="path"><input type="checkbox" value="path">PATH</label>
-        <label class="module-chip" data-module="apm"><input type="checkbox" value="apm">APM</label>
+        <label class="module-chip active" data-module="path"><input type="checkbox" value="path" checked>PATH</label>
+        <label class="module-chip active" data-module="apm"><input type="checkbox" value="apm" checked>APM</label>
         <label class="module-chip" data-module="vamc"><input type="checkbox" value="vamc">VAMC</label>
       </div>
       <div class="note">Core stack always includes BUILD + PRIME + CASE.</div>
@@ -399,14 +402,12 @@
         <div class="breakdown" id="out-cost-breakdown"></div>
       </div>
       <div class="panel payback">
-        <h3>
-          <span>Payback + Scale</span>
-          <span class="scenario-pills" id="scen-pills">
-            <button type="button" data-scen="Conservative" class="cons">Conservative</button>
-            <button type="button" data-scen="Expected" class="exp active">Expected</button>
-            <button type="button" data-scen="Aspirational" class="asp">Aspirational</button>
-          </span>
-        </h3>
+        <h3>Payback + Scale</h3>
+        <div class="scenario-pills" id="scen-pills" role="tablist" style="margin-bottom:14px;">
+          <button type="button" data-scen="Conservative" class="cons">Conservative</button>
+          <button type="button" data-scen="Expected" class="exp active">Expected</button>
+          <button type="button" data-scen="Aspirational" class="asp">Aspirational</button>
+        </div>
         <div class="stat-row">
           <div class="stat-box"><div class="num" id="out-payback">~3 wks</div><div class="label">Agency Payback</div></div>
           <div class="stat-box"><div class="num" id="out-unitdays">286</div><div class="label">Unit-Days Returned</div></div>
@@ -437,7 +438,7 @@
 
 <footer>
   <div style="display:flex; justify-content:space-between; align-items:center; max-width:1600px; margin:0 auto; padding:0 40px; flex-wrap:wrap; gap:12px;">
-    <div>MD Ally Technologies · Calculator <strong id="ver">v1.18</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
+    <div>MD Ally Technologies · Calculator <strong id="ver">v1.19</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
     <div>
       <button id="btn-feedback" style="background:var(--gold); color:var(--navy-deep); border:none; padding:12px 22px; border-radius:8px; font-family:inherit; font-size:16px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(229,168,23,0.3); transition:all 0.15s;">💡 Suggest an enhancement</button>
       &nbsp;&nbsp;
@@ -449,6 +450,7 @@
   <div id="changelog-box" style="display:none; max-width:800px; margin:16px auto 0; background:var(--white); border:1px solid var(--rule); border-radius:8px; padding:16px 20px; text-align:left; font-size:12px; color:var(--muted); line-height:1.6;">
     <strong style="color:var(--navy); font-size:13px;">Changelog</strong>
     <ul style="margin:8px 0 0 18px;">
+      <li><strong>v1.19</strong> (2026-04-29) · Scenario pills now sit on their own row above the stats (full-width, individually wired) so clicks register reliably. PATH and APM modules default to checked (baseline diversion services).</li>
       <li><strong>v1.18</strong> (2026-04-29) · Removed discount/MSRP/approval language from the cost panel. Discount input on the left is now the only place that surface concept appears.</li>
       <li><strong>v1.17</strong> (2026-04-29) · Scenario pills (Conservative / Expected / Aspirational) drive the Payback + Scale stats and ROI ratio. Booking CTA moved to bottom of page (horizontal). Sources strip moved up and toned down. Uninsured corrected to 10.0% per workbook.</li>
       <li><strong>v1.16</strong> (2026-04-29) · Cost panel now uses Direct ARR price book formula (Public Safety Offering, "Direct ARR Inputs" tab). Inputs: population + partner discount (max 20%). MSRP shown by default; discount slider adjusts. National-avg uninsured = 10% (was price-book default 30%). Payback/ROI/3-yr now reflect actual computed price.</li>
@@ -1009,13 +1011,20 @@ function updateURL() {
 
 // ========== SCENARIO SELECTOR ==========
 let selectedScenario = 'Expected';
+function setScenario(name) {
+  selectedScenario = name;
+  document.querySelectorAll('#scen-pills button').forEach(b => {
+    b.classList.toggle('active', b.dataset.scen === name);
+  });
+  calculate();
+}
 function wireScenarioPills() {
-  $('scen-pills').addEventListener('click', (e) => {
-    const btn = e.target.closest('button[data-scen]');
-    if (!btn) return;
-    selectedScenario = btn.dataset.scen;
-    $('scen-pills').querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.scen === selectedScenario));
-    calculate();
+  document.querySelectorAll('#scen-pills button[data-scen]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setScenario(btn.dataset.scen);
+    });
   });
 }
 
