@@ -394,14 +394,13 @@
 
     <div class="assumptions">
       <div class="grid">
-        <div><strong>0.0077% × pop</strong> daily 911 medical call volume (MD Ally baseline)</div>
+        <div><strong>0.0077 × pop</strong> daily 911 medical call volume (MD Ally baseline)</div>
         <div><strong>23%</strong> IAED Alpha/Omega eligible share of total 911 medical</div>
         <div><strong>85% / 84% / 65%</strong> consent / diversion / full resolution</div>
         <div><strong>$2,673</strong> EMS run cost · GAPDS/CMS</div>
         <div><strong>$1,481</strong> transport · <strong>$2,453</strong> ED visit · CMS benchmarks</div>
         <div><strong>1.48h</strong> urban/suburban · <strong>3.0h</strong> rural · EMS hrs/run (NEMSIS)</div>
-        <div><strong>$100K</strong> Platform & Maintenance base fee</div>
-        <div><strong>Per-call tiered</strong> $32–$48 by committed volume</div>
+        <div><strong>$100K</strong> Platform & Maintenance base fee (flat)</div>
         <div><strong>BUILD uplift</strong> $0 / $7.5K / $22.5K by integration depth</div>
       </div>
     </div>
@@ -411,7 +410,7 @@
 
 <footer>
   <div style="display:flex; justify-content:space-between; align-items:center; max-width:1600px; margin:0 auto; padding:0 40px; flex-wrap:wrap; gap:12px;">
-    <div>MD Ally Technologies · Calculator <strong id="ver">v1.5</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
+    <div>MD Ally Technologies · Calculator <strong id="ver">v1.6</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
     <div>
       <button id="btn-feedback" style="background:var(--gold); color:var(--navy-deep); border:none; padding:12px 22px; border-radius:8px; font-family:inherit; font-size:16px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(229,168,23,0.3); transition:all 0.15s;">💡 Suggest an enhancement</button>
       &nbsp;&nbsp;
@@ -423,6 +422,7 @@
   <div id="changelog-box" style="display:none; max-width:800px; margin:16px auto 0; background:var(--white); border:1px solid var(--rule); border-radius:8px; padding:16px 20px; text-align:left; font-size:12px; color:var(--muted); line-height:1.6;">
     <strong style="color:var(--navy); font-size:13px;">Changelog</strong>
     <ul style="margin:8px 0 0 18px;">
+      <li><strong>v1.6</strong> (2026-04-29) · Daily-call factor updated to 0.0077 × pop; per-call cost line removed (cost is now flat platform + modules + BUILD).</li>
       <li><strong>v1.5</strong> (2026-04-29) · MD Ally logo, in-header booking CTA, prospect-close CTA banner under results, Railway-deployed live URL.</li>
       <li><strong>v1.4</strong> (2026-04-22) · Rebuilt enhancement form with bulletproof inline styles; bigger, more prominent "Suggest" button.</li>
       <li><strong>v1.3</strong> (2026-04-22) — Simplified enhancement form — just What + Why + priority. No name/email/category fields.</li>
@@ -727,7 +727,7 @@ updateSuggestionCount();
 <script>
 // ========== CONSTANTS (from Impact Calculator + Price Book) ==========
 const C = {
-  daily_call_factor: 0.000077,       // 0.0077% × pop = daily 911 medical call volume (MD Ally baseline)
+  daily_call_factor: 0.0077,         // 0.0077 × pop = daily 911 medical call volume (MD Ally baseline)
   iaed_eligible_pct: 0.23,           // IAED Alpha+Omega of total 911 medical calls
   days_per_year: 365,
   cost_per_ems_run: 2673,
@@ -815,13 +815,13 @@ function calculate() {
   const modules = getModules();
 
   // Auto-estimate total 911 medical calls if not provided
-  // Formula (MD Ally baseline): daily calls = 0.0077% × pop; annual = daily × 365
+  // Formula (MD Ally baseline): daily calls = 0.0077 × pop; annual = daily × 365
   const dailyCalls = pop * C.daily_call_factor;
   const estTotalCalls = dailyCalls * C.days_per_year;
   const totalCalls = userCalls || estTotalCalls;
   $('calls-display').textContent = userCalls
     ? `Using entered value: ${fmtNum(totalCalls)}/yr (${fmtNum(totalCalls/365)}/day)`
-    : `Auto-estimated: ${fmtNum(estTotalCalls)}/yr · ${fmtNum(dailyCalls)}/day (0.0077% × pop)`;
+    : `Auto-estimated: ${fmtNum(estTotalCalls)}/yr · ${fmtNum(dailyCalls)}/day (0.0077 × pop)`;
 
   // Eligible calls = IAED Alpha/Omega share of total 911 medical calls
   const eligibleCalls = totalCalls * C.iaed_eligible_pct;
@@ -888,8 +888,8 @@ function calculate() {
   }
 
   // === Program cost ===
-  const rate = tierRate(eligibleCalls);
-  const baseArr = C.platform_fee + (eligibleCalls * rate);
+  // v1.6: per-call line removed from cost (cost decoupled from call volume).
+  const baseArr = C.platform_fee;
   const buildCost = C.build_base + C.build_uplift[depth];
   let moduleArr = 0;
   const moduleLines = [];
@@ -914,7 +914,6 @@ function calculate() {
 
   const breakdown = [
     ['Platform & Maintenance', C.platform_fee],
-    [`Per-call × ${fmtNum(eligibleCalls)} @ $${rate.toFixed(2)}`, eligibleCalls * rate],
     ...moduleLines,
     [`BUILD one-time (${depth})`, buildCost],
   ];
