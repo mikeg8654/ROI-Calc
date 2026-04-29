@@ -2,9 +2,11 @@
 
 Single-page ROI tool used by MD Ally Public Safety Partnerships for live prospect modeling.
 
-## Local
+**Live**: https://roi-calc-production.up.railway.app/
 
-Open `index.html` in a browser. URL params auto-populate inputs:
+## Usage
+
+URL params auto-populate inputs:
 
 - `name` — agency name
 - `pop` — population served
