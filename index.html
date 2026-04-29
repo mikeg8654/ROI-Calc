@@ -313,12 +313,6 @@
     </div>
 
     <div class="field">
-      <label>Annual addressable volume <span class="hint">blank = MD Ally baseline</span></label>
-      <input type="number" id="in-calls" min="0" step="100" placeholder="Auto from jurisdiction pop">
-      <div class="note" id="calls-display"></div>
-    </div>
-
-    <div class="field">
       <label>Annual transport volume <span class="hint">optional, sharpens ROI</span></label>
       <input type="number" id="in-transports" min="0" step="100" placeholder="Leave blank if unknown">
     </div>
@@ -414,7 +408,7 @@
 
 <footer>
   <div style="display:flex; justify-content:space-between; align-items:center; max-width:1600px; margin:0 auto; padding:0 40px; flex-wrap:wrap; gap:12px;">
-    <div>MD Ally Technologies · Calculator <strong id="ver">v1.13</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
+    <div>MD Ally Technologies · Calculator <strong id="ver">v1.14</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
     <div>
       <button id="btn-feedback" style="background:var(--gold); color:var(--navy-deep); border:none; padding:12px 22px; border-radius:8px; font-family:inherit; font-size:16px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(229,168,23,0.3); transition:all 0.15s;">💡 Suggest an enhancement</button>
       &nbsp;&nbsp;
@@ -426,6 +420,7 @@
   <div id="changelog-box" style="display:none; max-width:800px; margin:16px auto 0; background:var(--white); border:1px solid var(--rule); border-radius:8px; padding:16px 20px; text-align:left; font-size:12px; color:var(--muted); line-height:1.6;">
     <strong style="color:var(--navy); font-size:13px;">Changelog</strong>
     <ul style="margin:8px 0 0 18px;">
+      <li><strong>v1.14</strong> (2026-04-29) · Removed redundant "Annual addressable volume" input. Population Served now drives both 5-yr growth projection and modeled addressable volume in one consolidated note.</li>
       <li><strong>v1.13</strong> (2026-04-29) · Math correction: 0.0077 × pop is annual eligible (not daily); IAED 23% multiplier dropped (already in 0.0077). Pop field renamed Population Served. Platform fee removed; Year-1 cost shows published $150K–$450K range only. Assumptions block scrubbed to public benchmarks (CMS, NEMSIS) only. Internal scenario rates hidden.</li>
       <li><strong>v1.12</strong> (2026-04-29) · Removed "911 medical call volume" framing. 0.0077 × jurisdiction pop is now labeled "MD Ally daily addressable baseline." Cost stays decoupled from volume (since v1.6).</li>
       <li><strong>v1.11</strong> (2026-04-29) · Agency-name typeahead via CMS NPI Registry (filtered to EMS/fire/public-safety taxonomies). Selecting a match auto-fills the ZIP and opens a "Verify jurisdiction" Google search link. No NPI hit → direct Google search fallback.</li>
@@ -515,7 +510,6 @@ function getInputSnapshot() {
     agency: document.getElementById('in-name').value || null,
     population: document.getElementById('in-pop').value || null,
     area_type: (document.querySelector('input[name="area"]:checked')||{}).value,
-    annual_calls_entered: document.getElementById('in-calls').value || null,
     annual_transports_entered: document.getElementById('in-transports').value || null,
     integration_depth: (document.querySelector('input[name="depth"]:checked')||{}).value,
     modules: Array.from(document.querySelectorAll('#modules input:checked')).map(cb => cb.value),
@@ -816,21 +810,15 @@ function getModules() {
 function calculate() {
   const pop = Math.max(0, parseInt($('in-pop').value || 0));
   const area = getAreaType();
-  const userCalls = parseInt($('in-calls').value) || null;
   const userTransports = parseInt($('in-transports').value) || null;
   const depth = getDepth();
   const modules = getModules();
 
-  // 0.0077 × pop = annual alpha/omega-eligible volume. Daily = annual/365.
-  // IAED filter is already baked in; no further multiplier.
+  // 0.0077 × pop = annual alpha/omega-eligible volume (IAED filter baked in).
   const annualEligible = pop * C.annual_eligible_factor;
   const dailyEligible = annualEligible / C.days_per_year;
-  const totalCalls = userCalls || annualEligible;
-  $('calls-display').textContent = userCalls
-    ? `Using entered value: ${fmtNum(totalCalls)}/yr (${fmtNum(totalCalls/365)}/day)`
-    : `Modeled: ${fmtNum(annualEligible)}/yr eligible · ~${fmtNum(dailyEligible)}/day`;
-
-  const eligibleCalls = totalCalls;
+  const eligibleCalls = annualEligible;
+  const totalCalls = annualEligible;
 
   // Pop-display 5-yr projection is owned by updatePopProjection() (called on input + init).
   // Refresh it here so the projection updates whenever the population field changes via calc.
@@ -926,7 +914,6 @@ function updateURL() {
   params.set('zip', $('in-zip').value);
   params.set('pop', $('in-pop').value);
   params.set('area', getAreaType());
-  params.set('calls', $('in-calls').value);
   params.set('transports', $('in-transports').value);
   params.set('depth', getDepth());
   params.set('mods', getModules().join(','));
@@ -1203,7 +1190,11 @@ function updatePopProjection() {
   const rate = (ctx && ctx.growthRateYr) || CENSUS.growth_rate_yr;
   const pop5 = Math.round(pop * Math.pow(1 + rate, 5));
   const delta = pop5 - pop;
-  note.innerHTML = `Over a 5-yr contract at ${(rate*100).toFixed(2)}%/yr: <strong>${fmtNum(pop5)}</strong> (+${fmtNum(delta)})`;
+  const annualElig = pop * C.annual_eligible_factor;
+  const dailyElig = annualElig / C.days_per_year;
+  note.innerHTML =
+    `5-yr contract at ${(rate*100).toFixed(2)}%/yr → <strong>${fmtNum(pop5)}</strong> (+${fmtNum(delta)})` +
+    `<br>Modeled addressable: <strong>${fmtNum(annualElig)}/yr</strong> eligible · ~${fmtNum(dailyElig)}/day`;
 }
 
 function loadFromURL() {
@@ -1215,7 +1206,6 @@ function loadFromURL() {
     const r = document.querySelector(`input[name="area"][value="${params.get('area')}"]`);
     if (r) r.checked = true;
   }
-  if (params.get('calls')) $('in-calls').value = params.get('calls');
   if (params.get('transports')) $('in-transports').value = params.get('transports');
   if (params.get('depth')) {
     const r = document.querySelector(`input[name="depth"][value="${params.get('depth')}"]`);
@@ -1280,7 +1270,6 @@ function wire() {
     $('zip-display').textContent = '';
     $('in-pop').value = '500000';
     document.querySelector('input[name="area"][value="suburban"]').checked = true;
-    $('in-calls').value = '';
     $('in-transports').value = '';
     document.querySelector('input[name="depth"][value="parallel"]').checked = true;
     document.querySelectorAll('#modules input').forEach(cb => {
