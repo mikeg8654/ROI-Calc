@@ -416,7 +416,7 @@
 
 <footer>
   <div style="display:flex; justify-content:space-between; align-items:center; max-width:1600px; margin:0 auto; padding:0 40px; flex-wrap:wrap; gap:12px;">
-    <div>MD Ally Technologies · Calculator <strong id="ver">v1.7</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
+    <div>MD Ally Technologies · Calculator <strong id="ver">v1.8</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
     <div>
       <button id="btn-feedback" style="background:var(--gold); color:var(--navy-deep); border:none; padding:12px 22px; border-radius:8px; font-family:inherit; font-size:16px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(229,168,23,0.3); transition:all 0.15s;">💡 Suggest an enhancement</button>
       &nbsp;&nbsp;
@@ -428,6 +428,7 @@
   <div id="changelog-box" style="display:none; max-width:800px; margin:16px auto 0; background:var(--white); border:1px solid var(--rule); border-radius:8px; padding:16px 20px; text-align:left; font-size:12px; color:var(--muted); line-height:1.6;">
     <strong style="color:var(--navy); font-size:13px;">Changelog</strong>
     <ul style="margin:8px 0 0 18px;">
+      <li><strong>v1.8</strong> (2026-04-29) · ZIP also auto-classifies area type (rural/suburban/urban) by population density. Primary: live Census TIGERweb ZCTA land area; fallback: embedded 33K-ZIP offline JSON when API down.</li>
       <li><strong>v1.7</strong> (2026-04-29) · ZIP code field auto-fills service-area population from US Census ACS 5-year (2022 vintage) with growth projection to current year. Manual override still works.</li>
       <li><strong>v1.6</strong> (2026-04-29) · Daily-call factor updated to 0.0077 × pop; per-call cost line removed (cost is now flat platform + modules + BUILD).</li>
       <li><strong>v1.5</strong> (2026-04-29) · MD Ally logo, in-header booking CTA, prospect-close CTA banner under results, Railway-deployed live URL.</li>
@@ -991,6 +992,49 @@ async function lookupZip(zip) {
     growthPct: ((growth - 1) * 100),
   };
 }
+function classifyDensity(d) {
+  if (d < 500) return 'rural';
+  if (d < 2500) return 'suburban';
+  return 'urban';
+}
+let _zipMap = null;
+async function loadOfflineZipMap() {
+  if (_zipMap) return _zipMap;
+  const resp = await fetch('assets/zip-density.json');
+  if (!resp.ok) throw new Error('Offline ZIP density JSON missing');
+  _zipMap = await resp.json();
+  return _zipMap;
+}
+async function lookupZipDensity(zip, projectedPop) {
+  // Primary: TIGERweb live lookup of ZCTA AREALAND, compute density from projected pop
+  const tigerUrl = `https://tigerweb.geo.census.gov/arcgis/rest/services/Census2020/tigerWMS_Census2020/MapServer/0/query?where=ZCTA5%3D%27${zip}%27&outFields=AREALAND&returnGeometry=false&f=json`;
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 4000);
+    const resp = await fetch(tigerUrl, { signal: ctrl.signal });
+    clearTimeout(t);
+    if (resp.ok) {
+      const data = await resp.json();
+      const f = data && data.features && data.features[0];
+      const areaSqM = f && f.attributes && f.attributes.AREALAND;
+      if (areaSqM && areaSqM > 0 && projectedPop > 0) {
+        const areaSqMi = areaSqM / 2589988.110336;
+        const density = projectedPop / areaSqMi;
+        return { areaType: classifyDensity(density), density, source: 'TIGERweb live' };
+      }
+    }
+  } catch (e) { /* fall through to offline */ }
+  // Fallback: embedded ZIP→urbanity JSON (SimpleMaps-derived, MIT-licensed)
+  try {
+    const map = await loadOfflineZipMap();
+    const code = map[zip];
+    if (code) {
+      const areaType = code === 'R' ? 'rural' : code === 'S' ? 'suburban' : 'urban';
+      return { areaType, density: null, source: 'offline cache' };
+    }
+  } catch (e) { /* swallow; user keeps manual area */ }
+  return null;
+}
 async function onZipChange() {
   const zip = $('in-zip').value.trim();
   const display = $('zip-display');
@@ -1000,7 +1044,15 @@ async function onZipChange() {
   try {
     const r = await lookupZip(zip);
     $('in-pop').value = r.projectedPop;
-    display.innerHTML = `${r.name}: ${fmtNum(r.popDataYear)} (${r.dataYear} ACS) · projected to ${r.currentYear} <strong>${fmtNum(r.projectedPop)}</strong> (+${r.growthPct.toFixed(1)}%)`;
+    let line = `${r.name}: ${fmtNum(r.popDataYear)} (${r.dataYear} ACS) · projected to ${r.currentYear} <strong>${fmtNum(r.projectedPop)}</strong> (+${r.growthPct.toFixed(1)}%)`;
+    const dens = await lookupZipDensity(zip, r.projectedPop);
+    if (dens && dens.areaType) {
+      const radio = document.querySelector(`input[name="area"][value="${dens.areaType}"]`);
+      if (radio) radio.checked = true;
+      const densStr = dens.density ? `${Math.round(dens.density).toLocaleString()}/sq mi → ` : '';
+      line += `. Area: ${densStr}<strong>${dens.areaType}</strong> <span style="opacity:0.7;">(${dens.source})</span>`;
+    }
+    display.innerHTML = line;
     calculate();
   } catch(err) {
     display.textContent = `Census lookup failed: ${err.message}. Enter population manually.`;

@@ -6,6 +6,16 @@ Single-page ROI tool used by MD Ally Public Safety Partnerships for live prospec
 
 ## Usage
 
+## Refresh offline ZIP density data
+
+```bash
+py scripts/build_zip_density.py
+```
+
+Produces `assets/zip-density.json` (~400KB) from SimpleMaps US-Zips (MIT). Used as offline fallback when Census TIGERweb is unreachable.
+
+## URL params
+
 URL params auto-populate inputs:
 
 - `name` — agency name
