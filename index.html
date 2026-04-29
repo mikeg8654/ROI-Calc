@@ -324,6 +324,12 @@
     </div>
 
     <div class="field">
+      <label>Partner discount <span class="hint">0% MSRP · max 20% with approval</span></label>
+      <input type="number" id="in-discount" min="0" max="20" step="1" value="0">
+      <div class="note" id="discount-display">Default: MSRP (no discount)</div>
+    </div>
+
+    <div class="field">
       <label>CAD integration depth</label>
       <div class="segmented" id="seg-depth">
         <label><input type="radio" name="depth" value="parallel" checked><span>Parallel</span></label>
@@ -414,7 +420,7 @@
 
 <footer>
   <div style="display:flex; justify-content:space-between; align-items:center; max-width:1600px; margin:0 auto; padding:0 40px; flex-wrap:wrap; gap:12px;">
-    <div>MD Ally Technologies · Calculator <strong id="ver">v1.15</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
+    <div>MD Ally Technologies · Calculator <strong id="ver">v1.16</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
     <div>
       <button id="btn-feedback" style="background:var(--gold); color:var(--navy-deep); border:none; padding:12px 22px; border-radius:8px; font-family:inherit; font-size:16px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(229,168,23,0.3); transition:all 0.15s;">💡 Suggest an enhancement</button>
       &nbsp;&nbsp;
@@ -426,6 +432,7 @@
   <div id="changelog-box" style="display:none; max-width:800px; margin:16px auto 0; background:var(--white); border:1px solid var(--rule); border-radius:8px; padding:16px 20px; text-align:left; font-size:12px; color:var(--muted); line-height:1.6;">
     <strong style="color:var(--navy); font-size:13px;">Changelog</strong>
     <ul style="margin:8px 0 0 18px;">
+      <li><strong>v1.16</strong> (2026-04-29) · Cost panel now uses Direct ARR price book formula (Public Safety Offering, "Direct ARR Inputs" tab). Inputs: population + partner discount (max 20%). MSRP shown by default; discount slider adjusts. National-avg uninsured = 10.3% (was price-book default 30%). Payback/ROI/3-yr now reflect actual computed price.</li>
       <li><strong>v1.15</strong> (2026-04-29) · Optional "Annual medical 911 calls" override (eligibility = 12% of medical volume) for high-volume urban systems. Payback + 3-yr value + ROI ratio now anchored to displayed Year-1 range mid-point so math stays consistent with on-screen pricing.</li>
       <li><strong>v1.14</strong> (2026-04-29) · Removed redundant "Annual addressable volume" input. Population Served now drives both 5-yr growth projection and modeled addressable volume in one consolidated note.</li>
       <li><strong>v1.13</strong> (2026-04-29) · Math correction: 0.0077 × pop is annual eligible (not daily); IAED 23% multiplier dropped (already in 0.0077). Pop field renamed Population Served. Platform fee removed; Year-1 cost shows published $150K–$450K range only. Assumptions block scrubbed to public benchmarks (CMS, NEMSIS) only. Internal scenario rates hidden.</li>
@@ -754,7 +761,7 @@ const C = {
   runs_per_1k: { rural:75, suburban:125, urban:250 },  // area-type density (EMS reference; not used for call volume)
   hrs_per_run: { rural:3.0, suburban:1.48, urban:1.48 },
 
-  // INTERNAL pricing (not displayed in client-facing UI; used to anchor the headline range only).
+  // INTERNAL pricing (not displayed; computed Year-1 MSRP comes from priceForPop()).
   build_base: 23245,
   build_uplift: { parallel:0, uni:7500, bi:22500 },
   terf_tiers: [
@@ -767,10 +774,59 @@ const C = {
   ],
   path_flat: 11000,
   apm_flat: 17000,
-  // External-anchor Year-1 range (Mike's published anchors: $150K–$450K)
-  display_range_low: 150000,
-  display_range_high: 450000,
 };
+
+// ========== DIRECT ARR PRICING (matches Public Safety Offering Price Book) ==========
+const PRICE = {
+  uninsured_pct: 0.10,                 // National avg per price book 2026-04-29 (median 9.3%; rounded to 10.0% in book).
+  platform_fee: 100000,                // C5
+  pop_to_eligible_rate: 0.0077,        // M11
+  eligible_to_triaged: 0.5,            // M12
+  uninsured_call_uplift: 1.7,          // M16 (uninsured rate = base × (1 + 1.7))
+  followup_eoc_rate: 0.4,              // M22
+  insured_per_call: 43,                // M13 = anchor / 3
+  uninsured_per_call: 64.5,            // M19 = anchor / 2
+  eoc_per_call: 32.25,                 // M23 = anchor / 4
+  // Call-volume tiers: [max_calls, marginal_discount]
+  call_tiers: [
+    [1875,    0],
+    [3750,    0.05],
+    [5625,    0.0575],
+    [10000,   0.069],
+    [25000,   0.08625],
+    [43750,   0.112125],
+  ],
+  max_discount: 0.20,                  // 20% max with approval
+};
+function priceForPop(pop, partnerDiscount) {
+  pop = Math.max(0, pop || 0);
+  const uninsuredPop = pop * PRICE.uninsured_pct;
+  const insuredPop   = pop * (1 - PRICE.uninsured_pct);
+  const uninsuredCalls = uninsuredPop * PRICE.pop_to_eligible_rate * (1 + PRICE.uninsured_call_uplift) * PRICE.eligible_to_triaged;
+  const insuredCalls   = insuredPop   * PRICE.pop_to_eligible_rate * PRICE.eligible_to_triaged;
+  const eocCalls       = (uninsuredCalls + insuredCalls) * PRICE.followup_eoc_rate;
+  const totalCalls     = uninsuredCalls + insuredCalls + eocCalls;
+  if (totalCalls <= 0) return { listPrice: PRICE.platform_fee, effectivePrice: PRICE.platform_fee, totalCalls: 0, discount: 0 };
+  const totalAtAnchor = uninsuredCalls * PRICE.uninsured_per_call
+                      + insuredCalls   * PRICE.insured_per_call
+                      + eocCalls       * PRICE.eoc_per_call;
+  const blendedPricePerCall = totalAtAnchor / totalCalls;
+  let listPrice = PRICE.platform_fee;
+  let prevPrice = blendedPricePerCall, prevMax = 0;
+  for (let i = 0; i < PRICE.call_tiers.length; i++) {
+    const [tierMax, tierDiscount] = PRICE.call_tiers[i];
+    const tierPrice = i === 0 ? blendedPricePerCall : prevPrice * (1 - tierDiscount);
+    const callsInTier = Math.min(totalCalls, tierMax) - prevMax;
+    if (callsInTier <= 0) break;
+    listPrice += callsInTier * tierPrice;
+    prevPrice = tierPrice;
+    prevMax = tierMax;
+    if (totalCalls <= tierMax) break;
+  }
+  const discount = Math.max(0, Math.min(PRICE.max_discount, partnerDiscount || 0));
+  const effectivePrice = listPrice * (1 - discount);
+  return { listPrice, effectivePrice, totalCalls, blendedPricePerCall, discount };
+}
 
 // Scenarios
 const SCENARIOS = {
@@ -887,35 +943,33 @@ function calculate() {
     tbody.innerHTML += `<tr class="${cls}"><td>${r.label}</td><td>${r.cons}</td><td>${r.exp}</td><td>${r.asp}</td></tr>`;
   }
 
-  // === Program cost ===
-  // Client-facing: anchor to the published Year-1 typical range. Detailed breakdown is internal-only.
-  const buildCost = C.build_base + C.build_uplift[depth];
-  let moduleArr = 0;
-  if (modules.includes('terf')) moduleArr += popTier(pop, C.terf_tiers);
-  if (modules.includes('vamc')) moduleArr += popTier(pop, C.vamc_tiers);
-  if (modules.includes('path')) moduleArr += C.path_flat;
-  if (modules.includes('apm'))  moduleArr += C.apm_flat;
-  const year1Total = moduleArr + buildCost;  // internal sum (no platform fee), used for ROI ratio
+  // === Program cost (Direct ARR per Public Safety Price Book) ===
+  const partnerDiscount = (parseFloat($('in-discount').value) || 0) / 100;
+  const priced = priceForPop(pop, partnerDiscount);
+  const year1Total = priced.effectivePrice;
 
-  $('out-cost').textContent = `${fmtUSD(C.display_range_low)} – ${fmtUSD(C.display_range_high)}`;
-  $('out-cost-sub').textContent = `Year-1 typical · tailored to your scope during discovery`;
-  $('out-cost-breakdown').innerHTML = `<div class="line" style="opacity:0.75; font-size:12px;"><span>Final pricing scoped during discovery</span></div>`;
+  if (priced.discount > 0) {
+    $('out-cost').textContent = fmtUSD(priced.effectivePrice);
+    $('out-cost-sub').textContent = `Effective Year-1 · MSRP ${fmtUSD(priced.listPrice)} less ${(priced.discount*100).toFixed(0)}% partner discount`;
+  } else {
+    $('out-cost').textContent = fmtUSD(priced.listPrice);
+    $('out-cost-sub').textContent = `Year-1 MSRP · up to 20% partner discount available with approval`;
+  }
+  $('out-cost-breakdown').innerHTML = `<div class="line" style="opacity:0.75; font-size:12px;"><span>Direct ARR pricing · ${fmtNum(priced.totalCalls)} calls/yr modeled</span></div>`;
 
   // === Payback + scale ===
-  // Anchor payback to the displayed Year-1 range mid-point so the math is consistent with what the customer sees.
-  const displayedYear1Mid = (C.display_range_low + C.display_range_high) / 2;
   const agencySavings = exp.emsRunCost;
-  const paybackWeeks = (displayedYear1Mid / agencySavings) * 52;
+  const paybackWeeks = year1Total > 0 ? (year1Total / agencySavings) * 52 : 0;
   $('out-payback').textContent = paybackWeeks < 1 ? '< 1 wk' :
                                   paybackWeeks < 52 ? `~${Math.round(paybackWeeks)} wks` :
                                   `~${(paybackWeeks/52).toFixed(1)} yrs`;
   $('out-unitdays').textContent = fmtNum(exp.unitDays);
   $('out-diversions').textContent = fmtNum(exp.diversions);
-  const threeYrValue = (exp.emsRunCost * 3) - displayedYear1Mid;
+  const threeYrValue = (exp.emsRunCost * 3) - year1Total;
   $('out-3yr').textContent = fmtUSD(threeYrValue);
 
   // === Ratio headline ===
-  const ratio = agencySavings / displayedYear1Mid;
+  const ratio = year1Total > 0 ? agencySavings / year1Total : 0;
   $('out-ratio').textContent = `$${ratio.toFixed(0)} : $1`;
   $('out-ratio-context').textContent = `Expected-scenario · Year 1 · before community value (transport/ED) or new revenue`;
 
@@ -931,6 +985,7 @@ function updateURL() {
   params.set('pop', $('in-pop').value);
   params.set('area', getAreaType());
   params.set('transports', $('in-transports').value);
+  params.set('discount', $('in-discount').value);
   params.set('depth', getDepth());
   params.set('mods', getModules().join(','));
   const url = window.location.pathname + '?' + params.toString();
@@ -1234,6 +1289,7 @@ function loadFromURL() {
     if (r) r.checked = true;
   }
   if (params.get('transports')) $('in-transports').value = params.get('transports');
+  if (params.get('discount')) $('in-discount').value = params.get('discount');
   if (params.get('depth')) {
     const r = document.querySelector(`input[name="depth"][value="${params.get('depth')}"]`);
     if (r) r.checked = true;
@@ -1254,6 +1310,11 @@ function wire() {
   });
   $('in-pop').addEventListener('input', updatePopProjection);
   $('in-medical-calls').addEventListener('input', updateEligibilityNote);
+  $('in-discount').addEventListener('input', () => {
+    const d = parseFloat($('in-discount').value) || 0;
+    $('discount-display').textContent = d === 0 ? 'Default: MSRP (no discount)' :
+      d > 20 ? '⚠ Max 20% discount allowed' : `Effective: ${(100-d).toFixed(0)}% of MSRP · requires approval at ${d}%`;
+  });
   $('in-name').addEventListener('input', onAgencyInput);
   $('agency-results').addEventListener('click', (e) => {
     const row = e.target.closest('.agency-result');
@@ -1299,6 +1360,7 @@ function wire() {
     $('in-pop').value = '500000';
     document.querySelector('input[name="area"][value="suburban"]').checked = true;
     $('in-transports').value = '';
+    $('in-discount').value = '0';
     document.querySelector('input[name="depth"][value="parallel"]').checked = true;
     document.querySelectorAll('#modules input').forEach(cb => {
       cb.checked = false;
