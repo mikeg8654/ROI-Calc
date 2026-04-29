@@ -1,15 +1,18 @@
 """
-Build assets/zip-density.json — compact ZIP → urbanity classification map.
+Build assets/zip-density.json — compact ZIP → urbanity + county FIPS map.
 
 Source: SimpleMaps US Zips Basic (MIT-licensed, free for commercial use).
 https://simplemaps.com/data/us-zips
 
-Output schema: {"00501": "R", "00544": "R", "33602": "U", ...}
-  R = rural    (< 500 people/sq mile)
-  S = suburban (500–2500)
-  U = urban    (> 2500)
+Output schema: {"89501": {"d": "U", "f": "32031"}, ...}
+  d = density class (R rural <500/sq mi, S suburban 500-2500, U urban >2500)
+  f = county FIPS (5-digit, state + county)
 
-Run when you want to refresh the offline density data:
+The county FIPS is used at runtime to fetch county-level population from the
+US Census ACS API (which is what an EMS/fire agency actually serves; not the
+ZCTA's residential population).
+
+Run when you want to refresh the offline data:
     py scripts/build_zip_density.py
 """
 import csv
@@ -54,13 +57,15 @@ def main() -> None:
                 if not zip_code or len(zip_code) != 5 or not zip_code.isdigit():
                     continue
                 density_str = row.get("density", "").strip()
-                if not density_str:
+                fips = row.get("county_fips", "").strip()
+                if not density_str or not fips:
                     continue
                 try:
                     density = float(density_str)
                 except ValueError:
                     continue
-                mapping[zip_code] = classify(density)
+                fips = fips.zfill(5)
+                mapping[zip_code] = {"d": classify(density), "f": fips}
 
     print(f"Built {len(mapping):,} ZIP classifications")
     OUT.parent.mkdir(parents=True, exist_ok=True)

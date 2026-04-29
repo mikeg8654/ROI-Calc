@@ -289,15 +289,15 @@
     </div>
 
     <div class="field">
-      <label>ZIP code <span class="hint">auto-fills population</span></label>
-      <input type="text" id="in-zip" maxlength="5" inputmode="numeric" pattern="\d{5}" placeholder="e.g. 33602">
-      <div class="note" id="zip-display"></div>
+      <label>Service-area population <span class="req">*</span> <span class="hint">agency jurisdiction</span></label>
+      <input type="number" id="in-pop" min="0" step="1000" value="500000">
+      <div class="note" id="pop-display">Enter the population your agency serves.</div>
     </div>
 
     <div class="field">
-      <label>Service-area population <span class="req">*</span></label>
-      <input type="number" id="in-pop" min="0" step="1000" value="500000">
-      <div class="note" id="pop-display">Mid-size county scale</div>
+      <label>ZIP code <span class="hint">validates jurisdiction + projects growth</span></label>
+      <input type="text" id="in-zip" maxlength="5" inputmode="numeric" pattern="\d{5}" placeholder="e.g. 33602">
+      <div class="note" id="zip-display"></div>
     </div>
 
     <div class="field">
@@ -416,7 +416,7 @@
 
 <footer>
   <div style="display:flex; justify-content:space-between; align-items:center; max-width:1600px; margin:0 auto; padding:0 40px; flex-wrap:wrap; gap:12px;">
-    <div>MD Ally Technologies · Calculator <strong id="ver">v1.9</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
+    <div>MD Ally Technologies · Calculator <strong id="ver">v1.10</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
     <div>
       <button id="btn-feedback" style="background:var(--gold); color:var(--navy-deep); border:none; padding:12px 22px; border-radius:8px; font-family:inherit; font-size:16px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(229,168,23,0.3); transition:all 0.15s;">💡 Suggest an enhancement</button>
       &nbsp;&nbsp;
@@ -428,6 +428,7 @@
   <div id="changelog-box" style="display:none; max-width:800px; margin:16px auto 0; background:var(--white); border:1px solid var(--rule); border-radius:8px; padding:16px 20px; text-align:left; font-size:12px; color:var(--muted); line-height:1.6;">
     <strong style="color:var(--navy); font-size:13px;">Changelog</strong>
     <ul style="margin:8px 0 0 18px;">
+      <li><strong>v1.10</strong> (2026-04-29) · Population now agency-jurisdiction (manual). ZIP code becomes a validator: shows reference county pop, Census growth trend, and 5-year contract projection. ZIP density still auto-classifies area type. Agency-name lookup planned next.</li>
       <li><strong>v1.9</strong> (2026-04-29) · One-click branded PDF download replaces browser print. Filename includes agency + date. Includes branded header, inputs summary, results, disclaimer + booking link footer.</li>
       <li><strong>v1.8</strong> (2026-04-29) · ZIP also auto-classifies area type (rural/suburban/urban) by population density. Primary: live Census TIGERweb ZCTA land area; fallback: embedded 33K-ZIP offline JSON when API down.</li>
       <li><strong>v1.7</strong> (2026-04-29) · ZIP code field auto-fills service-area population from US Census ACS 5-year (2022 vintage) with growth projection to current year. Manual override still works.</li>
@@ -972,11 +973,18 @@ const CENSUS = {
 };
 async function lookupZip(zip) {
   if (!/^\d{5}$/.test(zip)) return null;
-  const url = `https://api.census.gov/data/${CENSUS.acs_year}/acs/acs5?get=NAME,B01003_001E&for=zip%20code%20tabulation%20area:${zip}`;
+  // ZIP → county FIPS comes from offline map (SimpleMaps, MIT). County pop comes from live Census ACS.
+  // We use county pop because EMS/fire agencies serve a county, not a single ZCTA.
+  const map = await loadOfflineZipMap();
+  const entry = map[zip];
+  if (!entry || !entry.f) throw new Error('ZIP not in US dataset');
+  const stateFips = entry.f.slice(0, 2);
+  const countyFips = entry.f.slice(2);
+  const url = `https://api.census.gov/data/${CENSUS.acs_year}/acs/acs5?get=NAME,B01003_001E&for=county:${countyFips}&in=state:${stateFips}`;
   const resp = await fetch(url);
-  if (!resp.ok) throw new Error(`Census API ${resp.status}`);
+  if (!resp.ok) throw new Error(`Census ACS ${resp.status}`);
   const data = await resp.json();
-  if (!Array.isArray(data) || data.length < 2) throw new Error('ZIP not in Census ZCTA');
+  if (!Array.isArray(data) || data.length < 2) throw new Error('County not in ACS');
   const popDataYear = parseInt(data[1][1]);
   if (!popDataYear || popDataYear < 0) throw new Error('No population data');
   const currentYear = new Date().getFullYear();
@@ -985,12 +993,13 @@ async function lookupZip(zip) {
   const projectedPop = Math.round(popDataYear * growth);
   return {
     zip,
-    name: data[1][0],
+    name: data[1][0],          // e.g. "Washoe County, Nevada"
     popDataYear,
     projectedPop,
     dataYear: CENSUS.acs_year,
     currentYear,
     growthPct: ((growth - 1) * 100),
+    densityClass: entry.d,     // 'R' | 'S' | 'U' from offline classifier
   };
 }
 // ========== PDF EXPORT ==========
@@ -1104,58 +1113,47 @@ async function loadOfflineZipMap() {
   _zipMap = await resp.json();
   return _zipMap;
 }
-async function lookupZipDensity(zip, projectedPop) {
-  // Primary: TIGERweb live lookup of ZCTA AREALAND, compute density from projected pop
-  const tigerUrl = `https://tigerweb.geo.census.gov/arcgis/rest/services/Census2020/tigerWMS_Census2020/MapServer/0/query?where=ZCTA5%3D%27${zip}%27&outFields=AREALAND&returnGeometry=false&f=json`;
-  try {
-    const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 4000);
-    const resp = await fetch(tigerUrl, { signal: ctrl.signal });
-    clearTimeout(t);
-    if (resp.ok) {
-      const data = await resp.json();
-      const f = data && data.features && data.features[0];
-      const areaSqM = f && f.attributes && f.attributes.AREALAND;
-      if (areaSqM && areaSqM > 0 && projectedPop > 0) {
-        const areaSqMi = areaSqM / 2589988.110336;
-        const density = projectedPop / areaSqMi;
-        return { areaType: classifyDensity(density), density, source: 'TIGERweb live' };
-      }
-    }
-  } catch (e) { /* fall through to offline */ }
-  // Fallback: embedded ZIP→urbanity JSON (SimpleMaps-derived, MIT-licensed)
-  try {
-    const map = await loadOfflineZipMap();
-    const code = map[zip];
-    if (code) {
-      const areaType = code === 'R' ? 'rural' : code === 'S' ? 'suburban' : 'urban';
-      return { areaType, density: null, source: 'offline cache' };
-    }
-  } catch (e) { /* swallow; user keeps manual area */ }
-  return null;
+function densityClassToAreaType(code) {
+  return code === 'R' ? 'rural' : code === 'S' ? 'suburban' : code === 'U' ? 'urban' : null;
 }
 async function onZipChange() {
   const zip = $('in-zip').value.trim();
   const display = $('zip-display');
-  if (!zip) { display.textContent = ''; return; }
+  if (!zip) { display.textContent = ''; updatePopProjection(); return; }
   if (!/^\d{5}$/.test(zip)) { display.textContent = 'Enter a 5-digit ZIP'; return; }
-  display.textContent = 'Looking up Census ZCTA...';
+  display.textContent = 'Looking up county via Census ACS...';
   try {
     const r = await lookupZip(zip);
-    $('in-pop').value = r.projectedPop;
-    let line = `${r.name}: ${fmtNum(r.popDataYear)} (${r.dataYear} ACS) · projected to ${r.currentYear} <strong>${fmtNum(r.projectedPop)}</strong> (+${r.growthPct.toFixed(1)}%)`;
-    const dens = await lookupZipDensity(zip, r.projectedPop);
-    if (dens && dens.areaType) {
-      const radio = document.querySelector(`input[name="area"][value="${dens.areaType}"]`);
+    // 5-yr contract horizon at the same growth rate
+    const fiveYrGrowth = Math.pow(1 + CENSUS.growth_rate_yr, 5);
+    const popIn5Yr = Math.round(r.projectedPop * fiveYrGrowth);
+    let line = `Ref: <strong>${r.name}</strong> · county pop ${fmtNum(r.popDataYear)} (${r.dataYear} ACS) → ${r.currentYear}: ${fmtNum(r.projectedPop)} (+${r.growthPct.toFixed(1)}%) → +5yr: ${fmtNum(popIn5Yr)}`;
+    const areaType = densityClassToAreaType(r.densityClass);
+    if (areaType) {
+      const radio = document.querySelector(`input[name="area"][value="${areaType}"]`);
       if (radio) radio.checked = true;
-      const densStr = dens.density ? `${Math.round(dens.density).toLocaleString()}/sq mi → ` : '';
-      line += `. Area: ${densStr}<strong>${dens.areaType}</strong> <span style="opacity:0.7;">(${dens.source})</span>`;
+      line += `. Density: <strong>${areaType}</strong>`;
     }
     display.innerHTML = line;
+    // Cache county growth context for the 5-yr pop projection on entered pop
+    window._zipContext = { growthRateYr: CENSUS.growth_rate_yr, source: r.name };
+    updatePopProjection();
     calculate();
   } catch(err) {
-    display.textContent = `Census lookup failed: ${err.message}. Enter population manually.`;
+    display.textContent = `Lookup failed: ${err.message}. Population stays as entered.`;
+    window._zipContext = null;
+    updatePopProjection();
   }
+}
+function updatePopProjection() {
+  const pop = parseInt($('in-pop').value || 0);
+  const note = $('pop-display');
+  if (!pop) { note.textContent = 'Enter the population your agency serves.'; return; }
+  const ctx = window._zipContext;
+  const rate = (ctx && ctx.growthRateYr) || CENSUS.growth_rate_yr;
+  const pop5 = Math.round(pop * Math.pow(1 + rate, 5));
+  const delta = pop5 - pop;
+  note.innerHTML = `Over a 5-yr contract at ${(rate*100).toFixed(2)}%/yr: <strong>${fmtNum(pop5)}</strong> (+${fmtNum(delta)})`;
 }
 
 function loadFromURL() {
@@ -1187,6 +1185,7 @@ function wire() {
     el.addEventListener('input', calculate);
     el.addEventListener('change', calculate);
   });
+  $('in-pop').addEventListener('input', updatePopProjection);
   // Module chip active-class toggle
   document.querySelectorAll('.module-chip').forEach(chip => {
     const cb = chip.querySelector('input');
@@ -1233,6 +1232,7 @@ function wire() {
 document.addEventListener('DOMContentLoaded', () => {
   wire();
   loadFromURL();
+  updatePopProjection();
   calculate();
 });
 </script>
