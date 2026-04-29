@@ -416,7 +416,7 @@
 
 <footer>
   <div style="display:flex; justify-content:space-between; align-items:center; max-width:1600px; margin:0 auto; padding:0 40px; flex-wrap:wrap; gap:12px;">
-    <div>MD Ally Technologies · Calculator <strong id="ver">v1.8</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
+    <div>MD Ally Technologies · Calculator <strong id="ver">v1.9</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
     <div>
       <button id="btn-feedback" style="background:var(--gold); color:var(--navy-deep); border:none; padding:12px 22px; border-radius:8px; font-family:inherit; font-size:16px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(229,168,23,0.3); transition:all 0.15s;">💡 Suggest an enhancement</button>
       &nbsp;&nbsp;
@@ -428,6 +428,7 @@
   <div id="changelog-box" style="display:none; max-width:800px; margin:16px auto 0; background:var(--white); border:1px solid var(--rule); border-radius:8px; padding:16px 20px; text-align:left; font-size:12px; color:var(--muted); line-height:1.6;">
     <strong style="color:var(--navy); font-size:13px;">Changelog</strong>
     <ul style="margin:8px 0 0 18px;">
+      <li><strong>v1.9</strong> (2026-04-29) · One-click branded PDF download replaces browser print. Filename includes agency + date. Includes branded header, inputs summary, results, disclaimer + booking link footer.</li>
       <li><strong>v1.8</strong> (2026-04-29) · ZIP also auto-classifies area type (rural/suburban/urban) by population density. Primary: live Census TIGERweb ZCTA land area; fallback: embedded 33K-ZIP offline JSON when API down.</li>
       <li><strong>v1.7</strong> (2026-04-29) · ZIP code field auto-fills service-area population from US Census ACS 5-year (2022 vintage) with growth projection to current year. Manual override still works.</li>
       <li><strong>v1.6</strong> (2026-04-29) · Daily-call factor updated to 0.0077 × pop; per-call cost line removed (cost is now flat platform + modules + BUILD).</li>
@@ -992,6 +993,104 @@ async function lookupZip(zip) {
     growthPct: ((growth - 1) * 100),
   };
 }
+// ========== PDF EXPORT ==========
+const BOOKING_URL = 'https://outlook.office.com/bookwithme/user/81b4be3503e34b2d8911a7ce2a100372@mdally.com?anonymous&ep=signature&ismsaljsauthenabled';
+const HTML2PDF_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.3/html2pdf.bundle.min.js';
+let _h2pPromise = null;
+function ensureHtml2Pdf() {
+  if (window.html2pdf) return Promise.resolve(window.html2pdf);
+  if (_h2pPromise) return _h2pPromise;
+  _h2pPromise = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = HTML2PDF_CDN;
+    s.onload = () => resolve(window.html2pdf);
+    s.onerror = () => { _h2pPromise = null; reject(new Error('CDN load failed')); };
+    document.head.appendChild(s);
+  });
+  return _h2pPromise;
+}
+function escHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function buildPdfWrapper() {
+  const agency = ($('in-name').value || 'Untitled Agency').trim();
+  const zip = $('in-zip').value.trim();
+  const pop = parseInt($('in-pop').value || 0).toLocaleString();
+  const area = (document.querySelector('input[name="area"]:checked')||{}).value || '—';
+  const depth = (document.querySelector('input[name="depth"]:checked')||{}).value || '—';
+  const modules = getModules().map(m => m.toUpperCase()).join(', ') || 'None';
+  const date = new Date().toISOString().slice(0,10);
+  const ver = $('ver').textContent;
+
+  const w = document.createElement('div');
+  w.style.cssText = 'position:fixed; left:-12000px; top:0; width:8.5in; background:#ffffff; font-family:Inter,system-ui,Segoe UI,sans-serif; color:#0F1B33;';
+  w.innerHTML = `
+    <div style="background:linear-gradient(135deg,#0F1B33,#1B2A4A); padding:22px 36px; border-bottom:4px solid #E5A817; color:white; display:flex; align-items:center; justify-content:space-between; gap:20px;">
+      <div style="display:flex; align-items:center; gap:16px;">
+        <div style="background:white; padding:6px 14px; border-radius:8px; height:50px; display:flex; align-items:center;">
+          <img src="assets/mdally-logo.png" style="height:38px; width:auto;" />
+        </div>
+        <div>
+          <div style="font-size:22px; font-weight:700; letter-spacing:-0.01em;">MD Ally ROI Estimate</div>
+          <div style="font-size:11px; color:#A9B4CC; letter-spacing:0.1em; text-transform:uppercase; margin-top:4px;">Public Safety · Year-1 Impact + Program Cost</div>
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:17px; font-weight:700;">${escHtml(agency)}</div>
+        <div style="font-size:11px; color:#A9B4CC; margin-top:3px;">${date} · ${ver}</div>
+      </div>
+    </div>
+    <div style="padding:14px 36px; background:#F6F7FB; border-bottom:1px solid #D6DCE6; display:grid; grid-template-columns:repeat(5,1fr); gap:12px; font-size:11px;">
+      <div><div style="color:#5E6B85; text-transform:uppercase; letter-spacing:0.08em; font-size:9px; font-weight:700;">ZIP</div><div style="font-weight:600; margin-top:3px;">${escHtml(zip||'—')}</div></div>
+      <div><div style="color:#5E6B85; text-transform:uppercase; letter-spacing:0.08em; font-size:9px; font-weight:700;">Population</div><div style="font-weight:600; margin-top:3px;">${pop}</div></div>
+      <div><div style="color:#5E6B85; text-transform:uppercase; letter-spacing:0.08em; font-size:9px; font-weight:700;">Area</div><div style="font-weight:600; margin-top:3px; text-transform:capitalize;">${area}</div></div>
+      <div><div style="color:#5E6B85; text-transform:uppercase; letter-spacing:0.08em; font-size:9px; font-weight:700;">CAD Depth</div><div style="font-weight:600; margin-top:3px; text-transform:capitalize;">${escHtml(depth)}</div></div>
+      <div><div style="color:#5E6B85; text-transform:uppercase; letter-spacing:0.08em; font-size:9px; font-weight:700;">Modules</div><div style="font-weight:600; margin-top:3px;">${escHtml(modules)}</div></div>
+    </div>
+    <div id="pdf-body" style="padding:20px 36px;"></div>
+    <div style="padding:16px 36px 20px; border-top:2px solid #D6DCE6; font-size:10px; color:#5E6B85; line-height:1.55; background:#FAFBFC;">
+      <div style="font-size:11px; color:#0F1B33;"><strong>Modeled estimate. Not a quote.</strong> Actual figures scoped during discovery. Cost is flat platform plus modules plus BUILD; per-call pricing not modeled.</div>
+      <div style="margin-top:6px;">Book a scoping conversation: <strong style="color:#0F1B33;">${BOOKING_URL}</strong></div>
+      <div style="margin-top:6px; opacity:0.65;">MD Ally Technologies · Calculator ${ver} · Generated ${date} · roi-calc-production.up.railway.app</div>
+    </div>`;
+
+  const mainClone = document.querySelector('main').cloneNode(true);
+  // strip the in-page CTA banner (PDF has its own footer)
+  mainClone.querySelectorAll('a[href*="bookwithme"]').forEach(a => {
+    const banner = a.closest('div[style*="gradient"]');
+    if (banner) banner.remove();
+  });
+  w.querySelector('#pdf-body').appendChild(mainClone);
+  return w;
+}
+async function exportPDF() {
+  const btn = $('btn-print');
+  const orig = btn.innerHTML;
+  btn.innerHTML = '⏳ Generating…';
+  btn.disabled = true;
+  try {
+    const html2pdf = await ensureHtml2Pdf();
+    const wrapper = buildPdfWrapper();
+    document.body.appendChild(wrapper);
+    const agency = ($('in-name').value || 'Agency').trim();
+    const safe = agency.replace(/[^a-zA-Z0-9]+/g,'_').replace(/^_+|_+$/g,'') || 'Agency';
+    const filename = `MD_Ally_ROI_${safe}_${new Date().toISOString().slice(0,10)}.pdf`;
+    await html2pdf().set({
+      margin: 0,
+      filename,
+      image: { type: 'jpeg', quality: 0.95 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false },
+      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait', compress: true },
+      pagebreak: { mode: ['css', 'legacy'] },
+    }).from(wrapper).save();
+    document.body.removeChild(wrapper);
+  } catch(err) {
+    alert('PDF export failed: ' + err.message + '\\n\\nFalling back to browser print dialog.');
+    window.print();
+  } finally {
+    btn.innerHTML = orig;
+    btn.disabled = false;
+  }
+}
+
 function classifyDensity(d) {
   if (d < 500) return 'rural';
   if (d < 2500) return 'suburban';
@@ -1106,7 +1205,7 @@ function wire() {
       prompt('Copy this URL:', url);
     }
   });
-  $('btn-print').addEventListener('click', () => window.print());
+  $('btn-print').addEventListener('click', exportPDF);
   // ZIP: prevent the live "input" handler from running calculate() before lookup completes;
   // we trigger calculate() ourselves after auto-fill.
   $('in-zip').addEventListener('blur', onZipChange);
