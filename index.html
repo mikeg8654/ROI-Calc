@@ -291,7 +291,7 @@
     </div>
 
     <div class="field">
-      <label>Service-area population <span class="req">*</span> <span class="hint">agency jurisdiction</span></label>
+      <label>Population Served <span class="req">*</span> <span class="hint">agency jurisdiction</span></label>
       <input type="number" id="in-pop" min="0" step="1000" value="500000">
       <div class="note" id="pop-display">Enter the population your agency serves.</div>
     </div>
@@ -401,15 +401,11 @@
     </div>
 
     <div class="assumptions">
+      <div style="font-size:11px; font-weight:700; color:var(--navy); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:8px;">Source data (public benchmarks)</div>
       <div class="grid">
-        <div><strong>0.0077 × jurisdiction pop</strong> daily MD Ally addressable baseline</div>
-        <div><strong>23%</strong> IAED Alpha/Omega eligible share of addressable volume</div>
-        <div><strong>85% / 84% / 65%</strong> consent / diversion / full resolution</div>
-        <div><strong>$2,673</strong> EMS run cost · GAPDS/CMS</div>
+        <div><strong>$2,673</strong> EMS run cost · GAPDS / CMS</div>
         <div><strong>$1,481</strong> transport · <strong>$2,453</strong> ED visit · CMS benchmarks</div>
         <div><strong>1.48h</strong> urban/suburban · <strong>3.0h</strong> rural · EMS hrs/run (NEMSIS)</div>
-        <div><strong>$100K</strong> Platform & Maintenance base fee (flat)</div>
-        <div><strong>BUILD uplift</strong> $0 / $7.5K / $22.5K by integration depth</div>
       </div>
     </div>
 
@@ -418,7 +414,7 @@
 
 <footer>
   <div style="display:flex; justify-content:space-between; align-items:center; max-width:1600px; margin:0 auto; padding:0 40px; flex-wrap:wrap; gap:12px;">
-    <div>MD Ally Technologies · Calculator <strong id="ver">v1.12</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
+    <div>MD Ally Technologies · Calculator <strong id="ver">v1.13</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
     <div>
       <button id="btn-feedback" style="background:var(--gold); color:var(--navy-deep); border:none; padding:12px 22px; border-radius:8px; font-family:inherit; font-size:16px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(229,168,23,0.3); transition:all 0.15s;">💡 Suggest an enhancement</button>
       &nbsp;&nbsp;
@@ -430,6 +426,7 @@
   <div id="changelog-box" style="display:none; max-width:800px; margin:16px auto 0; background:var(--white); border:1px solid var(--rule); border-radius:8px; padding:16px 20px; text-align:left; font-size:12px; color:var(--muted); line-height:1.6;">
     <strong style="color:var(--navy); font-size:13px;">Changelog</strong>
     <ul style="margin:8px 0 0 18px;">
+      <li><strong>v1.13</strong> (2026-04-29) · Math correction: 0.0077 × pop is annual eligible (not daily); IAED 23% multiplier dropped (already in 0.0077). Pop field renamed Population Served. Platform fee removed; Year-1 cost shows published $150K–$450K range only. Assumptions block scrubbed to public benchmarks (CMS, NEMSIS) only. Internal scenario rates hidden.</li>
       <li><strong>v1.12</strong> (2026-04-29) · Removed "911 medical call volume" framing. 0.0077 × jurisdiction pop is now labeled "MD Ally daily addressable baseline." Cost stays decoupled from volume (since v1.6).</li>
       <li><strong>v1.11</strong> (2026-04-29) · Agency-name typeahead via CMS NPI Registry (filtered to EMS/fire/public-safety taxonomies). Selecting a match auto-fills the ZIP and opens a "Verify jurisdiction" Google search link. No NPI hit → direct Google search fallback.</li>
       <li><strong>v1.10</strong> (2026-04-29) · Population now agency-jurisdiction (manual). ZIP code becomes a validator: shows reference county pop, Census growth trend, and 5-year contract projection. ZIP density still auto-classifies area type. Agency-name lookup planned next.</li>
@@ -741,8 +738,9 @@ updateSuggestionCount();
 <script>
 // ========== CONSTANTS (from Impact Calculator + Price Book) ==========
 const C = {
-  daily_call_factor: 0.0077,         // 0.0077 × jurisdiction pop = daily MD Ally addressable baseline (NOT raw 911 call volume)
-  iaed_eligible_pct: 0.23,           // IAED Alpha+Omega eligible share of addressable volume
+  // INTERNAL: 0.0077 × pop = annual alpha/omega-eligible volume (already IAED-filtered).
+  // Daily for display = annual / 365. Validated: REMSA ~520K pop → ~11/day.
+  annual_eligible_factor: 0.0077,
   days_per_year: 365,
   cost_per_ems_run: 2673,
   cost_per_transport: 1481,
@@ -751,17 +749,9 @@ const C = {
   runs_per_1k: { rural:75, suburban:125, urban:250 },  // area-type density (EMS reference; not used for call volume)
   hrs_per_run: { rural:3.0, suburban:1.48, urban:1.48 },
 
-  // Pricing
-  platform_fee: 100000,
-  per_call_tiers: [                 // [upper_bound, rate]
-    [1875, 48.17], [3750, 45.76], [5625, 43.13],
-    [10000, 40.15], [25000, 36.69], [43750, 32.57], [Infinity, 29.00]
-  ],
-  // BUILD one-time by integration depth
-  build_base: 23245,               // from Colorado Springs quote
+  // INTERNAL pricing (not displayed in client-facing UI; used to anchor the headline range only).
+  build_base: 23245,
   build_uplift: { parallel:0, uni:7500, bi:22500 },
-
-  // Optional modules annual (simplified population tiers)
   terf_tiers: [
     [150000, 15000],[330000, 18650],[450000, 22118],[800000, 25412],
     [2000000, 28541],[3500000, 31514],[5000000, 34338],[Infinity, 37021]
@@ -770,8 +760,11 @@ const C = {
     [450000, 15000],[1100000, 21500],[1750000, 28000],[2400000, 34000],
     [3050000, 40000],[3700000, 44500],[4350000, 50000],[Infinity, 55000]
   ],
-  path_pct_of_base: 0.11,    // ~11% of annual core per CO Springs ratio
-  apm_pct_of_base: 0.17,     // ~17% of annual core per CO Springs ratio
+  path_flat: 11000,
+  apm_flat: 17000,
+  // External-anchor Year-1 range (Mike's published anchors: $150K–$450K)
+  display_range_low: 150000,
+  display_range_high: 450000,
 };
 
 // Scenarios
@@ -828,16 +821,16 @@ function calculate() {
   const depth = getDepth();
   const modules = getModules();
 
-  // Auto-baseline: 0.0077 × jurisdiction pop per day (not raw 911 call volume; this is the MD Ally addressable baseline used to size eligibility downstream).
-  const dailyCalls = pop * C.daily_call_factor;
-  const estTotalCalls = dailyCalls * C.days_per_year;
-  const totalCalls = userCalls || estTotalCalls;
+  // 0.0077 × pop = annual alpha/omega-eligible volume. Daily = annual/365.
+  // IAED filter is already baked in; no further multiplier.
+  const annualEligible = pop * C.annual_eligible_factor;
+  const dailyEligible = annualEligible / C.days_per_year;
+  const totalCalls = userCalls || annualEligible;
   $('calls-display').textContent = userCalls
     ? `Using entered value: ${fmtNum(totalCalls)}/yr (${fmtNum(totalCalls/365)}/day)`
-    : `MD Ally baseline: ${fmtNum(estTotalCalls)}/yr · ${fmtNum(dailyCalls)}/day (0.0077 × jurisdiction pop)`;
+    : `Modeled: ${fmtNum(annualEligible)}/yr eligible · ~${fmtNum(dailyEligible)}/day`;
 
-  // Eligible volume = IAED Alpha/Omega share of addressable baseline
-  const eligibleCalls = totalCalls * C.iaed_eligible_pct;
+  const eligibleCalls = totalCalls;
 
   // Pop-display 5-yr projection is owned by updatePopProjection() (called on input + init).
   // Refresh it here so the projection updates whenever the population field changes via calc.
@@ -879,9 +872,7 @@ function calculate() {
   const cons = scenResults.Conservative, exp = scenResults.Expected, asp = scenResults.Aspirational;
 
   const rowData = [
-    { label:'Eligible MD Ally encounters', cons:fmtNum(eligibleCalls), exp:fmtNum(eligibleCalls), asp:fmtNum(eligibleCalls) },
-    { label:'Consent rate',       cons:'70%', exp:'85%', asp:'90%' },
-    { label:'Diversion rate',     cons:'70%', exp:'84%', asp:'88%' },
+    { label:'Eligible MD Ally encounters / yr', cons:fmtNum(eligibleCalls), exp:fmtNum(eligibleCalls), asp:fmtNum(eligibleCalls) },
     { label:'Total diversions', accent:true, cons:fmtNum(cons.diversions), exp:fmtNum(exp.diversions), asp:fmtNum(asp.diversions) },
     { label:'Staffed unit-days returned', cons:fmtNum(cons.unitDays), exp:fmtNum(exp.unitDays), asp:fmtNum(asp.unitDays) },
     { label:'EMS run-cost avoided (agency)', accent:true, cons:fmtUSD(cons.emsRunCost), exp:fmtUSD(exp.emsRunCost), asp:fmtUSD(asp.emsRunCost) },
@@ -895,38 +886,18 @@ function calculate() {
   }
 
   // === Program cost ===
-  // v1.6: per-call line removed from cost (cost decoupled from call volume).
-  const baseArr = C.platform_fee;
+  // Client-facing: anchor to the published Year-1 typical range. Detailed breakdown is internal-only.
   const buildCost = C.build_base + C.build_uplift[depth];
   let moduleArr = 0;
-  const moduleLines = [];
-  if (modules.includes('terf')) {
-    const p = popTier(pop, C.terf_tiers); moduleArr += p; moduleLines.push(['TERF (surge)', p]);
-  }
-  if (modules.includes('vamc')) {
-    const p = popTier(pop, C.vamc_tiers); moduleArr += p; moduleLines.push(['VAMC (law-enforcement)', p]);
-  }
-  if (modules.includes('path')) {
-    const p = baseArr * C.path_pct_of_base; moduleArr += p; moduleLines.push(['PATH (alt-transport)', p]);
-  }
-  if (modules.includes('apm')) {
-    const p = baseArr * C.apm_pct_of_base; moduleArr += p; moduleLines.push(['APM (performance mgmt)', p]);
-  }
-  const annualTotal = baseArr + moduleArr;
-  const year1Total = annualTotal + buildCost;
-  const lowRange = year1Total * 0.85, highRange = year1Total * 1.15;
+  if (modules.includes('terf')) moduleArr += popTier(pop, C.terf_tiers);
+  if (modules.includes('vamc')) moduleArr += popTier(pop, C.vamc_tiers);
+  if (modules.includes('path')) moduleArr += C.path_flat;
+  if (modules.includes('apm'))  moduleArr += C.apm_flat;
+  const year1Total = moduleArr + buildCost;  // internal sum (no platform fee), used for ROI ratio
 
-  $('out-cost').textContent = `${fmtUSD(lowRange)} – ${fmtUSD(highRange)}`;
-  $('out-cost-sub').textContent = `Year-1 total · typical range (±15%)`;
-
-  const breakdown = [
-    ['Platform & Maintenance', C.platform_fee],
-    ...moduleLines,
-    [`BUILD one-time (${depth})`, buildCost],
-  ];
-  $('out-cost-breakdown').innerHTML = breakdown.map(([k,v]) =>
-    `<div class="line"><span>${k}</span><strong>${fmtUSD(v)}</strong></div>`
-  ).join('');
+  $('out-cost').textContent = `${fmtUSD(C.display_range_low)} – ${fmtUSD(C.display_range_high)}`;
+  $('out-cost-sub').textContent = `Year-1 typical · tailored to your scope during discovery`;
+  $('out-cost-breakdown').innerHTML = `<div class="line" style="opacity:0.75; font-size:12px;"><span>Final pricing scoped during discovery</span></div>`;
 
   // === Payback + scale ===
   const agencySavings = exp.emsRunCost;
