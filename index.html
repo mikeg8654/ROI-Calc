@@ -437,7 +437,7 @@
 
 <footer>
   <div style="display:flex; justify-content:space-between; align-items:center; max-width:1600px; margin:0 auto; padding:0 40px; flex-wrap:wrap; gap:12px;">
-    <div>MD Ally Technologies · Calculator <strong id="ver">v1.17</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
+    <div>MD Ally Technologies · Calculator <strong id="ver">v1.18</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
     <div>
       <button id="btn-feedback" style="background:var(--gold); color:var(--navy-deep); border:none; padding:12px 22px; border-radius:8px; font-family:inherit; font-size:16px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(229,168,23,0.3); transition:all 0.15s;">💡 Suggest an enhancement</button>
       &nbsp;&nbsp;
@@ -449,6 +449,7 @@
   <div id="changelog-box" style="display:none; max-width:800px; margin:16px auto 0; background:var(--white); border:1px solid var(--rule); border-radius:8px; padding:16px 20px; text-align:left; font-size:12px; color:var(--muted); line-height:1.6;">
     <strong style="color:var(--navy); font-size:13px;">Changelog</strong>
     <ul style="margin:8px 0 0 18px;">
+      <li><strong>v1.18</strong> (2026-04-29) · Removed discount/MSRP/approval language from the cost panel. Discount input on the left is now the only place that surface concept appears.</li>
       <li><strong>v1.17</strong> (2026-04-29) · Scenario pills (Conservative / Expected / Aspirational) drive the Payback + Scale stats and ROI ratio. Booking CTA moved to bottom of page (horizontal). Sources strip moved up and toned down. Uninsured corrected to 10.0% per workbook.</li>
       <li><strong>v1.16</strong> (2026-04-29) · Cost panel now uses Direct ARR price book formula (Public Safety Offering, "Direct ARR Inputs" tab). Inputs: population + partner discount (max 20%). MSRP shown by default; discount slider adjusts. National-avg uninsured = 10% (was price-book default 30%). Payback/ROI/3-yr now reflect actual computed price.</li>
       <li><strong>v1.15</strong> (2026-04-29) · Optional "Annual medical 911 calls" override (eligibility = 12% of medical volume) for high-volume urban systems. Payback + 3-yr value + ROI ratio now anchored to displayed Year-1 range mid-point so math stays consistent with on-screen pricing.</li>
@@ -966,14 +967,9 @@ function calculate() {
   const priced = priceForPop(pop, partnerDiscount);
   const year1Total = priced.effectivePrice;
 
-  if (priced.discount > 0) {
-    $('out-cost').textContent = fmtUSD(priced.effectivePrice);
-    $('out-cost-sub').textContent = `Effective Year-1 · MSRP ${fmtUSD(priced.listPrice)} less ${(priced.discount*100).toFixed(0)}% partner discount`;
-  } else {
-    $('out-cost').textContent = fmtUSD(priced.listPrice);
-    $('out-cost-sub').textContent = `Year-1 MSRP · up to 20% partner discount available with approval`;
-  }
-  $('out-cost-breakdown').innerHTML = `<div class="line" style="opacity:0.75; font-size:12px;"><span>Direct ARR pricing · ${fmtNum(priced.totalCalls)} calls/yr modeled</span></div>`;
+  $('out-cost').textContent = fmtUSD(priced.discount > 0 ? priced.effectivePrice : priced.listPrice);
+  $('out-cost-sub').textContent = `Year-1 program cost`;
+  $('out-cost-breakdown').innerHTML = `<div class="line" style="opacity:0.75; font-size:12px;"><span>${fmtNum(priced.totalCalls)} calls/yr modeled</span></div>`;
 
   // === Payback + scale (driven by selected scenario) ===
   const sel = scenResults[selectedScenario] || exp;
