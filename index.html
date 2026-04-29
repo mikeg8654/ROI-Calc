@@ -313,8 +313,8 @@
     </div>
 
     <div class="field">
-      <label>Annual 911 medical calls <span class="hint">blank = auto-estimate</span></label>
-      <input type="number" id="in-calls" min="0" step="100" placeholder="Auto from population">
+      <label>Annual addressable volume <span class="hint">blank = MD Ally baseline</span></label>
+      <input type="number" id="in-calls" min="0" step="100" placeholder="Auto from jurisdiction pop">
       <div class="note" id="calls-display"></div>
     </div>
 
@@ -402,8 +402,8 @@
 
     <div class="assumptions">
       <div class="grid">
-        <div><strong>0.0077 × pop</strong> daily 911 medical call volume (MD Ally baseline)</div>
-        <div><strong>23%</strong> IAED Alpha/Omega eligible share of total 911 medical</div>
+        <div><strong>0.0077 × jurisdiction pop</strong> daily MD Ally addressable baseline</div>
+        <div><strong>23%</strong> IAED Alpha/Omega eligible share of addressable volume</div>
         <div><strong>85% / 84% / 65%</strong> consent / diversion / full resolution</div>
         <div><strong>$2,673</strong> EMS run cost · GAPDS/CMS</div>
         <div><strong>$1,481</strong> transport · <strong>$2,453</strong> ED visit · CMS benchmarks</div>
@@ -418,7 +418,7 @@
 
 <footer>
   <div style="display:flex; justify-content:space-between; align-items:center; max-width:1600px; margin:0 auto; padding:0 40px; flex-wrap:wrap; gap:12px;">
-    <div>MD Ally Technologies · Calculator <strong id="ver">v1.11</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
+    <div>MD Ally Technologies · Calculator <strong id="ver">v1.12</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
     <div>
       <button id="btn-feedback" style="background:var(--gold); color:var(--navy-deep); border:none; padding:12px 22px; border-radius:8px; font-family:inherit; font-size:16px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(229,168,23,0.3); transition:all 0.15s;">💡 Suggest an enhancement</button>
       &nbsp;&nbsp;
@@ -430,6 +430,7 @@
   <div id="changelog-box" style="display:none; max-width:800px; margin:16px auto 0; background:var(--white); border:1px solid var(--rule); border-radius:8px; padding:16px 20px; text-align:left; font-size:12px; color:var(--muted); line-height:1.6;">
     <strong style="color:var(--navy); font-size:13px;">Changelog</strong>
     <ul style="margin:8px 0 0 18px;">
+      <li><strong>v1.12</strong> (2026-04-29) · Removed "911 medical call volume" framing. 0.0077 × jurisdiction pop is now labeled "MD Ally daily addressable baseline." Cost stays decoupled from volume (since v1.6).</li>
       <li><strong>v1.11</strong> (2026-04-29) · Agency-name typeahead via CMS NPI Registry (filtered to EMS/fire/public-safety taxonomies). Selecting a match auto-fills the ZIP and opens a "Verify jurisdiction" Google search link. No NPI hit → direct Google search fallback.</li>
       <li><strong>v1.10</strong> (2026-04-29) · Population now agency-jurisdiction (manual). ZIP code becomes a validator: shows reference county pop, Census growth trend, and 5-year contract projection. ZIP density still auto-classifies area type. Agency-name lookup planned next.</li>
       <li><strong>v1.9</strong> (2026-04-29) · One-click branded PDF download replaces browser print. Filename includes agency + date. Includes branded header, inputs summary, results, disclaimer + booking link footer.</li>
@@ -740,8 +741,8 @@ updateSuggestionCount();
 <script>
 // ========== CONSTANTS (from Impact Calculator + Price Book) ==========
 const C = {
-  daily_call_factor: 0.0077,         // 0.0077 × pop = daily 911 medical call volume (MD Ally baseline)
-  iaed_eligible_pct: 0.23,           // IAED Alpha+Omega of total 911 medical calls
+  daily_call_factor: 0.0077,         // 0.0077 × jurisdiction pop = daily MD Ally addressable baseline (NOT raw 911 call volume)
+  iaed_eligible_pct: 0.23,           // IAED Alpha+Omega eligible share of addressable volume
   days_per_year: 365,
   cost_per_ems_run: 2673,
   cost_per_transport: 1481,
@@ -827,27 +828,20 @@ function calculate() {
   const depth = getDepth();
   const modules = getModules();
 
-  // Auto-estimate total 911 medical calls if not provided
-  // Formula (MD Ally baseline): daily calls = 0.0077 × pop; annual = daily × 365
+  // Auto-baseline: 0.0077 × jurisdiction pop per day (not raw 911 call volume; this is the MD Ally addressable baseline used to size eligibility downstream).
   const dailyCalls = pop * C.daily_call_factor;
   const estTotalCalls = dailyCalls * C.days_per_year;
   const totalCalls = userCalls || estTotalCalls;
   $('calls-display').textContent = userCalls
     ? `Using entered value: ${fmtNum(totalCalls)}/yr (${fmtNum(totalCalls/365)}/day)`
-    : `Auto-estimated: ${fmtNum(estTotalCalls)}/yr · ${fmtNum(dailyCalls)}/day (0.0077 × pop)`;
+    : `MD Ally baseline: ${fmtNum(estTotalCalls)}/yr · ${fmtNum(dailyCalls)}/day (0.0077 × jurisdiction pop)`;
 
-  // Eligible calls = IAED Alpha/Omega share of total 911 medical calls
+  // Eligible volume = IAED Alpha/Omega share of addressable baseline
   const eligibleCalls = totalCalls * C.iaed_eligible_pct;
 
-  // Pop display
-  if (pop) {
-    let popLabel = 'Mid-size';
-    if (pop < 100000) popLabel = 'Small rural/suburban';
-    else if (pop < 500000) popLabel = 'Mid-size county';
-    else if (pop < 1500000) popLabel = 'Large metro';
-    else popLabel = 'Major metro';
-    $('pop-display').textContent = popLabel + ` · ~${fmtNum(estTotalCalls)}/yr est. 911 medical · ~${fmtNum(dailyCalls)}/day`;
-  }
+  // Pop-display 5-yr projection is owned by updatePopProjection() (called on input + init).
+  // Refresh it here so the projection updates whenever the population field changes via calc.
+  updatePopProjection();
 
   // Depth note
   const depthNotes = {
@@ -885,7 +879,7 @@ function calculate() {
   const cons = scenResults.Conservative, exp = scenResults.Expected, asp = scenResults.Aspirational;
 
   const rowData = [
-    { label:'Eligible 911 calls', cons:fmtNum(eligibleCalls), exp:fmtNum(eligibleCalls), asp:fmtNum(eligibleCalls) },
+    { label:'Eligible MD Ally encounters', cons:fmtNum(eligibleCalls), exp:fmtNum(eligibleCalls), asp:fmtNum(eligibleCalls) },
     { label:'Consent rate',       cons:'70%', exp:'85%', asp:'90%' },
     { label:'Diversion rate',     cons:'70%', exp:'84%', asp:'88%' },
     { label:'Total diversions', accent:true, cons:fmtNum(cons.diversions), exp:fmtNum(exp.diversions), asp:fmtNum(asp.diversions) },
