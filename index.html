@@ -151,21 +151,60 @@
   .outputs { display:flex; flex-direction:column; gap:24px; }
   #impact-area { display:flex; flex-direction:column; gap:24px; }
 
-  .headline {
-    background:linear-gradient(135deg, var(--gold), var(--gold-light));
-    color:var(--navy-deep);
-    padding:34px 40px; border-radius:14px;
-    display:flex; align-items:center; gap:32px;
-    box-shadow:0 4px 16px rgba(229,168,23,0.25);
+  /* HERO STRIP — savings dominates, ratio supports */
+  .hero-strip {
+    display:grid; grid-template-columns:1.7fr 1fr;
+    background:linear-gradient(135deg, var(--navy-deep) 0%, var(--navy) 100%);
+    border-radius:14px; padding:36px 44px;
+    color:var(--white);
+    box-shadow:0 8px 28px rgba(15,27,51,0.18);
+    position:relative; overflow:hidden;
   }
-  .headline .ratio {
-    font-size:88px; font-weight:900; line-height:1;
-    letter-spacing:-0.035em;
+  .hero-strip::before {
+    content:""; position:absolute; left:0; top:0; bottom:0; width:6px;
+    background:var(--gold);
   }
-  .headline .ratio-desc { flex:1; font-size:20px; font-weight:700; line-height:1.25; }
-  .headline .ratio-desc small {
-    display:block; font-size:11px; font-weight:600; opacity:1;
-    color:rgba(15,27,51,0.55); text-transform:uppercase; letter-spacing:0.12em; margin-top:10px;
+  .hero-savings { display:flex; flex-direction:column; }
+  .hero-eyebrow {
+    display:block; font-size:11px; font-weight:700;
+    letter-spacing:0.18em; text-transform:uppercase;
+    color:var(--gold-light); margin-bottom:10px;
+  }
+  .hero-amount {
+    display:block; font-size:108px; font-weight:900; line-height:0.95;
+    letter-spacing:-0.045em; color:#fff;
+    font-feature-settings:"tnum";
+  }
+  .hero-context {
+    display:block; font-size:14px; color:#A9B4CC;
+    margin-top:12px; letter-spacing:0.02em;
+  }
+  .hero-context strong { color:var(--gold-light); font-weight:700; }
+  .hero-ratio {
+    border-left:1px solid rgba(255,255,255,0.15);
+    padding-left:36px;
+    display:flex; flex-direction:column; justify-content:center;
+  }
+  .hero-ratio-num {
+    font-size:72px; font-weight:900; color:var(--gold);
+    line-height:1; letter-spacing:-0.03em;
+    font-feature-settings:"tnum";
+  }
+  .hero-ratio-label {
+    font-size:13px; color:#C6CEDF; margin-top:10px;
+    letter-spacing:0.02em; line-height:1.35;
+  }
+  .hero-footnote {
+    font-size:11px; color:var(--muted);
+    font-style:italic;
+    padding:10px 4px 0;
+    letter-spacing:0.02em;
+  }
+  @media (max-width: 900px) {
+    .hero-strip { grid-template-columns:1fr; gap:24px; }
+    .hero-ratio { border-left:none; padding-left:0; border-top:1px solid rgba(255,255,255,0.15); padding-top:24px; }
+    .hero-amount { font-size:72px; }
+    .hero-ratio-num { font-size:56px; }
   }
 
   /* SCENARIO TABLE */
@@ -196,6 +235,20 @@
     font-weight:900; font-size:20px; border-bottom:none; border-top:3px solid var(--gold);
     padding:20px 22px; letter-spacing:0.01em;
   }
+  /* Active scenario column emphasis */
+  .scenarios table[data-scenario] tbody td:not(:first-child) { transition:all 0.25s ease; }
+  .scenarios table[data-scenario="cons"] tbody td:nth-child(3),
+  .scenarios table[data-scenario="cons"] tbody td:nth-child(4),
+  .scenarios table[data-scenario="exp"]  tbody td:nth-child(2),
+  .scenarios table[data-scenario="exp"]  tbody td:nth-child(4),
+  .scenarios table[data-scenario="asp"]  tbody td:nth-child(2),
+  .scenarios table[data-scenario="asp"]  tbody td:nth-child(3) { opacity:0.4; filter:saturate(0.5); }
+  .scenarios table[data-scenario="cons"] tbody td:nth-child(2) { background:linear-gradient(180deg, rgba(61,74,107,0.10), transparent); font-weight:700; }
+  .scenarios table[data-scenario="exp"]  tbody td:nth-child(3) { background:linear-gradient(180deg, rgba(47,111,191,0.12), rgba(47,111,191,0.02)); font-weight:700; color:var(--navy-deep); }
+  .scenarios table[data-scenario="asp"]  tbody td:nth-child(4) { background:linear-gradient(180deg, rgba(31,165,149,0.12), rgba(31,165,149,0.02)); font-weight:700; color:var(--navy-deep); }
+  .scenarios table[data-scenario="cons"] thead th:nth-child(2),
+  .scenarios table[data-scenario="exp"]  thead th:nth-child(3),
+  .scenarios table[data-scenario="asp"]  thead th:nth-child(4) { box-shadow:inset 0 -4px 0 var(--gold); }
   .scenarios tr.total td:first-child { color:var(--white); }
 
   /* PANELS ROW */
@@ -299,6 +352,9 @@
   }
 </style>
 </head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800;900&display=swap">
 <body>
 
 <header>
@@ -396,16 +452,21 @@
 
     <div id="impact-area">
 
-    <div class="headline">
-      <div class="ratio" id="out-ratio">$21 : $1</div>
-      <div class="ratio-desc">
-        In agency operational savings for every $1 invested
-        <small id="out-ratio-context">Expected-scenario, Year 1 · before patient-side value or new revenue</small>
+    <div class="hero-strip">
+      <div class="hero-savings">
+        <span class="hero-eyebrow">Year-1 Operational Savings · <span id="hero-scen">Expected</span></span>
+        <span class="hero-amount" id="out-savings">$15.8M</span>
+        <span class="hero-context">to <strong id="out-savings-asp">$23.4M</strong> aspirational · vs. <strong id="out-savings-cost">$234K</strong> Year-1 program cost</span>
+      </div>
+      <div class="hero-ratio">
+        <span class="hero-ratio-num" id="out-ratio">$31 : $1</span>
+        <span class="hero-ratio-label">Return on every $1 invested<br><span style="font-size:11px; opacity:0.7;" id="out-ratio-context">before community value or new revenue</span></span>
       </div>
     </div>
+    <div class="hero-footnote" id="hero-footnote">Modeled estimate · Sources: CMS GAPDS, NEMSIS · Actual quotes scoped during discovery</div>
 
     <div class="scenarios">
-      <table>
+      <table data-scenario="exp" id="scenario-table">
         <thead>
           <tr>
             <th>Inputs / Outputs</th>
@@ -466,7 +527,7 @@
 
 <footer>
   <div style="display:flex; justify-content:space-between; align-items:center; max-width:1600px; margin:0 auto; padding:0 40px; flex-wrap:wrap; gap:12px;">
-    <div>MD Ally Technologies · Calculator <strong id="ver">v1.20.1</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
+    <div>MD Ally Technologies · Calculator <strong id="ver">v1.21</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
     <div>
       <button id="btn-feedback" style="background:var(--gold); color:var(--navy-deep); border:none; padding:12px 22px; border-radius:8px; font-family:inherit; font-size:16px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(229,168,23,0.3); transition:all 0.15s;">💡 Suggest an enhancement</button>
       &nbsp;&nbsp;
@@ -478,6 +539,7 @@
   <div id="changelog-box" style="display:none; max-width:800px; margin:16px auto 0; background:var(--white); border:1px solid var(--rule); border-radius:8px; padding:16px 20px; text-align:left; font-size:12px; color:var(--muted); line-height:1.6;">
     <strong style="color:var(--navy); font-size:13px;">Changelog</strong>
     <ul style="margin:8px 0 0 18px;">
+      <li><strong>v1.21</strong> (2026-04-29) · Hero strip redesign: dollar savings ($X.XM Year-1) is now the headline at 108px on a navy background with gold left bar; ratio drops to a supporting column. Inter loaded from Google Fonts. Active scenario column highlighted in the table (others dim). Numbers count up on scenario change. Footnote line under the hero ("Sources: CMS GAPDS, NEMSIS").</li>
       <li><strong>v1.20.1</strong> (2026-04-29) · Fix Copy-for-PPT capture: load html2canvas from its own CDN (was trying to read it from the html2pdf bundle which doesn't expose it).</li>
       <li><strong>v1.20</strong> (2026-04-29) · PPT-ready impact area redesign: bigger headline ratio (88px), stronger Conservative column header, gold cost number, hero "Agency Payback" stat box, gold hairline above scenario total. New "📸 Copy for PPT" button captures the impact area as a PNG to your clipboard for instant paste into PowerPoint.</li>
       <li><strong>v1.19</strong> (2026-04-29) · Scenario pills now sit on their own row above the stats (full-width, individually wired) so clicks register reliably. PATH and APM modules default to checked (baseline diversion services).</li>
@@ -1015,10 +1077,18 @@ function calculate() {
   const threeYrValue = (sel.emsRunCost * 3) - year1Total;
   $('out-3yr').textContent = fmtUSD(threeYrValue);
 
-  // === Ratio headline (also tracks selected scenario) ===
+  // === Hero headline (savings + ratio) ===
   const ratio = year1Total > 0 ? agencySavings / year1Total : 0;
-  $('out-ratio').textContent = `$${ratio.toFixed(0)} : $1`;
-  $('out-ratio-context').textContent = `${selectedScenario}-scenario · Year 1 · before community value (transport/ED) or new revenue`;
+  const heroAnimate = window._animateHeroNext === true;
+  window._animateHeroNext = false;
+  setHeroNumbers({
+    savings: sel.totalImpact,
+    aspSavings: asp.totalImpact,
+    cost: year1Total,
+    ratio,
+  }, heroAnimate);
+  $('hero-scen').textContent = selectedScenario;
+  $('out-ratio-context').textContent = `before community value or new revenue`;
 
   // Update URL (shareable) without reload
   updateURL();
@@ -1041,11 +1111,15 @@ function updateURL() {
 
 // ========== SCENARIO SELECTOR ==========
 let selectedScenario = 'Expected';
+const SCEN_KEY = { Conservative:'cons', Expected:'exp', Aspirational:'asp' };
 function setScenario(name) {
   selectedScenario = name;
   document.querySelectorAll('#scen-pills button').forEach(b => {
     b.classList.toggle('active', b.dataset.scen === name);
   });
+  const table = document.getElementById('scenario-table');
+  if (table) table.setAttribute('data-scenario', SCEN_KEY[name] || 'exp');
+  window._animateHeroNext = true;
   calculate();
 }
 function wireScenarioPills() {
@@ -1056,6 +1130,43 @@ function wireScenarioPills() {
       setScenario(btn.dataset.scen);
     });
   });
+}
+
+// ========== NUMBER ANIMATION (for scenario-pill changes) ==========
+const REDUCE_MOTION = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function animateNumber(el, toRaw, formatter, duration = 600) {
+  if (!el) return;
+  const fromRaw = (typeof el._currentValue === 'number') ? el._currentValue : toRaw;
+  if (REDUCE_MOTION || fromRaw === toRaw) {
+    el.textContent = formatter(toRaw);
+    el._currentValue = toRaw;
+    return;
+  }
+  const start = performance.now();
+  const ease = t => 1 - Math.pow(1 - t, 3);
+  function tick(now) {
+    const t = Math.min(1, (now - start) / duration);
+    const v = fromRaw + (toRaw - fromRaw) * ease(t);
+    el.textContent = formatter(v);
+    if (t < 1) requestAnimationFrame(tick);
+    else el._currentValue = toRaw;
+  }
+  requestAnimationFrame(tick);
+}
+function fmtBigUSD(v) {
+  if (Math.abs(v) >= 1e6) return '$' + (v/1e6).toFixed(2).replace(/\.?0+$/, '') + 'M';
+  if (Math.abs(v) >= 1e3) return '$' + Math.round(v/1e3) + 'K';
+  return '$' + Math.round(v);
+}
+function fmtRatio(v) { return `$${Math.round(v)} : $1`; }
+function setHeroNumbers({ savings, aspSavings, cost, ratio }, animate = false) {
+  const set = animate
+    ? (id, v, fmt) => animateNumber($(id), v, fmt)
+    : (id, v, fmt) => { const el = $(id); if (!el) return; el.textContent = fmt(v); el._currentValue = v; };
+  set('out-savings', savings, fmtBigUSD);
+  set('out-savings-asp', aspSavings, fmtBigUSD);
+  set('out-savings-cost', cost, fmtBigUSD);
+  set('out-ratio', ratio, fmtRatio);
 }
 
 // ========== NPI AGENCY LOOKUP ==========
