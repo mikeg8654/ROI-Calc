@@ -283,9 +283,11 @@
     <h2>Your Agency</h2>
     <p class="subtitle">Minimum inputs return a coarse range. Add detail to tighten.</p>
 
-    <div class="field">
-      <label>Agency name <span class="hint">optional</span></label>
-      <input type="text" id="in-name" placeholder="e.g. Hillsborough County Fire Rescue">
+    <div class="field" style="position:relative;">
+      <label>Agency name <span class="hint">searches CMS NPI registry</span></label>
+      <input type="text" id="in-name" placeholder="Type agency name, e.g. Hillsborough County Fire Rescue" autocomplete="off">
+      <div id="agency-results" style="display:none; position:absolute; left:0; right:0; top:100%; z-index:50; max-height:240px; overflow-y:auto; background:white; border:1px solid #D6DCE6; border-radius:8px; box-shadow:0 4px 14px rgba(15,27,51,0.12); margin-top:4px;"></div>
+      <div class="note" id="agency-hint"></div>
     </div>
 
     <div class="field">
@@ -416,7 +418,7 @@
 
 <footer>
   <div style="display:flex; justify-content:space-between; align-items:center; max-width:1600px; margin:0 auto; padding:0 40px; flex-wrap:wrap; gap:12px;">
-    <div>MD Ally Technologies · Calculator <strong id="ver">v1.10</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
+    <div>MD Ally Technologies · Calculator <strong id="ver">v1.11</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
     <div>
       <button id="btn-feedback" style="background:var(--gold); color:var(--navy-deep); border:none; padding:12px 22px; border-radius:8px; font-family:inherit; font-size:16px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(229,168,23,0.3); transition:all 0.15s;">💡 Suggest an enhancement</button>
       &nbsp;&nbsp;
@@ -428,6 +430,7 @@
   <div id="changelog-box" style="display:none; max-width:800px; margin:16px auto 0; background:var(--white); border:1px solid var(--rule); border-radius:8px; padding:16px 20px; text-align:left; font-size:12px; color:var(--muted); line-height:1.6;">
     <strong style="color:var(--navy); font-size:13px;">Changelog</strong>
     <ul style="margin:8px 0 0 18px;">
+      <li><strong>v1.11</strong> (2026-04-29) · Agency-name typeahead via CMS NPI Registry (filtered to EMS/fire/public-safety taxonomies). Selecting a match auto-fills the ZIP and opens a "Verify jurisdiction" Google search link. No NPI hit → direct Google search fallback.</li>
       <li><strong>v1.10</strong> (2026-04-29) · Population now agency-jurisdiction (manual). ZIP code becomes a validator: shows reference county pop, Census growth trend, and 5-year contract projection. ZIP density still auto-classifies area type. Agency-name lookup planned next.</li>
       <li><strong>v1.9</strong> (2026-04-29) · One-click branded PDF download replaces browser print. Filename includes agency + date. Includes branded header, inputs summary, results, disclaimer + booking link footer.</li>
       <li><strong>v1.8</strong> (2026-04-29) · ZIP also auto-classifies area type (rural/suburban/urban) by population density. Primary: live Census TIGERweb ZCTA land area; fallback: embedded 33K-ZIP offline JSON when API down.</li>
@@ -966,6 +969,88 @@ function updateURL() {
   window.history.replaceState({}, '', url);
 }
 
+// ========== NPI AGENCY LOOKUP ==========
+const NPI_API = 'https://npiregistry.cms.hhs.gov/api/';
+const AGENCY_TAXONOMY_FILTER = /emergency medical|ambulance|fire|public safety|public health/i;
+let _agencySearchTimer = null;
+async function searchNPI(name) {
+  if (!name || name.length < 4) return [];
+  const params = new URLSearchParams({
+    version: '2.1',
+    enumeration_type: 'NPI-2',
+    organization_name: name + '*',
+    limit: '20',
+  });
+  const resp = await fetch(`${NPI_API}?${params}`);
+  if (!resp.ok) throw new Error(`NPI API ${resp.status}`);
+  const data = await resp.json();
+  const raw = (data.results || []).map(r => {
+    const basic = r.basic || {};
+    const addr = (r.addresses || []).find(a => a.address_purpose === 'LOCATION') || (r.addresses || [])[0] || {};
+    const tax = (r.taxonomies || []).find(t => t.primary) || (r.taxonomies || [])[0] || {};
+    return {
+      npi: r.number,
+      name: basic.organization_name || basic.name || '',
+      city: addr.city || '',
+      state: addr.state || '',
+      zip: (addr.postal_code || '').slice(0, 5),
+      taxonomy: tax.desc || '',
+    };
+  });
+  // Prefer taxonomies relevant to public safety / EMS / fire
+  const relevant = raw.filter(r => AGENCY_TAXONOMY_FILTER.test(r.taxonomy));
+  const ordered = relevant.length ? relevant : raw;
+  return ordered.slice(0, 8);
+}
+function renderAgencyResults(results, query) {
+  const box = $('agency-results');
+  const hint = $('agency-hint');
+  if (!results.length) {
+    box.style.display = 'none';
+    box.innerHTML = '';
+    hint.innerHTML = `No NPI match. <a href="https://www.google.com/search?q=${encodeURIComponent(query + ' population served jurisdiction')}" target="_blank" rel="noopener" style="color:var(--navy); text-decoration:underline;">Search "${escHtml(query)} jurisdiction" on Google →</a>`;
+    return;
+  }
+  hint.innerHTML = '';
+  box.style.display = 'block';
+  box.innerHTML = results.map((r, i) => `
+    <div class="agency-result" data-i="${i}" style="padding:10px 12px; cursor:pointer; border-bottom:1px solid #F0F0F0;">
+      <div style="font-weight:600; color:var(--navy); font-size:13px;">${escHtml(r.name)}</div>
+      <div style="font-size:11px; color:var(--muted); margin-top:2px;">${escHtml(r.city)}, ${escHtml(r.state)}${r.zip ? ' · ZIP ' + escHtml(r.zip) : ''} · <em>${escHtml(r.taxonomy || '—')}</em></div>
+    </div>
+  `).join('');
+  window._agencyResults = results;
+}
+async function selectAgency(r) {
+  $('in-name').value = r.name;
+  $('agency-results').style.display = 'none';
+  $('agency-hint').innerHTML = `<a href="https://www.google.com/search?q=${encodeURIComponent(r.name + ' population served jurisdiction')}" target="_blank" rel="noopener" style="color:var(--navy); text-decoration:underline;">Verify "${escHtml(r.name)}" jurisdiction population on Google →</a>`;
+  if (r.zip && /^\d{5}$/.test(r.zip)) {
+    $('in-zip').value = r.zip;
+    await onZipChange();
+  }
+  calculate();
+}
+function onAgencyInput() {
+  clearTimeout(_agencySearchTimer);
+  const q = $('in-name').value.trim();
+  if (q.length < 4) {
+    $('agency-results').style.display = 'none';
+    $('agency-hint').innerHTML = '';
+    return;
+  }
+  _agencySearchTimer = setTimeout(async () => {
+    $('agency-hint').textContent = 'Searching CMS NPI registry...';
+    try {
+      const results = await searchNPI(q);
+      renderAgencyResults(results, q);
+    } catch(err) {
+      $('agency-hint').innerHTML = `NPI lookup failed (${escHtml(err.message)}). <a href="https://www.google.com/search?q=${encodeURIComponent(q + ' population served jurisdiction')}" target="_blank" rel="noopener" style="color:var(--navy); text-decoration:underline;">Search online →</a>`;
+      $('agency-results').style.display = 'none';
+    }
+  }, 400);
+}
+
 // ========== CENSUS ZIP LOOKUP ==========
 const CENSUS = {
   acs_year: 2022,           // Latest ACS 5-year estimate vintage
@@ -1186,6 +1271,19 @@ function wire() {
     el.addEventListener('change', calculate);
   });
   $('in-pop').addEventListener('input', updatePopProjection);
+  $('in-name').addEventListener('input', onAgencyInput);
+  $('agency-results').addEventListener('click', (e) => {
+    const row = e.target.closest('.agency-result');
+    if (!row) return;
+    const i = parseInt(row.dataset.i);
+    const r = (window._agencyResults || [])[i];
+    if (r) selectAgency(r);
+  });
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#agency-results') && e.target.id !== 'in-name') {
+      $('agency-results').style.display = 'none';
+    }
+  });
   // Module chip active-class toggle
   document.querySelectorAll('.module-chip').forEach(chip => {
     const cb = chip.querySelector('input');
