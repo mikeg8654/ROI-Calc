@@ -148,21 +148,25 @@
   .reset-btn:hover { background:var(--bg); color:var(--navy); }
 
   /* ===== OUTPUT AREA ===== */
-  .outputs { display:flex; flex-direction:column; gap:20px; }
+  .outputs { display:flex; flex-direction:column; gap:24px; }
+  #impact-area { display:flex; flex-direction:column; gap:24px; }
 
   .headline {
     background:linear-gradient(135deg, var(--gold), var(--gold-light));
     color:var(--navy-deep);
-    padding:28px 32px; border-radius:14px;
-    display:flex; align-items:center; gap:28px;
+    padding:34px 40px; border-radius:14px;
+    display:flex; align-items:center; gap:32px;
     box-shadow:0 4px 16px rgba(229,168,23,0.25);
   }
   .headline .ratio {
-    font-size:64px; font-weight:800; line-height:1;
-    letter-spacing:-0.02em;
+    font-size:88px; font-weight:900; line-height:1;
+    letter-spacing:-0.035em;
   }
-  .headline .ratio-desc { flex:1; font-size:17px; font-weight:600; line-height:1.35; }
-  .headline .ratio-desc small { display:block; font-size:12px; font-weight:400; margin-top:8px; opacity:0.7; }
+  .headline .ratio-desc { flex:1; font-size:20px; font-weight:700; line-height:1.25; }
+  .headline .ratio-desc small {
+    display:block; font-size:11px; font-weight:600; opacity:1;
+    color:rgba(15,27,51,0.55); text-transform:uppercase; letter-spacing:0.12em; margin-top:10px;
+  }
 
   /* SCENARIO TABLE */
   .scenarios {
@@ -171,26 +175,26 @@
   }
   .scenarios table { width:100%; border-collapse:collapse; }
   .scenarios th {
-    padding:14px 18px; text-align:right; font-size:12px;
-    letter-spacing:0.14em; font-weight:700;
+    padding:18px 20px; text-align:right; font-size:13px;
+    letter-spacing:0.16em; font-weight:700;
     background:var(--navy-deep); color:var(--white);
     text-transform:uppercase;
   }
   .scenarios th:first-child { text-align:left; }
-  .scenarios th.cons { background:#5E6B85; }
+  .scenarios th.cons { background:#3D4A6B; }
   .scenarios th.exp { background:var(--blue); }
   .scenarios th.asp { background:var(--teal); }
   .scenarios td {
-    padding:11px 18px; border-bottom:1px solid var(--rule);
-    text-align:right; font-size:15px;
+    padding:14px 20px; border-bottom:1px solid var(--rule);
+    text-align:right; font-size:16px;
     font-variant-numeric: tabular-nums;
   }
   .scenarios td:first-child { text-align:left; color:var(--navy); font-weight:500; }
-  .scenarios tr.accent td { background:#F7F9FD; font-weight:700; color:var(--navy-deep); }
+  .scenarios tr.accent td { background:#E9EFF8; font-weight:700; color:var(--navy-deep); }
   .scenarios tr.total td {
     background:var(--navy-deep); color:var(--white);
-    font-weight:800; font-size:17px; border-bottom:none;
-    padding:16px 18px;
+    font-weight:900; font-size:20px; border-bottom:none; border-top:3px solid var(--gold);
+    padding:20px 22px; letter-spacing:0.01em;
   }
   .scenarios tr.total td:first-child { color:var(--white); }
 
@@ -223,9 +227,13 @@
   .panel.cost { background:var(--navy-deep); color:var(--white); }
   .panel.cost h3 { color:var(--gold); }
   .cost .amount-range {
-    font-size:40px; font-weight:800; line-height:1;
-    letter-spacing:-0.01em; color:var(--white);
+    font-size:56px; font-weight:900; line-height:1;
+    letter-spacing:-0.02em; color:var(--gold-light);
     font-variant-numeric: tabular-nums;
+  }
+  #out-cost-sub {
+    font-size:12px !important; font-weight:600 !important; color:#F2C055 !important;
+    text-transform:uppercase; letter-spacing:0.14em; opacity:0.75; margin-top:10px;
   }
   .cost .amount-range small { display:block; font-size:13px; font-weight:500; color:#A9B4CC; margin-top:4px; letter-spacing:0.06em; text-transform:uppercase; }
   .cost .breakdown { margin-top:16px; font-size:13px; color:#C6CEDF; line-height:1.6; }
@@ -233,13 +241,28 @@
   .cost .breakdown .line:last-child { border-bottom:none; }
   .cost .breakdown strong { color:var(--white); font-variant-numeric:tabular-nums; }
 
-  .payback .stat-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .payback .stat-row {
+    display:grid;
+    grid-template-columns:1.6fr 1fr 1fr;
+    grid-template-rows:auto auto;
+    gap:14px;
+  }
   .stat-box {
     background:var(--bg); border-radius:8px;
-    padding:14px 16px; text-align:center;
+    padding:16px 18px; text-align:center;
+    display:flex; flex-direction:column; justify-content:center;
   }
-  .stat-box .num { font-size:28px; font-weight:800; color:var(--navy-deep); font-variant-numeric:tabular-nums; line-height:1; }
-  .stat-box .label { font-size:11px; color:var(--muted); margin-top:6px; letter-spacing:0.1em; text-transform:uppercase; font-weight:600; }
+  .stat-box .num { font-size:32px; font-weight:800; color:var(--navy-deep); font-variant-numeric:tabular-nums; line-height:1; }
+  .stat-box .label { font-size:11px; color:var(--muted); margin-top:8px; letter-spacing:0.1em; text-transform:uppercase; font-weight:600; }
+  .stat-box.hero {
+    grid-column:1; grid-row:1 / span 2;
+    background:linear-gradient(135deg, #EEF2FA, #FFFFFF);
+    border:1px solid rgba(47,111,191,0.25);
+    padding:22px 20px;
+  }
+  .stat-box.hero .num { font-size:48px; color:var(--blue); font-weight:900; letter-spacing:-0.02em; }
+  .stat-box.hero .label { font-size:13px; margin-top:10px; }
+  .stat-box.wide { grid-column:2 / span 2; }
 
   /* SOURCES STRIP (subtle, single-line) */
   .assumptions {
@@ -285,6 +308,7 @@
   </div>
   <div class="actions">
     <a id="btn-book" href="https://outlook.office.com/bookwithme/user/81b4be3503e34b2d8911a7ce2a100372@mdally.com?anonymous&ep=signature&ismsaljsauthenabled" target="_blank" rel="noopener" style="background:var(--gold); border:1px solid var(--gold); color:var(--navy-deep); padding:8px 14px; border-radius:6px; font-size:13px; font-weight:700; text-decoration:none; font-family:inherit;">📅 Book a meeting</a>
+    <button id="btn-copy-ppt">📸 Copy for PPT</button>
     <button id="btn-share">🔗 Copy Link</button>
     <button id="btn-print">📄 Export PDF</button>
   </div>
@@ -370,6 +394,8 @@
   <!-- ===== OUTPUTS ===== -->
   <main class="outputs">
 
+    <div id="impact-area">
+
     <div class="headline">
       <div class="ratio" id="out-ratio">$21 : $1</div>
       <div class="ratio-desc">
@@ -409,13 +435,15 @@
           <button type="button" data-scen="Aspirational" class="asp">Aspirational</button>
         </div>
         <div class="stat-row">
-          <div class="stat-box"><div class="num" id="out-payback">~3 wks</div><div class="label">Agency Payback</div></div>
+          <div class="stat-box hero"><div class="num" id="out-payback">~3 wks</div><div class="label">Agency Payback</div></div>
           <div class="stat-box"><div class="num" id="out-unitdays">286</div><div class="label">Unit-Days Returned</div></div>
           <div class="stat-box"><div class="num" id="out-diversions">2,749</div><div class="label">Diversions / Year</div></div>
-          <div class="stat-box"><div class="num" id="out-3yr">$21M</div><div class="label">3-Year Agency Value</div></div>
+          <div class="stat-box wide"><div class="num" id="out-3yr">$21M</div><div class="label">3-Year Agency Value</div></div>
         </div>
       </div>
     </div>
+
+    </div><!-- /#impact-area -->
 
     <div class="assumptions">
       <span style="font-weight:600; color:var(--navy); margin-right:6px;">Sources:</span>
@@ -438,7 +466,7 @@
 
 <footer>
   <div style="display:flex; justify-content:space-between; align-items:center; max-width:1600px; margin:0 auto; padding:0 40px; flex-wrap:wrap; gap:12px;">
-    <div>MD Ally Technologies · Calculator <strong id="ver">v1.19</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
+    <div>MD Ally Technologies · Calculator <strong id="ver">v1.20</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
     <div>
       <button id="btn-feedback" style="background:var(--gold); color:var(--navy-deep); border:none; padding:12px 22px; border-radius:8px; font-family:inherit; font-size:16px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(229,168,23,0.3); transition:all 0.15s;">💡 Suggest an enhancement</button>
       &nbsp;&nbsp;
@@ -450,6 +478,7 @@
   <div id="changelog-box" style="display:none; max-width:800px; margin:16px auto 0; background:var(--white); border:1px solid var(--rule); border-radius:8px; padding:16px 20px; text-align:left; font-size:12px; color:var(--muted); line-height:1.6;">
     <strong style="color:var(--navy); font-size:13px;">Changelog</strong>
     <ul style="margin:8px 0 0 18px;">
+      <li><strong>v1.20</strong> (2026-04-29) · PPT-ready impact area redesign: bigger headline ratio (88px), stronger Conservative column header, gold cost number, hero "Agency Payback" stat box, gold hairline above scenario total. New "📸 Copy for PPT" button captures the impact area as a PNG to your clipboard for instant paste into PowerPoint.</li>
       <li><strong>v1.19</strong> (2026-04-29) · Scenario pills now sit on their own row above the stats (full-width, individually wired) so clicks register reliably. PATH and APM modules default to checked (baseline diversion services).</li>
       <li><strong>v1.18</strong> (2026-04-29) · Removed discount/MSRP/approval language from the cost panel. Discount input on the left is now the only place that surface concept appears.</li>
       <li><strong>v1.17</strong> (2026-04-29) · Scenario pills (Conservative / Expected / Aspirational) drive the Payback + Scale stats and ROI ratio. Booking CTA moved to bottom of page (horizontal). Sources strip moved up and toned down. Uninsured corrected to 10.0% per workbook.</li>
@@ -1214,6 +1243,47 @@ function buildPdfWrapper() {
   w.querySelector('#pdf-body').appendChild(mainClone);
   return w;
 }
+async function copyImpactToClipboard() {
+  const btn = $('btn-copy-ppt');
+  const orig = btn.innerHTML;
+  btn.innerHTML = '⏳ Capturing…';
+  btn.disabled = true;
+  try {
+    if (!window.html2canvas) await ensureHtml2Pdf();
+    const target = document.getElementById('impact-area');
+    const canvas = await window.html2canvas(target, {
+      scale: 2.5,
+      backgroundColor: '#F6F7FB',
+      useCORS: true,
+      logging: false,
+    });
+    await new Promise((resolve, reject) => {
+      canvas.toBlob(async (blob) => {
+        if (!blob) return reject(new Error('blob conversion failed'));
+        try {
+          await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+          btn.innerHTML = '✓ Copied! Paste into PPT';
+          setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 2200);
+          resolve();
+        } catch (e) {
+          // Clipboard API blocked / unsupported — fall back to download
+          const a = document.createElement('a');
+          a.href = canvas.toDataURL('image/png');
+          a.download = `MD_Ally_ROI_Impact_${new Date().toISOString().slice(0,10)}.png`;
+          a.click();
+          btn.innerHTML = '↓ Downloaded (paste blocked)';
+          setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 2200);
+          resolve();
+        }
+      }, 'image/png');
+    });
+  } catch(err) {
+    alert('Capture failed: ' + err.message);
+    btn.innerHTML = orig;
+    btn.disabled = false;
+  }
+}
+
 async function exportPDF() {
   const btn = $('btn-print');
   const orig = btn.innerHTML;
@@ -1383,6 +1453,7 @@ function wire() {
     }
   });
   $('btn-print').addEventListener('click', exportPDF);
+  $('btn-copy-ppt').addEventListener('click', copyImpactToClipboard);
   // ZIP: prevent the live "input" handler from running calculate() before lookup completes;
   // we trigger calculate() ourselves after auto-fill.
   $('in-zip').addEventListener('blur', onZipChange);
