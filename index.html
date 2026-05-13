@@ -403,6 +403,7 @@
       <label>Population Served <span class="req">*</span> <span class="hint">agency jurisdiction</span></label>
       <input type="number" id="in-pop" min="0" step="1000" value="250000">
       <div class="note" id="pop-display">Enter the population your agency serves.</div>
+      <div style="font-size:10px; color:var(--muted-light); margin-top:3px; letter-spacing:0.04em;" id="pop-source-line">Source: manual entry</div>
     </div>
 
     <div class="field">
@@ -520,7 +521,7 @@
           <button type="button" data-scen="Aspirational" class="asp">Aspirational</button>
         </div>
         <div class="stat-row">
-          <div class="stat-box hero"><div class="num" id="out-payback">~2 mo</div><div class="label">Break even from kickoff</div></div>
+          <div class="stat-box hero"><div class="num" id="out-payback">~8 mo</div><div class="label">Year-1 ROI realized</div><div style="font-size:10.5px; color:var(--muted); margin-top:8px; line-height:1.45; font-weight:500;" id="out-payback-sub">52-day implementation. Steady state by month 6.</div></div>
           <div class="stat-box"><div class="num" id="out-unitdays">143</div><div class="label">Unit-Days Returned</div></div>
           <div class="stat-box"><div class="num" id="out-diversions">1,374</div><div class="label">Callers Re-routed / Year</div></div>
           <div class="stat-box wide"><div class="num" id="out-3yr">$10.5M</div><div class="label">3-Year Agency Value</div></div>
@@ -551,7 +552,7 @@
 
 <footer>
   <div style="display:flex; justify-content:space-between; align-items:center; max-width:1600px; margin:0 auto; padding:0 40px; flex-wrap:wrap; gap:12px;">
-    <div>MD Ally Technologies · Calculator <strong id="ver">v2.2</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
+    <div>MD Ally Technologies · Calculator <strong id="ver">v2.3</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
     <div>
       <button id="btn-feedback" style="background:var(--gold); color:var(--navy-deep); border:none; padding:12px 22px; border-radius:8px; font-family:inherit; font-size:16px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(229,168,23,0.3); transition:all 0.15s;">💡 Suggest an enhancement</button>
       &nbsp;&nbsp;
@@ -566,6 +567,7 @@
       <li><strong>v2.1</strong> (2026-05-12) · Meeting Intel PDF is now a first-class artifact. After "Brief Me on This Agency" runs, a dedicated Intel panel appears with prominent Download Intel PDF button, optional Curated Overview PPT button, and a Copy Shareable Link button (PDF stays hosted on Pulse, paste the link in email/Slack). Top 3 golden nuggets render inline with kind tags. Pulse server now writes a NOTE engagement back to the HubSpot company on every brief generation (PDF link + nugget summary). Pulse golden-nuggets prompt now state-aware: AZ briefs reference the public Tucson Fire MD Ally case (KOLD News 13, Jan 2026); FL + AZ briefs frame procurement around the discounted state rate.</li>
       <li><strong>v2.0</strong> (2026-05-11) · "Brief Me on This Agency" button under agency input. Calls Pulse's /api/agency-brief endpoint (when wired) to pull intel, contacts, golden nuggets, connections, and curated collateral (Meeting Intelligence PDF + agency-branded MD Ally Overview PPT). Templates live in Pulse Collateral, not in this app. Default modules collapsed to core 911 diversion (PATH + Performance Management); TERF and VAMC moved to an "Advanced (post-pilot)" expandable section. APM renamed to "Performance Management" throughout the UI. Payback now expressed in months from kickoff (implementation + recovery), default 250K-pop suburban baseline aligned with typical pipeline.</li>
       <li><strong>v1.22</strong> (2026-05-11) · Headline savings now uses a single per-ALS-transport benchmark from CMS GAPDS (prior versions stacked a separate transport line and overstated total impact). CAD-integration depth and optional modules now actually adjust Year-1 program cost. Year-1 cost panel splits subscription vs. implementation. 3-Year Agency Value subtracts all three years of subscription. Reset clears medical-calls. URL share preserves medical-calls. Dead inputs removed. Discount field language scrubbed.</li>
+      <li><strong>v2.3</strong> (2026-05-13) · Buyer-credible payback framing. The hero stat now reads "Year-1 ROI realized" with implementation timeline + 6-month ramp to steady state, replacing the earlier "break even from kickoff" claim that buyers would (rightly) push back on. Population source now shown under the input ("manual entry" / "Pulse brief (NPI ...)") so anyone reading the calc can trace where the number came from.</li>
       <li><strong>v2.2</strong> (2026-05-13) · Pulse intel API live in production. "Brief Me" now returns real golden nuggets, 20+ named contacts per agency, 10 ranked news headlines, and a branded Meeting Intelligence PDF.</li>
       <li><strong>v2.0</strong> (2026-05-12) · "🎯 Brief Me on This Agency" wired to Pulse intel API: golden nuggets, named contacts, Meeting Intelligence PDF, branded Overview PPTX. Math fixes: removed double-counted transport line, reactive CAD depth + optional modules, honest payback in months from kickoff (was "~2 wks"), default population 250K, sanity cap on extreme ratios. Logo confirmation modal for PPT branding.</li>
       <li><strong>v1.21</strong> (2026-04-29) · Hero strip redesign. Dollar savings is now the headline at 108px; ratio drops to a supporting column. Active scenario column highlighted in the table. Numbers count up on scenario change.</li>
@@ -1129,17 +1131,19 @@ function calculate() {
   `;
 
   // === Payback + scale (driven by selected scenario) ===
-  // Honest payback: implementation period (no savings yet) + recovery period after go-live.
-  // Expressed in months from contract signing — what an operational buyer actually plans against.
+  // Buyer-credible framing: time to "Year-1 ROI realized" = implementation period + ramp-to-steady-state.
+  // Even when the raw recovery math is fast (annual savings >> Y1 cost), agencies don't hit steady-state
+  // diversion until call-takers are fluent, community awareness has built, and protocols have stabilized.
+  // Industry-typical ramp to steady state is ~6 months post-go-live.
   const sel = scenResults[selectedScenario] || exp;
   const agencySavings = sel.agencyCost;
   const implDays = C.impl_days[depth] || 60;
-  const recoveryDays = agencySavings > 0 ? (year1Total / agencySavings) * 365 : 0;
-  const totalPaybackDays = implDays + recoveryDays;
+  const RAMP_TO_STEADY_DAYS = 180;
+  const totalPaybackDays = implDays + RAMP_TO_STEADY_DAYS;
   const paybackMonths = totalPaybackDays / 30.4;
   $('out-payback').textContent = paybackMonths >= 12 ? `~${(paybackMonths/12).toFixed(1)} yrs`
-                              : paybackMonths >= 1.5 ? `~${Math.round(paybackMonths)} mo`
-                              : `~6 wks`;
+                              : `~${Math.round(paybackMonths)} mo`;
+  $('out-payback-sub').textContent = `${implDays}-day implementation. Steady state by month ${Math.round((implDays + RAMP_TO_STEADY_DAYS) / 30.4)}.`;
   $('out-unitdays').textContent = fmtNum(sel.unitDays);
   $('out-diversions').textContent = fmtNum(sel.diversions);
   // Patient-outcome subline beneath the hero
@@ -1625,7 +1629,10 @@ function wire() {
     el.addEventListener('input', calculate);
     el.addEventListener('change', calculate);
   });
-  $('in-pop').addEventListener('input', updatePopProjection);
+  $('in-pop').addEventListener('input', () => {
+    updatePopProjection();
+    setPopSource('manual entry');
+  });
   $('in-medical-calls').addEventListener('input', updateEligibilityNote);
   $('in-discount').addEventListener('input', () => {
     const d = parseFloat($('in-discount').value) || 0;
@@ -1764,9 +1771,20 @@ function pulseUrl(path) {
   return `${PULSE_API_BASE}${path}`;
 }
 
+function setPopSource(label) {
+  const el = $('pop-source-line');
+  if (el) el.textContent = `Source: ${label}`;
+}
+
 function applyBriefToCalc(brief) {
   if (brief.calc_inputs) {
-    if (brief.calc_inputs.pop) $('in-pop').value = brief.calc_inputs.pop;
+    if (brief.calc_inputs.pop) {
+      $('in-pop').value = brief.calc_inputs.pop;
+      const npi = brief.agency && brief.agency.npi;
+      const county = brief.agency && brief.agency.county && brief.agency.county.name;
+      const tag = npi ? `Pulse brief (NPI ${npi})` : (county ? `Pulse brief (${county} County)` : 'Pulse brief');
+      setPopSource(tag);
+    }
     if (brief.calc_inputs.area) {
       const r = document.querySelector(`input[name="area"][value="${brief.calc_inputs.area}"]`);
       if (r) r.checked = true;
