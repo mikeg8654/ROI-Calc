@@ -1780,10 +1780,24 @@ function applyBriefToCalc(brief) {
   if (brief.calc_inputs) {
     if (brief.calc_inputs.pop) {
       $('in-pop').value = brief.calc_inputs.pop;
+      // Prefer Pulse's explicit population_source label when available (e.g.
+      // "San Ramon + Danville + portions of unincorporated Contra Costa (SRVFPD...)").
+      // Falls back to NPI / county tagging for agencies without a seed.
+      const popSource = brief.agency && brief.agency.population_source;
       const npi = brief.agency && brief.agency.npi;
       const county = brief.agency && brief.agency.county && brief.agency.county.name;
-      const tag = npi ? `Pulse brief (NPI ${npi})` : (county ? `Pulse brief (${county} County)` : 'Pulse brief');
+      const tag = popSource || (npi ? `Pulse brief (NPI ${npi})` : (county ? `Pulse brief (${county} County)` : 'Pulse brief'));
       setPopSource(tag);
+    }
+    // County-as-upsell: when Pulse identifies an expansion ceiling, surface it
+    // as a small advisory under the pop input so the rep can frame the call.
+    if (brief.agency && brief.agency.upsell) {
+      const u = brief.agency.upsell;
+      const el = $('pop-source-line');
+      if (el) {
+        const upsellLine = ` · Upsell ceiling: ${u.county_name} County (${(u.county_population/1000).toFixed(0)}K, ${u.multiplier}x)`;
+        el.textContent = el.textContent + upsellLine;
+      }
     }
     if (brief.calc_inputs.area) {
       const r = document.querySelector(`input[name="area"][value="${brief.calc_inputs.area}"]`);
