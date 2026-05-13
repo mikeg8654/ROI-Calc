@@ -382,11 +382,13 @@
       <input type="text" id="in-name" placeholder="Type agency name, e.g. Hillsborough County Fire Rescue" autocomplete="off">
       <div id="agency-results" style="display:none; position:absolute; left:0; right:0; top:100%; z-index:50; max-height:240px; overflow-y:auto; background:white; border:1px solid #D6DCE6; border-radius:8px; box-shadow:0 4px 14px rgba(15,27,51,0.12); margin-top:4px;"></div>
       <div class="note" id="agency-hint"></div>
+      <button type="button" id="btn-brief-me" style="margin-top:10px; width:100%; padding:11px 14px; background:linear-gradient(135deg, var(--teal) 0%, #178578 100%); color:var(--white); border:none; border-radius:8px; font-family:inherit; font-size:13px; font-weight:700; cursor:pointer; letter-spacing:0.04em; box-shadow:0 2px 6px rgba(31,165,149,0.25); transition:all 0.15s;">🎯 Brief Me on This Agency</button>
+      <div class="note" id="brief-status" style="display:none; margin-top:6px;"></div>
     </div>
 
     <div class="field">
       <label>Population Served <span class="req">*</span> <span class="hint">agency jurisdiction</span></label>
-      <input type="number" id="in-pop" min="0" step="1000" value="500000">
+      <input type="number" id="in-pop" min="0" step="1000" value="250000">
       <div class="note" id="pop-display">Enter the population your agency serves.</div>
     </div>
 
@@ -413,14 +415,9 @@
     </div>
 
     <div class="field">
-      <label>Annual transport volume <span class="hint">optional, sharpens ROI</span></label>
-      <input type="number" id="in-transports" min="0" step="100" placeholder="Leave blank if unknown">
-    </div>
-
-    <div class="field">
-      <label>Partner discount <span class="hint">0% MSRP · max 20% with approval</span></label>
+      <label>Partner rate adjustment <span class="hint">0% standard · up to 20%</span></label>
       <input type="number" id="in-discount" min="0" max="20" step="1" value="0">
-      <div class="note" id="discount-display">Default: MSRP (no discount)</div>
+      <div class="note" id="discount-display">Standard partner rate</div>
     </div>
 
     <div class="field">
@@ -434,14 +431,20 @@
     </div>
 
     <div class="field">
-      <label>Optional modules</label>
+      <label>Core 911 diversion modules</label>
       <div class="modules" id="modules">
-        <label class="module-chip" data-module="terf"><input type="checkbox" value="terf">TERF</label>
         <label class="module-chip active" data-module="path"><input type="checkbox" value="path" checked>PATH</label>
-        <label class="module-chip active" data-module="apm"><input type="checkbox" value="apm" checked>APM</label>
-        <label class="module-chip" data-module="vamc"><input type="checkbox" value="vamc">VAMC</label>
+        <label class="module-chip active" data-module="apm"><input type="checkbox" value="apm" checked>Performance Mgmt</label>
       </div>
-      <div class="note">Core stack always includes BUILD + PRIME + CASE.</div>
+      <div class="note">Core stack: BUILD + PRIME + CASE always included. PATH + Performance Mgmt drive diversion.</div>
+      <details style="margin-top:10px;">
+        <summary style="font-size:11px; color:var(--muted); cursor:pointer; padding:4px 0; user-select:none;">Advanced (post-pilot)</summary>
+        <div class="modules" style="margin-top:6px;">
+          <label class="module-chip" data-module="terf"><input type="checkbox" value="terf">TERF</label>
+          <label class="module-chip" data-module="vamc"><input type="checkbox" value="vamc">VAMC</label>
+        </div>
+        <div class="note" style="margin-top:6px; font-size:10px;">Hospital coordination + VA. Typically layered after the core 911 diversion pilot is running.</div>
+      </details>
     </div>
 
     <button class="reset-btn" id="btn-reset">Reset to defaults</button>
@@ -454,14 +457,22 @@
 
     <div class="hero-strip">
       <div class="hero-savings">
-        <span class="hero-eyebrow">Year-1 Operational Savings · <span id="hero-scen">Expected</span></span>
-        <span class="hero-amount" id="out-savings">$15.8M</span>
-        <span class="hero-context">to <strong id="out-savings-asp">$23.4M</strong> aspirational · vs. <strong id="out-savings-cost">$234K</strong> Year-1 program cost</span>
+        <span class="hero-eyebrow">Year-1 Avoided Spending · <span id="hero-scen">Expected</span></span>
+        <span class="hero-amount" id="out-savings">$5.87M</span>
+        <span class="hero-context">to <strong id="out-savings-asp">$6.69M</strong> aspirational · vs. <strong id="out-savings-cost">$220K</strong> Year-1 program cost</span>
       </div>
       <div class="hero-ratio">
-        <span class="hero-ratio-num" id="out-ratio">$31 : $1</span>
-        <span class="hero-ratio-label">Return on every $1 invested<br><span style="font-size:11px; opacity:0.7;" id="out-ratio-context">before community value or new revenue</span></span>
+        <span class="hero-ratio-num" id="out-ratio">$17 : $1</span>
+        <span class="hero-ratio-label">Agency $ avoided per $ invested<br><span style="font-size:11px; opacity:0.7;" id="out-ratio-context">community ED savings &amp; new revenue not counted</span></span>
       </div>
+    </div>
+    <div id="hero-outcome" style="display:flex; align-items:center; gap:14px; padding:14px 4px 0; font-size:14px; color:var(--navy); flex-wrap:wrap; line-height:1.5;">
+      <span style="font-size:10px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:var(--teal); background:rgba(31,165,149,0.10); padding:5px 10px; border-radius:4px; white-space:nowrap;">What this means</span>
+      <span><strong id="out-callers">1,374</strong> callers aligned with the right care</span>
+      <span style="color:var(--muted-light);">·</span>
+      <span><strong id="out-unitdays-hero">143</strong> ambulance-days back in service</span>
+      <span style="color:var(--muted-light);">·</span>
+      <span><strong id="out-edsaved">$2.19M</strong> in community ED visits avoided</span>
     </div>
     <div class="hero-footnote" id="hero-footnote">Modeled estimate · Sources: CMS GAPDS, NEMSIS · Actual quotes scoped during discovery</div>
 
@@ -484,8 +495,8 @@
     <div class="panel-row">
       <div class="panel cost">
         <h3>Program Cost · Year 1</h3>
-        <div class="amount-range" id="out-cost">$150K – $450K</div>
-        <div class="amount-range" style="font-size:13px; font-weight:500; color:#A9B4CC; margin-top:6px;" id="out-cost-sub">Typical scope for an agency this size</div>
+        <div class="amount-range" id="out-cost">$220K</div>
+        <div class="amount-range" style="font-size:13px; font-weight:500; color:#A9B4CC; margin-top:6px;" id="out-cost-sub">Year-1 total</div>
         <div class="breakdown" id="out-cost-breakdown"></div>
       </div>
       <div class="panel payback">
@@ -496,10 +507,10 @@
           <button type="button" data-scen="Aspirational" class="asp">Aspirational</button>
         </div>
         <div class="stat-row">
-          <div class="stat-box hero"><div class="num" id="out-payback">~3 wks</div><div class="label">Agency Payback</div></div>
-          <div class="stat-box"><div class="num" id="out-unitdays">286</div><div class="label">Unit-Days Returned</div></div>
-          <div class="stat-box"><div class="num" id="out-diversions">2,749</div><div class="label">Diversions / Year</div></div>
-          <div class="stat-box wide"><div class="num" id="out-3yr">$21M</div><div class="label">3-Year Agency Value</div></div>
+          <div class="stat-box hero"><div class="num" id="out-payback">~2 mo</div><div class="label">Break even from kickoff</div></div>
+          <div class="stat-box"><div class="num" id="out-unitdays">143</div><div class="label">Unit-Days Returned</div></div>
+          <div class="stat-box"><div class="num" id="out-diversions">1,374</div><div class="label">Callers Re-routed / Year</div></div>
+          <div class="stat-box wide"><div class="num" id="out-3yr">$10.5M</div><div class="label">3-Year Agency Value</div></div>
         </div>
       </div>
     </div>
@@ -508,8 +519,8 @@
 
     <div class="assumptions">
       <span style="font-weight:600; color:var(--navy); margin-right:6px;">Sources:</span>
-      <span><strong>$2,673</strong> EMS run · <strong>$1,481</strong> transport · <strong>$2,453</strong> ED · CMS / GAPDS</span>
-      <span style="margin-left:12px;"><strong>1.48h</strong> urban-suburban · <strong>3.0h</strong> rural · NEMSIS</span>
+      <span><strong>$2,673</strong> per ALS transport call · <strong>$2,453</strong> per ED visit · CMS GAPDS</span>
+      <span style="margin-left:12px;"><strong>1.48h</strong> urban &amp; suburban · <strong>3.0h</strong> rural unit-hours per call · NEMSIS</span>
     </div>
 
     <div id="cta-bottom" style="background:linear-gradient(135deg, var(--navy) 0%, var(--navy-deep) 100%); border-radius:12px; padding:20px 28px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; box-shadow:0 4px 14px rgba(15,27,51,0.12);">
@@ -527,7 +538,7 @@
 
 <footer>
   <div style="display:flex; justify-content:space-between; align-items:center; max-width:1600px; margin:0 auto; padding:0 40px; flex-wrap:wrap; gap:12px;">
-    <div>MD Ally Technologies · Calculator <strong id="ver">v1.21</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
+    <div>MD Ally Technologies · Calculator <strong id="ver">v2.0</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
     <div>
       <button id="btn-feedback" style="background:var(--gold); color:var(--navy-deep); border:none; padding:12px 22px; border-radius:8px; font-family:inherit; font-size:16px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(229,168,23,0.3); transition:all 0.15s;">💡 Suggest an enhancement</button>
       &nbsp;&nbsp;
@@ -539,32 +550,61 @@
   <div id="changelog-box" style="display:none; max-width:800px; margin:16px auto 0; background:var(--white); border:1px solid var(--rule); border-radius:8px; padding:16px 20px; text-align:left; font-size:12px; color:var(--muted); line-height:1.6;">
     <strong style="color:var(--navy); font-size:13px;">Changelog</strong>
     <ul style="margin:8px 0 0 18px;">
-      <li><strong>v1.21</strong> (2026-04-29) · Hero strip redesign: dollar savings ($X.XM Year-1) is now the headline at 108px on a navy background with gold left bar; ratio drops to a supporting column. Inter loaded from Google Fonts. Active scenario column highlighted in the table (others dim). Numbers count up on scenario change. Footnote line under the hero ("Sources: CMS GAPDS, NEMSIS").</li>
-      <li><strong>v1.20.1</strong> (2026-04-29) · Fix Copy-for-PPT capture: load html2canvas from its own CDN (was trying to read it from the html2pdf bundle which doesn't expose it).</li>
-      <li><strong>v1.20</strong> (2026-04-29) · PPT-ready impact area redesign: bigger headline ratio (88px), stronger Conservative column header, gold cost number, hero "Agency Payback" stat box, gold hairline above scenario total. New "📸 Copy for PPT" button captures the impact area as a PNG to your clipboard for instant paste into PowerPoint.</li>
-      <li><strong>v1.19</strong> (2026-04-29) · Scenario pills now sit on their own row above the stats (full-width, individually wired) so clicks register reliably. PATH and APM modules default to checked (baseline diversion services).</li>
-      <li><strong>v1.18</strong> (2026-04-29) · Removed discount/MSRP/approval language from the cost panel. Discount input on the left is now the only place that surface concept appears.</li>
-      <li><strong>v1.17</strong> (2026-04-29) · Scenario pills (Conservative / Expected / Aspirational) drive the Payback + Scale stats and ROI ratio. Booking CTA moved to bottom of page (horizontal). Sources strip moved up and toned down. Uninsured corrected to 10.0% per workbook.</li>
-      <li><strong>v1.16</strong> (2026-04-29) · Cost panel now uses Direct ARR price book formula (Public Safety Offering, "Direct ARR Inputs" tab). Inputs: population + partner discount (max 20%). MSRP shown by default; discount slider adjusts. National-avg uninsured = 10% (was price-book default 30%). Payback/ROI/3-yr now reflect actual computed price.</li>
-      <li><strong>v1.15</strong> (2026-04-29) · Optional "Annual medical 911 calls" override (eligibility = 12% of medical volume) for high-volume urban systems. Payback + 3-yr value + ROI ratio now anchored to displayed Year-1 range mid-point so math stays consistent with on-screen pricing.</li>
-      <li><strong>v1.14</strong> (2026-04-29) · Removed redundant "Annual addressable volume" input. Population Served now drives both 5-yr growth projection and modeled addressable volume in one consolidated note.</li>
-      <li><strong>v1.13</strong> (2026-04-29) · Math correction: 0.0077 × pop is annual eligible (not daily); IAED 23% multiplier dropped (already in 0.0077). Pop field renamed Population Served. Platform fee removed; Year-1 cost shows published $150K–$450K range only. Assumptions block scrubbed to public benchmarks (CMS, NEMSIS) only. Internal scenario rates hidden.</li>
-      <li><strong>v1.12</strong> (2026-04-29) · Removed "911 medical call volume" framing. 0.0077 × jurisdiction pop is now labeled "MD Ally daily addressable baseline." Cost stays decoupled from volume (since v1.6).</li>
-      <li><strong>v1.11</strong> (2026-04-29) · Agency-name typeahead via CMS NPI Registry (filtered to EMS/fire/public-safety taxonomies). Selecting a match auto-fills the ZIP and opens a "Verify jurisdiction" Google search link. No NPI hit → direct Google search fallback.</li>
-      <li><strong>v1.10</strong> (2026-04-29) · Population now agency-jurisdiction (manual). ZIP code becomes a validator: shows reference county pop, Census growth trend, and 5-year contract projection. ZIP density still auto-classifies area type. Agency-name lookup planned next.</li>
-      <li><strong>v1.9</strong> (2026-04-29) · One-click branded PDF download replaces browser print. Filename includes agency + date. Includes branded header, inputs summary, results, disclaimer + booking link footer.</li>
-      <li><strong>v1.8</strong> (2026-04-29) · ZIP also auto-classifies area type (rural/suburban/urban) by population density. Primary: live Census TIGERweb ZCTA land area; fallback: embedded 33K-ZIP offline JSON when API down.</li>
-      <li><strong>v1.7</strong> (2026-04-29) · ZIP code field auto-fills service-area population from US Census ACS 5-year (2022 vintage) with growth projection to current year. Manual override still works.</li>
-      <li><strong>v1.6</strong> (2026-04-29) · Daily-call factor updated to 0.0077 × pop; per-call cost line removed (cost is now flat platform + modules + BUILD).</li>
+      <li><strong>v2.0</strong> (2026-05-11) · "Brief Me on This Agency" button under agency input. Calls Pulse's /api/agency-brief endpoint (when wired) to pull intel, contacts, golden nuggets, connections, and curated collateral (Meeting Intelligence PDF + agency-branded MD Ally Overview PPT). Templates live in Pulse Collateral, not in this app. Default modules collapsed to core 911 diversion (PATH + Performance Management); TERF and VAMC moved to an "Advanced (post-pilot)" expandable section. APM renamed to "Performance Management" throughout the UI. Payback now expressed in months from kickoff (implementation + recovery), default 250K-pop suburban baseline aligned with typical pipeline.</li>
+      <li><strong>v1.22</strong> (2026-05-11) · Headline savings now uses a single per-ALS-transport benchmark from CMS GAPDS (prior versions stacked a separate transport line and overstated total impact). CAD-integration depth and optional modules now actually adjust Year-1 program cost. Year-1 cost panel splits subscription vs. implementation. 3-Year Agency Value subtracts all three years of subscription. Reset clears medical-calls. URL share preserves medical-calls. Dead inputs removed. Discount field language scrubbed.</li>
+      <li><strong>v2.0</strong> (2026-05-12) · "🎯 Brief Me on This Agency" wired to Pulse intel API: golden nuggets, named contacts, Meeting Intelligence PDF, branded Overview PPTX. Math fixes: removed double-counted transport line, reactive CAD depth + optional modules, honest payback in months from kickoff (was "~2 wks"), default population 250K, sanity cap on extreme ratios. Logo confirmation modal for PPT branding.</li>
+      <li><strong>v1.21</strong> (2026-04-29) · Hero strip redesign. Dollar savings is now the headline at 108px; ratio drops to a supporting column. Active scenario column highlighted in the table. Numbers count up on scenario change.</li>
+      <li><strong>v1.20</strong> (2026-04-29) · PPT-ready impact area. New "📸 Copy for PPT" button captures the impact area as a PNG to your clipboard for instant paste into PowerPoint.</li>
+      <li><strong>v1.19</strong> (2026-04-29) · Scenario pills sit on their own row above the stats. PATH and APM modules default to checked.</li>
+      <li><strong>v1.17</strong> (2026-04-29) · Scenario pills (Conservative / Expected / Aspirational) drive the Payback + Scale stats and ROI ratio. Booking CTA moved to bottom of page.</li>
+      <li><strong>v1.15</strong> (2026-04-29) · Optional "Annual medical 911 calls" override for high-volume urban systems. Payback + 3-yr value + ROI ratio anchored to displayed Year-1 cost.</li>
+      <li><strong>v1.13</strong> (2026-04-29) · Population Served field rename; assumptions block scrubbed to public CMS / NEMSIS benchmarks.</li>
+      <li><strong>v1.11</strong> (2026-04-29) · Agency-name typeahead via CMS NPI Registry. Selecting a match auto-fills the ZIP.</li>
+      <li><strong>v1.10</strong> (2026-04-29) · Population now agency-jurisdiction (manual). ZIP code becomes a validator with reference county pop, Census growth trend, and 5-year contract projection.</li>
+      <li><strong>v1.9</strong> (2026-04-29) · One-click branded PDF download replaces browser print.</li>
+      <li><strong>v1.8</strong> (2026-04-29) · ZIP auto-classifies area type (rural / suburban / urban) by population density.</li>
+      <li><strong>v1.7</strong> (2026-04-29) · ZIP code field auto-fills service-area population from US Census ACS 5-year with growth projection to current year.</li>
       <li><strong>v1.5</strong> (2026-04-29) · MD Ally logo, in-header booking CTA, prospect-close CTA banner under results, Railway-deployed live URL.</li>
-      <li><strong>v1.4</strong> (2026-04-22) · Rebuilt enhancement form with bulletproof inline styles; bigger, more prominent "Suggest" button.</li>
-      <li><strong>v1.3</strong> (2026-04-22) — Simplified enhancement form — just What + Why + priority. No name/email/category fields.</li>
-      <li><strong>v1.2</strong> (2026-04-22) — In-browser suggestion capture form with localStorage queue, webhook POST, and one-click export-for-autobuild.</li>
-      <li><strong>v1.1</strong> (2026-04-22) — Corrected daily-call formula to 0.0077% × pop.</li>
-      <li><strong>v1.0</strong> (2026-04-21) — Initial build.</li>
+      <li><strong>v1.2</strong> (2026-04-22) · In-browser suggestion capture form with localStorage queue.</li>
+      <li><strong>v1.0</strong> (2026-04-21) · Initial build.</li>
     </ul>
   </div>
 </footer>
+
+<!-- ============ LOGO / BRANDING MODAL ============ -->
+<div id="logo-modal" style="display:none; position:fixed; inset:0; background:rgba(15,27,51,0.65); z-index:1100; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(4px);">
+  <div style="background:var(--white); border-radius:14px; max-width:560px; width:100%; max-height:92vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.4);">
+    <div style="background:linear-gradient(135deg, var(--navy-deep), var(--navy)); color:var(--white); padding:22px 28px; border-radius:14px 14px 0 0; display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <h3 style="margin:0; font-size:19px;">📊 Branding for the Curated PPT</h3>
+        <p style="margin:4px 0 0; font-size:13px; color:#A9B4CC;" id="logo-modal-agency">Pick how the deck gets branded for this agency.</p>
+      </div>
+      <button id="logo-close" type="button" style="background:rgba(255,255,255,0.1); color:var(--white); border:1px solid rgba(255,255,255,0.25); padding:6px 12px; border-radius:6px; cursor:pointer; font-size:18px;">&times;</button>
+    </div>
+    <div style="padding:22px 28px;">
+      <div style="margin-bottom:18px;">
+        <div style="font-size:12px; font-weight:700; color:var(--navy); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:6px;">Option 1 · Use a public logo URL</div>
+        <div style="display:flex; gap:8px; margin-bottom:8px;">
+          <input id="logo-url" type="url" placeholder="https://… (paste a PNG/JPEG URL)" style="flex:1; padding:10px 12px; border:1px solid var(--rule); border-radius:6px; font-family:inherit; font-size:14px;">
+          <button id="logo-google" type="button" style="background:var(--bg); border:1px solid var(--rule); padding:10px 14px; border-radius:6px; font-family:inherit; font-size:13px; cursor:pointer; white-space:nowrap;" title="Open Google Images in a new tab. Copy the image address (right-click, then Copy image address) and paste it above.">🔍 Google Images</button>
+        </div>
+        <img id="logo-preview" alt="" style="display:none; max-height:90px; max-width:100%; padding:8px; background:#f7f7f7; border:1px dashed var(--rule); border-radius:6px; margin-bottom:8px;">
+        <button id="logo-use-url" type="button" style="width:100%; background:var(--teal); color:var(--white); border:none; padding:11px; border-radius:6px; font-family:inherit; font-size:14px; font-weight:700; cursor:pointer;">Use this logo</button>
+      </div>
+      <div style="margin-bottom:18px; padding-top:16px; border-top:1px dashed var(--rule);">
+        <div style="font-size:12px; font-weight:700; color:var(--navy); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:6px;">Option 2 · Upload a PNG / JPEG</div>
+        <input id="logo-file" type="file" accept="image/png,image/jpeg" style="display:block; width:100%; padding:6px 0; font-family:inherit; font-size:13px; margin-bottom:8px;">
+        <button id="logo-use-upload" type="button" style="width:100%; background:var(--navy); color:var(--white); border:none; padding:11px; border-radius:6px; font-family:inherit; font-size:14px; font-weight:700; cursor:pointer;">Use uploaded logo</button>
+      </div>
+      <div style="padding-top:16px; border-top:1px dashed var(--rule);">
+        <div style="font-size:12px; font-weight:700; color:var(--navy); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:6px;">Option 3 · Skip branding</div>
+        <p style="font-size:12px; color:var(--muted); margin-bottom:8px;">Ship a generic MD Ally Overview without the agency name or logo. Removes the agency-branded title slide.</p>
+        <button id="logo-skip" type="button" style="width:100%; background:var(--bg); color:var(--navy); border:1px solid var(--rule); padding:11px; border-radius:6px; font-family:inherit; font-size:14px; font-weight:600; cursor:pointer;">Skip (generic deck)</button>
+      </div>
+      <div id="logo-status" style="display:none; margin-top:14px; padding:10px 14px; border-radius:6px; font-size:13px;"></div>
+    </div>
+  </div>
+</div>
 
 <!-- ============ SUGGESTION MODAL ============ -->
 <div id="sug-overlay" style="display:none; position:fixed; inset:0; background:rgba(15,27,51,0.65); z-index:1000; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(4px);">
@@ -579,10 +619,10 @@
     <form id="sug-form" style="padding:24px 28px;">
       <div style="margin-bottom:18px;">
         <div style="font-size:12px; font-weight:700; color:#1B2A4A; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:6px;">What should change? <span style="color:#B2483D;">*</span></div>
-        <textarea name="what" required rows="4" placeholder="e.g. Add 'Uninsured %' as an input — currently hardcoded to 30%" style="display:block; width:100%; padding:10px 12px; border:1px solid #D6DCE6; border-radius:6px; font-family:inherit; font-size:14px; color:#0F1B33; background:#FFFFFF; resize:vertical; box-sizing:border-box;"></textarea>
+        <textarea name="what" required rows="4" placeholder="e.g. Add 'Uninsured %' as an input (currently a fixed assumption)" style="display:block; width:100%; padding:10px 12px; border:1px solid #D6DCE6; border-radius:6px; font-family:inherit; font-size:14px; color:#0F1B33; background:#FFFFFF; resize:vertical; box-sizing:border-box;"></textarea>
       </div>
       <div style="margin-bottom:18px;">
-        <div style="font-size:12px; font-weight:700; color:#1B2A4A; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:6px;">Why <span style="font-weight:400; text-transform:none; letter-spacing:0; color:#5E6B85; font-style:italic;">— optional</span></div>
+        <div style="font-size:12px; font-weight:700; color:#1B2A4A; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:6px;">Why <span style="font-weight:400; text-transform:none; letter-spacing:0; color:#5E6B85; font-style:italic;">(optional)</span></div>
         <textarea name="why" rows="2" placeholder="e.g. 30% default overstates savings for rural areas" style="display:block; width:100%; padding:10px 12px; border:1px solid #D6DCE6; border-radius:6px; font-family:inherit; font-size:14px; color:#0F1B33; background:#FFFFFF; resize:vertical; box-sizing:border-box;"></textarea>
       </div>
       <div style="margin-bottom:18px;">
@@ -637,7 +677,7 @@ function getInputSnapshot() {
     agency: document.getElementById('in-name').value || null,
     population: document.getElementById('in-pop').value || null,
     area_type: (document.querySelector('input[name="area"]:checked')||{}).value,
-    annual_transports_entered: document.getElementById('in-transports').value || null,
+    medical_calls_entered: document.getElementById('in-medical-calls').value || null,
     integration_depth: (document.querySelector('input[name="depth"]:checked')||{}).value,
     modules: Array.from(document.querySelectorAll('#modules input:checked')).map(cb => cb.value),
     calculator_version: document.getElementById('ver').textContent,
@@ -767,7 +807,7 @@ document.getElementById('sug-form').addEventListener('submit', async (e) => {
   statusEl.style.color = 'var(--teal)';
   statusEl.innerHTML = webhookSuccess
     ? '✓ Submitted! Your request is in the build queue and synced to webhook.'
-    : '✓ Saved locally! ' + (SUG_WEBHOOK_URL ? 'Webhook failed — will retry on next submission.' : 'Configure webhook URL in the HTML to auto-sync to team systems.');
+    : '✓ Saved locally! ' + (SUG_WEBHOOK_URL ? 'Webhook failed; will retry on next submission.' : 'Configure webhook URL in the HTML to auto-sync to team systems.');
 
   setTimeout(() => {
     document.getElementById('sug-overlay').style.display = 'none';
@@ -857,36 +897,38 @@ updateSuggestionCount();
 </script>
 
 <script>
-// ========== CONSTANTS (from Impact Calculator + Price Book) ==========
+// ========== CONSTANTS (CMS GAPDS, NEMSIS, MD Ally Public Safety price book) ==========
 const C = {
-  // INTERNAL: 0.0077 × pop = annual alpha/omega-eligible volume (already IAED-filtered).
-  // Equivalent identity: 0.12 × annual_medical_911_calls (MD Ally targets 12% of medical volume).
-  // Default uses pop because most agencies don't know their medical-call count; high-volume
-  // urban systems should enter the medical count manually to override.
-  // Daily for display = annual / 365. Validated: REMSA ~520K pop → ~11/day.
+  // 0.0077 × pop = annual alpha/omega-eligible volume (already IAED-filtered).
+  // Equivalent identity: 0.12 × annual medical 911 calls.
+  // Default uses pop; medical-call field overrides for high-volume urban systems.
+  // Validated: REMSA ~520K pop → ~11/day.
   annual_eligible_factor: 0.0077,
   md_ally_pct_of_medical: 0.12,
   days_per_year: 365,
-  cost_per_ems_run: 2673,
-  cost_per_transport: 1481,
+  // CMS GAPDS: $2,673 = average cost per ALS transport call (apparatus + crew + transport).
+  // Used ONCE per diversion — combining a separate "transport" line would double-count.
+  cost_per_diverted_call: 2673,
   cost_per_ed_visit: 2453,
   hrs_per_unit_day: 14.256,
-  runs_per_1k: { rural:75, suburban:125, urban:250 },  // area-type density (EMS reference; not used for call volume)
   hrs_per_run: { rural:3.0, suburban:1.48, urban:1.48 },
-
-  // INTERNAL pricing (not displayed; computed Year-1 MSRP comes from priceForPop()).
+  // Year-1 implementation add-ons (one-time; years 2-3 are ARR only)
   build_base: 23245,
   build_uplift: { parallel:0, uni:7500, bi:22500 },
-  terf_tiers: [
-    [150000, 15000],[330000, 18650],[450000, 22118],[800000, 25412],
-    [2000000, 28541],[3500000, 31514],[5000000, 34338],[Infinity, 37021]
-  ],
-  vamc_tiers: [
-    [450000, 15000],[1100000, 21500],[1750000, 28000],[2400000, 34000],
-    [3050000, 40000],[3700000, 44500],[4350000, 50000],[Infinity, 55000]
-  ],
-  path_flat: 11000,
-  apm_flat: 17000,
+  // Midpoints of go-live windows (see depthNotes): savings start after implementation.
+  impl_days: { parallel: 52, uni: 75, bi: 105 },
+  module_costs: {
+    path: 11000,
+    apm: 17000,
+    terf_tiers: [
+      [150000, 15000],[330000, 18650],[450000, 22118],[800000, 25412],
+      [2000000, 28541],[3500000, 31514],[5000000, 34338],[Infinity, 37021]
+    ],
+    vamc_tiers: [
+      [450000, 15000],[1100000, 21500],[1750000, 28000],[2400000, 34000],
+      [3050000, 40000],[3700000, 44500],[4350000, 50000],[Infinity, 55000]
+    ],
+  },
 };
 
 // ========== DIRECT ARR PRICING (matches Public Safety Offering Price Book) ==========
@@ -958,17 +1000,20 @@ function fmtUSD(n, abbr=true) {
   return '$' + Math.round(n).toLocaleString();
 }
 function fmtNum(n) { return Math.round(n).toLocaleString(); }
-function tierRate(call_volume) {
-  for (const [bound, rate] of C.per_call_tiers) {
-    if (call_volume <= bound) return rate;
-  }
-  return 29;
-}
 function popTier(pop, tiers) {
   for (const [bound, price] of tiers) {
     if (pop <= bound) return price;
   }
   return tiers[tiers.length-1][1];
+}
+// Year-1 implementation add-ons. Year 2-3 use only priceForPop() ARR.
+function buildExtras(pop, depth, modules) {
+  let extra = C.build_base + (C.build_uplift[depth] || 0);
+  if (modules.includes('path')) extra += C.module_costs.path;
+  if (modules.includes('apm'))  extra += C.module_costs.apm;
+  if (modules.includes('terf')) extra += popTier(pop, C.module_costs.terf_tiers);
+  if (modules.includes('vamc')) extra += popTier(pop, C.module_costs.vamc_tiers);
+  return extra;
 }
 function getAreaType() {
   const el = document.querySelector('input[name="area"]:checked');
@@ -991,17 +1036,14 @@ function calculate() {
   const pop = Math.max(0, parseInt($('in-pop').value || 0));
   const area = getAreaType();
   const userMedicalCalls = parseInt($('in-medical-calls').value) || null;
-  const userTransports = parseInt($('in-transports').value) || null;
   const depth = getDepth();
   const modules = getModules();
 
-  // Eligibility: prefer manual medical-call override (× 12%); else pop default (× 0.0077).
+  // Eligibility: prefer manual medical-call override; else pop default.
   const annualEligible = userMedicalCalls
     ? userMedicalCalls * C.md_ally_pct_of_medical
     : pop * C.annual_eligible_factor;
-  const dailyEligible = annualEligible / C.days_per_year;
   const eligibleCalls = annualEligible;
-  const totalCalls = annualEligible;
 
   // Pop-display 5-yr projection is owned by updatePopProjection() (called on input + init).
   // Refresh it here so the projection updates whenever the population field changes via calc.
@@ -1026,14 +1068,14 @@ function calculate() {
     const fullDiv = diversions * s.full;
     const emsHrsAvoided = diversions * hrsPerRun;
     const unitDays = emsHrsAvoided / C.hrs_per_unit_day;
-    const emsRunCost = diversions * C.cost_per_ems_run;
-    const transCost = diversions * C.cost_per_transport;
+    // $2,673/diversion = full ALS transport-call cost (CMS GAPDS, single line — no transport-billing add-on).
+    const agencyCost = diversions * C.cost_per_diverted_call;
     const edCost = fullDiv * C.cost_per_ed_visit;
-    const totalImpact = emsRunCost + transCost + edCost;
+    const totalImpact = agencyCost + edCost;
 
     scenResults[name] = {
       diversions, fullDiv, emsHrsAvoided, unitDays,
-      emsRunCost, transCost, edCost, totalImpact,
+      agencyCost, edCost, totalImpact,
     };
   }
 
@@ -1046,8 +1088,7 @@ function calculate() {
     { label:'Eligible MD Ally encounters / yr', cons:fmtNum(eligibleCalls), exp:fmtNum(eligibleCalls), asp:fmtNum(eligibleCalls) },
     { label:'Total diversions', accent:true, cons:fmtNum(cons.diversions), exp:fmtNum(exp.diversions), asp:fmtNum(asp.diversions) },
     { label:'Staffed unit-days returned', cons:fmtNum(cons.unitDays), exp:fmtNum(exp.unitDays), asp:fmtNum(asp.unitDays) },
-    { label:'EMS run-cost avoided (agency)', accent:true, cons:fmtUSD(cons.emsRunCost), exp:fmtUSD(exp.emsRunCost), asp:fmtUSD(asp.emsRunCost) },
-    { label:'Transport cost avoided (community)', cons:fmtUSD(cons.transCost), exp:fmtUSD(exp.transCost), asp:fmtUSD(asp.transCost) },
+    { label:'Agency cost avoided (ALS transport)', accent:true, cons:fmtUSD(cons.agencyCost), exp:fmtUSD(exp.agencyCost), asp:fmtUSD(asp.agencyCost) },
     { label:'ED visit cost avoided (community)', cons:fmtUSD(cons.edCost), exp:fmtUSD(exp.edCost), asp:fmtUSD(asp.edCost) },
     { label:'Total Year-1 Impact', total:true, cons:fmtUSD(cons.totalImpact), exp:fmtUSD(exp.totalImpact), asp:fmtUSD(asp.totalImpact) },
   ];
@@ -1056,28 +1097,46 @@ function calculate() {
     tbody.innerHTML += `<tr class="${cls}"><td>${r.label}</td><td>${r.cons}</td><td>${r.exp}</td><td>${r.asp}</td></tr>`;
   }
 
-  // === Program cost (Direct ARR per Public Safety Price Book) ===
+  // === Program cost ===
+  // Year 1 = subscription ARR + one-time implementation (build + depth uplift + selected modules).
+  // Years 2-3 = subscription ARR only.
   const partnerDiscount = (parseFloat($('in-discount').value) || 0) / 100;
   const priced = priceForPop(pop, partnerDiscount);
-  const year1Total = priced.effectivePrice;
+  const ongoingYearly = priced.effectivePrice;
+  const oneTimeYear1 = buildExtras(pop, depth, modules);
+  const year1Total = ongoingYearly + oneTimeYear1;
 
-  $('out-cost').textContent = fmtUSD(priced.discount > 0 ? priced.effectivePrice : priced.listPrice);
-  $('out-cost-sub').textContent = `Year-1 program cost`;
-  $('out-cost-breakdown').innerHTML = `<div class="line" style="opacity:0.75; font-size:12px;"><span>${fmtNum(priced.totalCalls)} calls/yr modeled</span></div>`;
+  $('out-cost').textContent = fmtUSD(year1Total);
+  $('out-cost-sub').textContent = `Year-1 total · ${fmtUSD(ongoingYearly)} ongoing`;
+  $('out-cost-breakdown').innerHTML = `
+    <div class="line" style="opacity:0.85;"><span>Subscription (Year 1)</span><strong>${fmtUSD(ongoingYearly)}</strong></div>
+    <div class="line" style="opacity:0.85;"><span>Implementation (one-time)</span><strong>${fmtUSD(oneTimeYear1)}</strong></div>
+  `;
 
   // === Payback + scale (driven by selected scenario) ===
+  // Honest payback: implementation period (no savings yet) + recovery period after go-live.
+  // Expressed in months from contract signing — what an operational buyer actually plans against.
   const sel = scenResults[selectedScenario] || exp;
-  const agencySavings = sel.emsRunCost;
-  const paybackWeeks = year1Total > 0 ? (year1Total / agencySavings) * 52 : 0;
-  $('out-payback').textContent = paybackWeeks < 1 ? '< 1 wk' :
-                                  paybackWeeks < 52 ? `~${Math.round(paybackWeeks)} wks` :
-                                  `~${(paybackWeeks/52).toFixed(1)} yrs`;
+  const agencySavings = sel.agencyCost;
+  const implDays = C.impl_days[depth] || 60;
+  const recoveryDays = agencySavings > 0 ? (year1Total / agencySavings) * 365 : 0;
+  const totalPaybackDays = implDays + recoveryDays;
+  const paybackMonths = totalPaybackDays / 30.4;
+  $('out-payback').textContent = paybackMonths >= 12 ? `~${(paybackMonths/12).toFixed(1)} yrs`
+                              : paybackMonths >= 1.5 ? `~${Math.round(paybackMonths)} mo`
+                              : `~6 wks`;
   $('out-unitdays').textContent = fmtNum(sel.unitDays);
   $('out-diversions').textContent = fmtNum(sel.diversions);
-  const threeYrValue = (sel.emsRunCost * 3) - year1Total;
+  // Patient-outcome subline beneath the hero
+  $('out-callers').textContent = fmtNum(sel.diversions);
+  $('out-unitdays-hero').textContent = fmtNum(sel.unitDays);
+  $('out-edsaved').textContent = fmtUSD(sel.edCost);
+  const threeYrCost = year1Total + 2 * ongoingYearly;
+  const threeYrValue = (sel.agencyCost * 3) - threeYrCost;
   $('out-3yr').textContent = fmtUSD(threeYrValue);
 
   // === Hero headline (savings + ratio) ===
+  // Ratio uses agency-only savings vs. Year-1 total (conservative; community + ED + revenue not counted).
   const ratio = year1Total > 0 ? agencySavings / year1Total : 0;
   const heroAnimate = window._animateHeroNext === true;
   window._animateHeroNext = false;
@@ -1101,7 +1160,7 @@ function updateURL() {
   params.set('zip', $('in-zip').value);
   params.set('pop', $('in-pop').value);
   params.set('area', getAreaType());
-  params.set('transports', $('in-transports').value);
+  if ($('in-medical-calls').value) params.set('calls', $('in-medical-calls').value);
   params.set('discount', $('in-discount').value);
   params.set('depth', getDepth());
   params.set('mods', getModules().join(','));
@@ -1158,7 +1217,10 @@ function fmtBigUSD(v) {
   if (Math.abs(v) >= 1e3) return '$' + Math.round(v/1e3) + 'K';
   return '$' + Math.round(v);
 }
-function fmtRatio(v) { return `$${Math.round(v)} : $1`; }
+function fmtRatio(v) {
+  if (v > 100) return `$100+ : $1`;
+  return `$${Math.round(v)} : $1`;
+}
 function setHeroNumbers({ savings, aspSavings, cost, ratio }, animate = false) {
   const set = animate
     ? (id, v, fmt) => animateNumber($(id), v, fmt)
@@ -1216,13 +1278,14 @@ function renderAgencyResults(results, query) {
   box.innerHTML = results.map((r, i) => `
     <div class="agency-result" data-i="${i}" style="padding:10px 12px; cursor:pointer; border-bottom:1px solid #F0F0F0;">
       <div style="font-weight:600; color:var(--navy); font-size:13px;">${escHtml(r.name)}</div>
-      <div style="font-size:11px; color:var(--muted); margin-top:2px;">${escHtml(r.city)}, ${escHtml(r.state)}${r.zip ? ' · ZIP ' + escHtml(r.zip) : ''} · <em>${escHtml(r.taxonomy || '—')}</em></div>
+      <div style="font-size:11px; color:var(--muted); margin-top:2px;">${escHtml(r.city)}, ${escHtml(r.state)}${r.zip ? ' · ZIP ' + escHtml(r.zip) : ''} · <em>${escHtml(r.taxonomy || 'n/a')}</em></div>
     </div>
   `).join('');
   window._agencyResults = results;
 }
 async function selectAgency(r) {
   $('in-name').value = r.name;
+  window._selectedNpi = r.npi || null;
   $('agency-results').style.display = 'none';
   $('agency-hint').innerHTML = `<a href="https://www.google.com/search?q=${encodeURIComponent(r.name + ' population served jurisdiction')}" target="_blank" rel="noopener" style="color:var(--navy); text-decoration:underline;">Verify "${escHtml(r.name)}" jurisdiction population on Google →</a>`;
   if (r.zip && /^\d{5}$/.test(r.zip)) {
@@ -1319,8 +1382,8 @@ function buildPdfWrapper() {
   const agency = ($('in-name').value || 'Untitled Agency').trim();
   const zip = $('in-zip').value.trim();
   const pop = parseInt($('in-pop').value || 0).toLocaleString();
-  const area = (document.querySelector('input[name="area"]:checked')||{}).value || '—';
-  const depth = (document.querySelector('input[name="depth"]:checked')||{}).value || '—';
+  const area = (document.querySelector('input[name="area"]:checked')||{}).value || 'n/a';
+  const depth = (document.querySelector('input[name="depth"]:checked')||{}).value || 'n/a';
   const modules = getModules().map(m => m.toUpperCase()).join(', ') || 'None';
   const date = new Date().toISOString().slice(0,10);
   const ver = $('ver').textContent;
@@ -1344,7 +1407,7 @@ function buildPdfWrapper() {
       </div>
     </div>
     <div style="padding:14px 36px; background:#F6F7FB; border-bottom:1px solid #D6DCE6; display:grid; grid-template-columns:repeat(5,1fr); gap:12px; font-size:11px;">
-      <div><div style="color:#5E6B85; text-transform:uppercase; letter-spacing:0.08em; font-size:9px; font-weight:700;">ZIP</div><div style="font-weight:600; margin-top:3px;">${escHtml(zip||'—')}</div></div>
+      <div><div style="color:#5E6B85; text-transform:uppercase; letter-spacing:0.08em; font-size:9px; font-weight:700;">ZIP</div><div style="font-weight:600; margin-top:3px;">${escHtml(zip||'n/a')}</div></div>
       <div><div style="color:#5E6B85; text-transform:uppercase; letter-spacing:0.08em; font-size:9px; font-weight:700;">Population</div><div style="font-weight:600; margin-top:3px;">${pop}</div></div>
       <div><div style="color:#5E6B85; text-transform:uppercase; letter-spacing:0.08em; font-size:9px; font-weight:700;">Area</div><div style="font-weight:600; margin-top:3px; text-transform:capitalize;">${area}</div></div>
       <div><div style="color:#5E6B85; text-transform:uppercase; letter-spacing:0.08em; font-size:9px; font-weight:700;">CAD Depth</div><div style="font-weight:600; margin-top:3px; text-transform:capitalize;">${escHtml(depth)}</div></div>
@@ -1499,10 +1562,20 @@ function updateEligibilityNote() {
   const display = $('medical-display');
   if (medical > 0) {
     const elig = medical * C.md_ally_pct_of_medical;
-    display.innerHTML = `Eligibility from entered volume: <strong>${fmtNum(elig)}/yr</strong> (${(C.md_ally_pct_of_medical*100).toFixed(0)}% × ${fmtNum(medical)}) · ~${fmtNum(elig/365)}/day`;
+    let warn = '';
+    if (pop > 0) {
+      const callsPer1k = medical / (pop / 1000);
+      // NEMSIS national avg ~65-80/1K; high-volume urban tops out around 150-180/1K.
+      if (callsPer1k > 200) {
+        warn = `<div style="color:#B2483D; font-size:11px; margin-top:4px; font-weight:600;">⚠ ${callsPer1k.toFixed(0)} medical calls per 1K population is well above the NEMSIS range (~65-180/1K). Verify the source before sharing.</div>`;
+      } else if (callsPer1k > 150) {
+        warn = `<div style="color:var(--gold); font-size:11px; margin-top:4px;">High end of NEMSIS range (${callsPer1k.toFixed(0)}/1K). Confirm with the agency.</div>`;
+      }
+    }
+    display.innerHTML = `MD Ally-eligible volume: <strong>${fmtNum(elig)}/yr</strong> · ~${fmtNum(elig/365)}/day${warn}`;
   } else if (pop > 0) {
     const elig = pop * C.annual_eligible_factor;
-    display.innerHTML = `Default from population: <strong>${fmtNum(elig)}/yr</strong> eligible · ~${fmtNum(elig/365)}/day`;
+    display.innerHTML = `Modeled from population: <strong>${fmtNum(elig)}/yr</strong> eligible · ~${fmtNum(elig/365)}/day`;
   } else {
     display.textContent = '';
   }
@@ -1517,7 +1590,7 @@ function loadFromURL() {
     const r = document.querySelector(`input[name="area"][value="${params.get('area')}"]`);
     if (r) r.checked = true;
   }
-  if (params.get('transports')) $('in-transports').value = params.get('transports');
+  if (params.get('calls')) $('in-medical-calls').value = params.get('calls');
   if (params.get('discount')) $('in-discount').value = params.get('discount');
   if (params.get('depth')) {
     const r = document.querySelector(`input[name="depth"][value="${params.get('depth')}"]`);
@@ -1541,8 +1614,8 @@ function wire() {
   $('in-medical-calls').addEventListener('input', updateEligibilityNote);
   $('in-discount').addEventListener('input', () => {
     const d = parseFloat($('in-discount').value) || 0;
-    $('discount-display').textContent = d === 0 ? 'Default: MSRP (no discount)' :
-      d > 20 ? '⚠ Max 20% discount allowed' : `Effective: ${(100-d).toFixed(0)}% of MSRP · requires approval at ${d}%`;
+    $('discount-display').textContent = d === 0 ? 'Standard partner rate' :
+      d > 20 ? '⚠ Maximum adjustment is 20%' : `Effective: ${(100-d).toFixed(0)}% of standard rate`;
   });
   $('in-name').addEventListener('input', onAgencyInput);
   $('agency-results').addEventListener('click', (e) => {
@@ -1585,19 +1658,284 @@ function wire() {
   });
   $('btn-reset').addEventListener('click', () => {
     $('in-name').value = '';
+    $('agency-hint').innerHTML = '';
     $('in-zip').value = '';
     $('zip-display').textContent = '';
-    $('in-pop').value = '500000';
+    $('in-pop').value = '250000';
+    $('in-medical-calls').value = '';
     document.querySelector('input[name="area"][value="suburban"]').checked = true;
-    $('in-transports').value = '';
     $('in-discount').value = '0';
+    $('discount-display').textContent = 'Standard partner rate';
     document.querySelector('input[name="depth"][value="parallel"]').checked = true;
     document.querySelectorAll('#modules input').forEach(cb => {
-      cb.checked = false;
-      cb.parentElement.classList.remove('active');
+      const def = cb.value === 'path' || cb.value === 'apm';
+      cb.checked = def;
+      cb.parentElement.classList.toggle('active', def);
     });
+    updateEligibilityNote();
+    updatePopProjection();
     calculate();
   });
+}
+
+// ========== BRIEF ME ON THIS AGENCY (Pulse /api/agency-brief client) ==========
+// Pulse owns the intel + collateral generation. Calc is a thin client that:
+// 1) POSTs agency_name → gets back calc_inputs + intel + artifact URLs from Pulse
+// 2) Auto-fills the calc, renders the golden nuggets, exposes PDF/PPT downloads
+// Until Pulse is live, this stub fakes the contract so the UI flow is real.
+// Resolution order (highest wins): ?pulse_base= URL param, window.PULSE_API_BASE global, stub mode.
+// This lets us point at Pulse via URL (?pulse_base=https://pulse.mdally.com) without a redeploy.
+const _pulseUrlParam = new URLSearchParams(window.location.search).get('pulse_base');
+const PULSE_API_BASE = (_pulseUrlParam || window.PULSE_API_BASE || '').replace(/\/+$/, '');
+const PULSE_STUB = !PULSE_API_BASE;
+// Bearer key can also be supplied via ?pulse_key= for testing; persist to global so artifact downloads pick it up.
+const _pulseKeyParam = new URLSearchParams(window.location.search).get('pulse_key');
+if (_pulseKeyParam) window.PULSE_BRIEF_KEY = _pulseKeyParam;
+
+async function callAgencyBrief(agencyName, npi) {
+  if (PULSE_STUB) {
+    // Stub mirrors the real contract so the calc renders the same UX today.
+    await new Promise(r => setTimeout(r, 600));
+    return {
+      brief_id: 'stub-' + Date.now(),
+      status: 'stub',
+      agency: { name: agencyName, npi: npi || null },
+      calc_inputs: null, // Pulse will return pop/area/etc. once wired
+      intel: {
+        golden_nuggets: [
+          { kind: 'stub', text: 'Pulse /api/agency-brief not yet wired. Calc auto-fill from NPI typeahead still works.', source_url: null, source_date: null }
+        ],
+        contacts: [],
+        connections: {},
+        discovery_questions: []
+      },
+      artifacts: { pdf_url: null, ppt_url: null }
+    };
+  }
+  const headers = { 'Content-Type': 'application/json' };
+  if (window.PULSE_BRIEF_KEY) headers['X-Pulse-Brief-Key'] = window.PULSE_BRIEF_KEY;
+  const resp = await fetch(`${PULSE_API_BASE}/api/agency-brief`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ agency_name: agencyName, npi, requested_artifacts: ['meeting_intel_pdf', 'overview_pptx'] })
+  });
+  if (!resp.ok) throw new Error(`Pulse ${resp.status}`);
+  const data = await resp.json();
+  // Sync path: server returns the complete brief in the POST body (status: "complete" | "error" | "stub").
+  // Async path (when Pulse later adds 202+poll): { brief_id, poll_url }.
+  if (data.status === 'complete' || data.status === 'error' || data.status === 'stub' || data.agency) {
+    return data;
+  }
+  // Fallback to the async pattern.
+  const briefId = data.brief_id;
+  const pollUrl = data.poll_url || `/api/agency-brief/${briefId}`;
+  for (let i = 0; i < 30; i++) {
+    await new Promise(r => setTimeout(r, 2000));
+    const r2 = await fetch(`${PULSE_API_BASE}${pollUrl}`, { headers });
+    if (r2.status === 200) return await r2.json();
+  }
+  throw new Error('Pulse brief timed out');
+}
+
+// Resolve relative artifact URLs against PULSE_API_BASE so download links work cross-origin.
+function pulseUrl(path) {
+  if (!path) return null;
+  if (/^https?:\/\//.test(path)) return path;
+  return `${PULSE_API_BASE}${path}`;
+}
+
+function applyBriefToCalc(brief) {
+  if (brief.calc_inputs) {
+    if (brief.calc_inputs.pop) $('in-pop').value = brief.calc_inputs.pop;
+    if (brief.calc_inputs.area) {
+      const r = document.querySelector(`input[name="area"][value="${brief.calc_inputs.area}"]`);
+      if (r) r.checked = true;
+    }
+    if (brief.calc_inputs.depth) {
+      const r = document.querySelector(`input[name="depth"][value="${brief.calc_inputs.depth}"]`);
+      if (r) r.checked = true;
+    }
+    if (Array.isArray(brief.calc_inputs.modules)) {
+      document.querySelectorAll('#modules input, details .modules input').forEach(cb => {
+        const on = brief.calc_inputs.modules.includes(cb.value);
+        cb.checked = on;
+        cb.parentElement.classList.toggle('active', on);
+      });
+    }
+    updatePopProjection();
+    calculate();
+  }
+}
+
+function renderBriefStatus(html, kind = 'info') {
+  const el = $('brief-status');
+  const color = kind === 'error' ? 'var(--red)' : kind === 'success' ? 'var(--teal)' : 'var(--muted)';
+  el.style.display = 'block';
+  el.style.color = color;
+  el.innerHTML = html;
+}
+
+async function onBriefMe() {
+  const agency = $('in-name').value.trim();
+  if (!agency) { renderBriefStatus('Enter an agency name first.', 'error'); return; }
+  const btn = $('btn-brief-me');
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Briefing…';
+  renderBriefStatus(PULSE_STUB ? 'Stub mode: Pulse /api/agency-brief not yet wired. Auto-fill from NPI typeahead is live.' : 'Calling Pulse…');
+  try {
+    const brief = await callAgencyBrief(agency, window._selectedNpi || null);
+    window._lastBrief = brief;
+    applyBriefToCalc(brief);
+    const nuggets = (brief.intel && brief.intel.golden_nuggets) || [];
+    const lines = nuggets.map(n => `• ${escHtml(n.text)}${n.source_url ? ` <a href="${n.source_url}" target="_blank" rel="noopener" style="color:var(--blue);">↗</a>` : ''}`).join('<br>');
+    const artifacts = [];
+    const pdfUrl = pulseUrl(brief.artifacts && brief.artifacts.pdf_url);
+    if (pdfUrl) {
+      artifacts.push(`<a href="${pdfUrl}" target="_blank" rel="noopener" style="color:var(--teal); font-weight:600;">📄 Meeting Intelligence PDF</a>`);
+    }
+    if (brief.artifacts && brief.artifacts.ppt_url && brief.brief_id) {
+      // Curated PPT goes through the logo modal (not a direct link) so the user
+      // picks logo / upload / skip before Pulse renders the deck.
+      artifacts.push(`<a href="#" onclick="openLogoModal(event)" style="color:var(--teal); font-weight:600;">📊 Curated PPT (branding)</a>`);
+    }
+    renderBriefStatus((lines || 'No intel returned.') + (artifacts.length ? `<br><br>${artifacts.join(' · ')}` : ''), 'success');
+  } catch (err) {
+    renderBriefStatus(`Brief failed: ${escHtml(err.message)}`, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = orig;
+  }
+}
+
+// ========== LOGO / BRANDING MODAL ==========
+function openLogoModal(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  const brief = window._lastBrief;
+  if (!brief || !brief.brief_id) {
+    alert('Generate a brief first ("Brief Me on This Agency").');
+    return;
+  }
+  $('logo-modal-agency').textContent = `Pick how the deck gets branded for ${brief.agency?.name ?? 'this agency'}.`;
+  $('logo-url').value = '';
+  $('logo-file').value = '';
+  $('logo-preview').style.display = 'none';
+  $('logo-preview').src = '';
+  $('logo-status').style.display = 'none';
+  $('logo-modal').style.display = 'flex';
+}
+function closeLogoModal() { $('logo-modal').style.display = 'none'; }
+window.openLogoModal = openLogoModal;
+
+function logoStatus(html, kind = 'info') {
+  const el = $('logo-status');
+  const colors = { info: '#5E6B85', success: '#1FA595', error: '#B2483D' };
+  el.style.display = 'block';
+  el.style.background = '#F4F6FA';
+  el.style.color = colors[kind] || colors.info;
+  el.innerHTML = html;
+}
+
+async function downloadPptx(url, fetchOpts) {
+  const opts = fetchOpts || { method: 'GET' };
+  if (window.PULSE_BRIEF_KEY) {
+    opts.headers = { ...(opts.headers || {}), 'X-Pulse-Brief-Key': window.PULSE_BRIEF_KEY };
+  }
+  const resp = await fetch(url, opts);
+  if (!resp.ok) {
+    let err = `Pulse ${resp.status}`;
+    try {
+      const j = await resp.json();
+      if (j.error) err += `: ${j.error}`;
+      if (j.detail) err += ` (${j.detail})`;
+    } catch {}
+    throw new Error(err);
+  }
+  const blob = await resp.blob();
+  const cd = resp.headers.get('content-disposition') || '';
+  const m = /filename="([^"]+)"/.exec(cd);
+  const filename = m ? m[1] : 'MD_Ally_Overview.pptx';
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  setTimeout(() => { URL.revokeObjectURL(link.href); link.remove(); }, 1000);
+  return { logoStatus: resp.headers.get('x-pulse-logo-status'), filename };
+}
+
+async function submitLogoModal(mode) {
+  const brief = window._lastBrief;
+  if (!brief || !brief.brief_id) return;
+  const baseUrl = `${PULSE_API_BASE}/api/agency-brief/${brief.brief_id}/pptx`;
+  try {
+    if (mode === 'url') {
+      const url = $('logo-url').value.trim();
+      if (!url) { logoStatus('Paste a logo URL first.', 'error'); return; }
+      logoStatus('Fetching logo and rendering deck (~15 sec)…');
+      const result = await downloadPptx(`${baseUrl}?logo_url=${encodeURIComponent(url)}`);
+      logoStatus(`✓ Downloaded ${result.filename} (logo: ${result.logoStatus || 'unknown'}).`, 'success');
+    } else if (mode === 'upload') {
+      const file = $('logo-file').files[0];
+      if (!file) { logoStatus('Choose a file first.', 'error'); return; }
+      if (file.size > 5 * 1024 * 1024) { logoStatus('Logo too large (5 MiB max).', 'error'); return; }
+      logoStatus('Encoding and rendering deck (~15 sec)…');
+      const b64 = await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result);
+        r.onerror = () => rej(new Error('file read failed'));
+        r.readAsDataURL(file);
+      });
+      const result = await downloadPptx(baseUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ logo_b64: b64 }),
+      });
+      logoStatus(`✓ Downloaded ${result.filename} (logo: ${result.logoStatus || 'unknown'}).`, 'success');
+    } else if (mode === 'skip') {
+      logoStatus('Rendering generic deck (~15 sec)…');
+      const result = await downloadPptx(`${baseUrl}?skip_branding=true`);
+      logoStatus(`✓ Downloaded ${result.filename} (generic, no branding).`, 'success');
+    }
+  } catch (err) {
+    logoStatus(`Failed: ${escHtml(err.message)}`, 'error');
+  }
+}
+
+// Logo URL preview on input change
+function wireLogoPreview() {
+  let t = null;
+  $('logo-url').addEventListener('input', () => {
+    clearTimeout(t);
+    const url = $('logo-url').value.trim();
+    const img = $('logo-preview');
+    if (!url || !/^https?:\/\//.test(url)) {
+      img.style.display = 'none';
+      img.src = '';
+      return;
+    }
+    t = setTimeout(() => {
+      img.src = url;
+      img.style.display = 'block';
+    }, 400);
+  });
+}
+
+function wireLogoModal() {
+  $('logo-close').addEventListener('click', closeLogoModal);
+  $('logo-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'logo-modal') closeLogoModal();
+  });
+  $('logo-google').addEventListener('click', () => {
+    const name = (window._lastBrief && window._lastBrief.agency && window._lastBrief.agency.name) || $('in-name').value;
+    if (!name) return;
+    const q = encodeURIComponent(`${name} logo transparent`);
+    window.open(`https://www.google.com/search?q=${q}&tbm=isch`, '_blank', 'noopener');
+  });
+  $('logo-use-url').addEventListener('click', () => submitLogoModal('url'));
+  $('logo-use-upload').addEventListener('click', () => submitLogoModal('upload'));
+  $('logo-skip').addEventListener('click', () => submitLogoModal('skip'));
+  wireLogoPreview();
 }
 
 // ========== INIT ==========
@@ -1607,6 +1945,8 @@ document.addEventListener('DOMContentLoaded', () => {
   loadFromURL();
   updatePopProjection();
   calculate();
+  $('btn-brief-me').addEventListener('click', onBriefMe);
+  wireLogoModal();
 });
 </script>
 </body>
