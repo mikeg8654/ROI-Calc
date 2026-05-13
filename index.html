@@ -384,6 +384,19 @@
       <div class="note" id="agency-hint"></div>
       <button type="button" id="btn-brief-me" style="margin-top:10px; width:100%; padding:11px 14px; background:linear-gradient(135deg, var(--teal) 0%, #178578 100%); color:var(--white); border:none; border-radius:8px; font-family:inherit; font-size:13px; font-weight:700; cursor:pointer; letter-spacing:0.04em; box-shadow:0 2px 6px rgba(31,165,149,0.25); transition:all 0.15s;">🎯 Brief Me on This Agency</button>
       <div class="note" id="brief-status" style="display:none; margin-top:6px;"></div>
+      <div id="intel-artifacts" style="display:none; margin-top:12px; padding:14px; background:linear-gradient(135deg, #F4F6FA 0%, #FFFFFF 100%); border:1px solid #D6DCE6; border-radius:10px; box-shadow:0 1px 4px rgba(15,27,51,0.06);">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+          <div style="font-size:10px; font-weight:700; letter-spacing:1.4px; color:var(--navy); text-transform:uppercase;">Meeting Intel</div>
+          <div id="intel-meta" style="font-size:10px; color:var(--muted); letter-spacing:0.4px;"></div>
+        </div>
+        <div id="intel-agency" style="font-size:14px; font-weight:700; color:var(--navy-mid); margin-bottom:8px;"></div>
+        <div style="display:grid; grid-template-columns:1fr; gap:8px;">
+          <button type="button" id="btn-intel-pdf" style="width:100%; padding:12px 14px; background:var(--navy); color:#fff; border:none; border-radius:8px; font-family:inherit; font-size:13px; font-weight:700; cursor:pointer; letter-spacing:0.03em; box-shadow:0 2px 6px rgba(10,21,37,0.18); transition:all 0.15s; display:flex; align-items:center; justify-content:center; gap:8px;">📄 Download Meeting Intel PDF</button>
+          <button type="button" id="btn-intel-ppt" style="width:100%; padding:11px 14px; background:#fff; color:var(--navy); border:1px solid var(--navy); border-radius:8px; font-family:inherit; font-size:12px; font-weight:700; cursor:pointer; letter-spacing:0.03em; transition:all 0.15s; display:none; align-items:center; justify-content:center; gap:8px;">📊 Curated Overview PPT (with logo)</button>
+          <button type="button" id="btn-intel-share" style="width:100%; padding:9px 14px; background:transparent; color:var(--muted); border:1px dashed #B8C2D4; border-radius:8px; font-family:inherit; font-size:11px; font-weight:600; cursor:pointer; letter-spacing:0.04em; transition:all 0.15s;">🔗 Copy shareable PDF link</button>
+        </div>
+        <div id="intel-nuggets" style="margin-top:10px; padding-top:10px; border-top:1px solid #E5E9F0; font-size:11.5px; color:var(--ink); line-height:1.55;"></div>
+      </div>
     </div>
 
     <div class="field">
@@ -538,7 +551,7 @@
 
 <footer>
   <div style="display:flex; justify-content:space-between; align-items:center; max-width:1600px; margin:0 auto; padding:0 40px; flex-wrap:wrap; gap:12px;">
-    <div>MD Ally Technologies · Calculator <strong id="ver">v2.0</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
+    <div>MD Ally Technologies · Calculator <strong id="ver">v2.1</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
     <div>
       <button id="btn-feedback" style="background:var(--gold); color:var(--navy-deep); border:none; padding:12px 22px; border-radius:8px; font-family:inherit; font-size:16px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(229,168,23,0.3); transition:all 0.15s;">💡 Suggest an enhancement</button>
       &nbsp;&nbsp;
@@ -550,6 +563,7 @@
   <div id="changelog-box" style="display:none; max-width:800px; margin:16px auto 0; background:var(--white); border:1px solid var(--rule); border-radius:8px; padding:16px 20px; text-align:left; font-size:12px; color:var(--muted); line-height:1.6;">
     <strong style="color:var(--navy); font-size:13px;">Changelog</strong>
     <ul style="margin:8px 0 0 18px;">
+      <li><strong>v2.1</strong> (2026-05-12) · Meeting Intel PDF is now a first-class artifact. After "Brief Me on This Agency" runs, a dedicated Intel panel appears with prominent Download Intel PDF button, optional Curated Overview PPT button, and a Copy Shareable Link button (PDF stays hosted on Pulse, paste the link in email/Slack). Top 3 golden nuggets render inline with kind tags. Pulse server now writes a NOTE engagement back to the HubSpot company on every brief generation (PDF link + nugget summary). Pulse golden-nuggets prompt now state-aware: AZ briefs reference the public Tucson Fire MD Ally case (KOLD News 13, Jan 2026); FL + AZ briefs frame procurement around the discounted state rate.</li>
       <li><strong>v2.0</strong> (2026-05-11) · "Brief Me on This Agency" button under agency input. Calls Pulse's /api/agency-brief endpoint (when wired) to pull intel, contacts, golden nuggets, connections, and curated collateral (Meeting Intelligence PDF + agency-branded MD Ally Overview PPT). Templates live in Pulse Collateral, not in this app. Default modules collapsed to core 911 diversion (PATH + Performance Management); TERF and VAMC moved to an "Advanced (post-pilot)" expandable section. APM renamed to "Performance Management" throughout the UI. Payback now expressed in months from kickoff (implementation + recovery), default 250K-pop suburban baseline aligned with typical pipeline.</li>
       <li><strong>v1.22</strong> (2026-05-11) · Headline savings now uses a single per-ALS-transport benchmark from CMS GAPDS (prior versions stacked a separate transport line and overstated total impact). CAD-integration depth and optional modules now actually adjust Year-1 program cost. Year-1 cost panel splits subscription vs. implementation. 3-Year Agency Value subtracts all three years of subscription. Reset clears medical-calls. URL share preserves medical-calls. Dead inputs removed. Discount field language scrubbed.</li>
       <li><strong>v2.0</strong> (2026-05-12) · "🎯 Brief Me on This Agency" wired to Pulse intel API: golden nuggets, named contacts, Meeting Intelligence PDF, branded Overview PPTX. Math fixes: removed double-counted transport line, reactive CAD depth + optional modules, honest payback in months from kickoff (was "~2 wks"), default population 250K, sanity cap on extreme ratios. Logo confirmation modal for PPT branding.</li>
@@ -1775,6 +1789,86 @@ function renderBriefStatus(html, kind = 'info') {
   el.innerHTML = html;
 }
 
+function renderIntelArtifacts(brief) {
+  const panel = $('intel-artifacts');
+  if (!panel) return;
+  const pdfUrl = pulseUrl(brief.artifacts && brief.artifacts.pdf_url);
+  const hasPdf = Boolean(pdfUrl);
+  const hasPpt = Boolean(brief.artifacts && brief.artifacts.ppt_url && brief.brief_id);
+  // Header line
+  const ag = brief.agency || {};
+  const stateLine = [ag.state, ag.city, ag.npi ? `NPI ${ag.npi}` : ''].filter(Boolean).join(' · ');
+  $('intel-agency').textContent = ag.name || $('in-name').value.trim() || 'Selected agency';
+  const counts = [];
+  const n = (brief.intel && brief.intel.golden_nuggets) || [];
+  counts.push(`${n.length} nuggets`);
+  if (brief.intel && brief.intel.contacts) counts.push(`${brief.intel.contacts.length} contacts`);
+  if (brief.intel && brief.intel.news) counts.push(`${brief.intel.news.length} news`);
+  $('intel-meta').textContent = [stateLine, counts.join(' · ')].filter(Boolean).join(' · ');
+
+  const pdfBtn = $('btn-intel-pdf');
+  pdfBtn.style.display = hasPdf ? 'flex' : 'none';
+  pdfBtn.onclick = async () => {
+    if (!pdfUrl) return;
+    const orig = pdfBtn.innerHTML;
+    pdfBtn.disabled = true;
+    pdfBtn.innerHTML = '⏳ Rendering PDF…';
+    try {
+      const opts = { method: 'GET' };
+      if (window.PULSE_BRIEF_KEY) opts.headers = { 'X-Pulse-Brief-Key': window.PULSE_BRIEF_KEY };
+      const resp = await fetch(pdfUrl, opts);
+      if (!resp.ok) throw new Error(`Pulse ${resp.status}`);
+      const blob = await resp.blob();
+      const cd = resp.headers.get('content-disposition') || '';
+      const m = /filename="([^"]+)"/.exec(cd);
+      const filename = m ? m[1] : 'MD_Ally_Meeting_Intelligence.pdf';
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => { URL.revokeObjectURL(link.href); link.remove(); }, 1000);
+    } catch (err) {
+      alert(`PDF download failed: ${err.message}`);
+    } finally {
+      pdfBtn.disabled = false;
+      pdfBtn.innerHTML = orig;
+    }
+  };
+
+  const pptBtn = $('btn-intel-ppt');
+  pptBtn.style.display = hasPpt ? 'flex' : 'none';
+  pptBtn.onclick = (e) => openLogoModal(e);
+
+  const shareBtn = $('btn-intel-share');
+  shareBtn.style.display = hasPdf ? 'block' : 'none';
+  shareBtn.onclick = async () => {
+    if (!pdfUrl) return;
+    try {
+      await navigator.clipboard.writeText(pdfUrl);
+      const orig = shareBtn.innerHTML;
+      shareBtn.innerHTML = '✓ Link copied';
+      setTimeout(() => { shareBtn.innerHTML = orig; }, 1600);
+    } catch {
+      window.prompt('Copy this link:', pdfUrl);
+    }
+  };
+
+  // Top 3 nuggets summary inline
+  const nug = $('intel-nuggets');
+  if (n.length === 0) {
+    nug.innerHTML = '<span style="color:var(--muted); font-style:italic;">No nuggets returned. Check brief status for diagnostics.</span>';
+  } else {
+    nug.innerHTML = n.slice(0, 3).map(item => {
+      const kindTag = `<span style="display:inline-block; padding:1px 6px; background:var(--bg-soft, #F4F6FA); color:var(--navy-mid, #1B2A4A); font-size:9px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; border-radius:3px; margin-right:6px;">${escHtml((item.kind || '').replace(/_/g, ' '))}</span>`;
+      const src = item.source_url ? ` <a href="${item.source_url}" target="_blank" rel="noopener" style="color:var(--blue, #2F6FBF); text-decoration:none;">↗</a>` : '';
+      return `<div style="margin-bottom:6px;">${kindTag}${escHtml(item.text)}${src}</div>`;
+    }).join('');
+  }
+
+  panel.style.display = 'block';
+}
+
 async function onBriefMe() {
   const agency = $('in-name').value.trim();
   if (!agency) { renderBriefStatus('Enter an agency name first.', 'error'); return; }
@@ -1782,24 +1876,14 @@ async function onBriefMe() {
   const orig = btn.innerHTML;
   btn.disabled = true;
   btn.innerHTML = '⏳ Briefing…';
-  renderBriefStatus(PULSE_STUB ? 'Stub mode: Pulse /api/agency-brief not yet wired. Auto-fill from NPI typeahead is live.' : 'Calling Pulse…');
+  renderBriefStatus(PULSE_STUB ? 'Stub mode: Pulse /api/agency-brief not yet wired. Auto-fill from NPI typeahead is live.' : 'Calling Pulse… (~60–90s first call, ~10s cached)');
+  $('intel-artifacts').style.display = 'none';
   try {
     const brief = await callAgencyBrief(agency, window._selectedNpi || null);
     window._lastBrief = brief;
     applyBriefToCalc(brief);
-    const nuggets = (brief.intel && brief.intel.golden_nuggets) || [];
-    const lines = nuggets.map(n => `• ${escHtml(n.text)}${n.source_url ? ` <a href="${n.source_url}" target="_blank" rel="noopener" style="color:var(--blue);">↗</a>` : ''}`).join('<br>');
-    const artifacts = [];
-    const pdfUrl = pulseUrl(brief.artifacts && brief.artifacts.pdf_url);
-    if (pdfUrl) {
-      artifacts.push(`<a href="${pdfUrl}" target="_blank" rel="noopener" style="color:var(--teal); font-weight:600;">📄 Meeting Intelligence PDF</a>`);
-    }
-    if (brief.artifacts && brief.artifacts.ppt_url && brief.brief_id) {
-      // Curated PPT goes through the logo modal (not a direct link) so the user
-      // picks logo / upload / skip before Pulse renders the deck.
-      artifacts.push(`<a href="#" onclick="openLogoModal(event)" style="color:var(--teal); font-weight:600;">📊 Curated PPT (branding)</a>`);
-    }
-    renderBriefStatus((lines || 'No intel returned.') + (artifacts.length ? `<br><br>${artifacts.join(' · ')}` : ''), 'success');
+    renderIntelArtifacts(brief);
+    renderBriefStatus('Brief ready. Auto-filled calculator inputs above.', 'success');
   } catch (err) {
     renderBriefStatus(`Brief failed: ${escHtml(err.message)}`, 'error');
   } finally {
