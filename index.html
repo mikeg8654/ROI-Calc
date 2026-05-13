@@ -1728,10 +1728,13 @@ async function callAgencyBrief(agencyName, npi) {
   }
   const headers = { 'Content-Type': 'application/json' };
   if (window.PULSE_BRIEF_KEY) headers['X-Pulse-Brief-Key'] = window.PULSE_BRIEF_KEY;
+  // Zod validates npi as string|undefined, NOT string|null — omit when missing.
+  const payload = { agency_name: agencyName, requested_artifacts: ['meeting_intel_pdf', 'overview_pptx'] };
+  if (npi && /^\d{10}$/.test(String(npi))) payload.npi = String(npi);
   const resp = await fetch(`${PULSE_API_BASE}/api/agency-brief`, {
     method: 'POST',
     headers,
-    body: JSON.stringify({ agency_name: agencyName, npi, requested_artifacts: ['meeting_intel_pdf', 'overview_pptx'] })
+    body: JSON.stringify(payload)
   });
   if (!resp.ok) throw new Error(`Pulse ${resp.status}`);
   const data = await resp.json();
