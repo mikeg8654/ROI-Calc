@@ -1,0 +1,2075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MD Ally · ROI Calculator</title>
+<style>
+  :root {
+    --navy:#1B2A4A;
+    --navy-deep:#0F1B33;
+    --navy-ink:#16223D;
+    --blue:#2F6FBF;
+    --blue-light:#4A8FDE;
+    --teal:#1FA595;
+    --teal-light:#2BBFAB;
+    --ink:#0F1B33;
+    --muted:#5E6B85;
+    --muted-light:#8895B0;
+    --rule:#D6DCE6;
+    --bg:#F4F6FA;
+    --bg-deeper:#E9EDF4;
+    --white:#FFFFFF;
+    --gold:#E5A817;
+    --gold-light:#F5C13F;
+    --red:#B2483D;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body {
+    font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    font-size:15px;
+    line-height:1.45;
+    min-height:100vh;
+  }
+  /* ===== HEADER ===== */
+  header {
+    background:linear-gradient(90deg, var(--navy-deep) 0%, var(--navy) 100%);
+    color:var(--white);
+    padding:20px 40px;
+    display:flex; align-items:center; justify-content:space-between;
+    border-bottom:3px solid var(--gold);
+  }
+  header .brand { display:flex; align-items:center; gap:16px; }
+  header .logo {
+    height:44px;
+    background:var(--white);
+    display:flex; align-items:center; justify-content:center;
+    padding:6px 14px;
+    border-radius:8px;
+  }
+  header .logo img { height:100%; width:auto; display:block; }
+  header h1 { font-size:22px; font-weight:700; letter-spacing:-0.01em; }
+  header h1 small { display:block; font-size:12px; color:#A9B4CC; font-weight:400; letter-spacing:0.1em; text-transform:uppercase; margin-top:2px; }
+  header .actions { display:flex; gap:10px; }
+  header button {
+    background:rgba(255,255,255,0.1); color:var(--white);
+    border:1px solid rgba(255,255,255,0.2);
+    padding:8px 14px; border-radius:6px;
+    font-size:13px; cursor:pointer; font-family:inherit; font-weight:500;
+    transition:all 0.15s;
+  }
+  header button:hover { background:rgba(255,255,255,0.2); }
+  header button.primary { background:var(--gold); border-color:var(--gold); color:var(--navy-deep); font-weight:700; }
+  header button.primary:hover { background:var(--gold-light); }
+
+  /* ===== MAIN LAYOUT ===== */
+  .wrap {
+    max-width:1600px; margin:0 auto;
+    padding:28px 40px 60px;
+    display:grid; grid-template-columns:380px 1fr; gap:28px;
+  }
+
+  /* ===== INPUT PANEL ===== */
+  .inputs {
+    background:var(--white);
+    border-radius:12px;
+    padding:24px;
+    box-shadow:0 2px 10px rgba(15,27,51,0.06);
+    position:sticky; top:20px;
+    align-self:start;
+  }
+  .inputs h2 {
+    font-size:13px; letter-spacing:0.14em;
+    color:var(--navy); font-weight:700;
+    margin-bottom:6px; text-transform:uppercase;
+  }
+  .inputs .subtitle { font-size:13px; color:var(--muted); margin-bottom:22px; }
+  .field { margin-bottom:18px; }
+  .field label {
+    display:block; font-size:12px; font-weight:600;
+    color:var(--navy); margin-bottom:6px;
+    letter-spacing:0.04em; text-transform:uppercase;
+  }
+  .field label .req { color:var(--red); margin-left:2px; }
+  .field label .hint { color:var(--muted); font-weight:400; text-transform:none; letter-spacing:0; font-size:11px; margin-left:6px; font-style:italic; }
+  .field input, .field select {
+    width:100%; padding:10px 12px;
+    border:1px solid var(--rule); border-radius:8px;
+    font-family:inherit; font-size:15px; color:var(--ink);
+    background:var(--white);
+    transition:border-color 0.15s, box-shadow 0.15s;
+  }
+  .field input:focus, .field select:focus {
+    outline:none; border-color:var(--blue);
+    box-shadow:0 0 0 3px rgba(47,111,191,0.12);
+  }
+  .field .note { font-size:11px; color:var(--muted); margin-top:4px; }
+  .segmented {
+    display:grid; grid-template-columns:1fr 1fr 1fr;
+    border:1px solid var(--rule); border-radius:8px;
+    overflow:hidden; background:var(--bg);
+  }
+  .segmented label {
+    display:block; text-align:center; padding:10px 8px;
+    font-size:12px; font-weight:600; cursor:pointer;
+    border-right:1px solid var(--rule);
+    transition:all 0.15s;
+    text-transform:none; letter-spacing:0; margin:0; color:var(--muted);
+  }
+  .segmented label:last-child { border-right:none; }
+  .segmented input[type="radio"] { display:none; }
+  .segmented input[type="radio"]:checked + span { background:var(--navy); color:var(--white); }
+  .segmented span { display:block; padding:10px 8px; transition:all 0.15s; }
+
+  .modules {
+    display:grid; grid-template-columns:1fr 1fr; gap:6px;
+    margin-top:6px;
+  }
+  .module-chip {
+    padding:8px 12px; border:1px solid var(--rule);
+    border-radius:6px; font-size:12px; font-weight:600;
+    cursor:pointer; text-align:center;
+    background:var(--bg); color:var(--muted);
+    transition:all 0.15s;
+  }
+  .module-chip input { display:none; }
+  .module-chip.active { background:var(--teal); color:var(--white); border-color:var(--teal); }
+
+  .reset-btn {
+    margin-top:14px; width:100%;
+    padding:10px; background:transparent;
+    border:1px solid var(--rule);
+    color:var(--muted); border-radius:8px;
+    font-family:inherit; font-size:13px; cursor:pointer;
+    transition:all 0.15s;
+  }
+  .reset-btn:hover { background:var(--bg); color:var(--navy); }
+
+  /* ===== OUTPUT AREA ===== */
+  .outputs { display:flex; flex-direction:column; gap:24px; }
+  #impact-area { display:flex; flex-direction:column; gap:24px; }
+
+  /* HERO STRIP — savings dominates, ratio supports */
+  .hero-strip {
+    display:grid; grid-template-columns:1.7fr 1fr;
+    background:linear-gradient(135deg, var(--navy-deep) 0%, var(--navy) 100%);
+    border-radius:14px; padding:36px 44px;
+    color:var(--white);
+    box-shadow:0 8px 28px rgba(15,27,51,0.18);
+    position:relative; overflow:hidden;
+  }
+  .hero-strip::before {
+    content:""; position:absolute; left:0; top:0; bottom:0; width:6px;
+    background:var(--gold);
+  }
+  .hero-savings { display:flex; flex-direction:column; }
+  .hero-eyebrow {
+    display:block; font-size:11px; font-weight:700;
+    letter-spacing:0.18em; text-transform:uppercase;
+    color:var(--gold-light); margin-bottom:10px;
+  }
+  .hero-amount {
+    display:block; font-size:108px; font-weight:900; line-height:0.95;
+    letter-spacing:-0.045em; color:#fff;
+    font-feature-settings:"tnum";
+  }
+  .hero-context {
+    display:block; font-size:14px; color:#A9B4CC;
+    margin-top:12px; letter-spacing:0.02em;
+  }
+  .hero-context strong { color:var(--gold-light); font-weight:700; }
+  .hero-ratio {
+    border-left:1px solid rgba(255,255,255,0.15);
+    padding-left:36px;
+    display:flex; flex-direction:column; justify-content:center;
+  }
+  .hero-ratio-num {
+    font-size:72px; font-weight:900; color:var(--gold);
+    line-height:1; letter-spacing:-0.03em;
+    font-feature-settings:"tnum";
+  }
+  .hero-ratio-label {
+    font-size:13px; color:#C6CEDF; margin-top:10px;
+    letter-spacing:0.02em; line-height:1.35;
+  }
+  .hero-footnote {
+    font-size:11px; color:var(--muted);
+    font-style:italic;
+    padding:10px 4px 0;
+    letter-spacing:0.02em;
+  }
+  @media (max-width: 900px) {
+    .hero-strip { grid-template-columns:1fr; gap:24px; }
+    .hero-ratio { border-left:none; padding-left:0; border-top:1px solid rgba(255,255,255,0.15); padding-top:24px; }
+    .hero-amount { font-size:72px; }
+    .hero-ratio-num { font-size:56px; }
+  }
+
+  /* SCENARIO TABLE */
+  .scenarios {
+    background:var(--white); border-radius:12px;
+    overflow:hidden; box-shadow:0 2px 10px rgba(15,27,51,0.06);
+  }
+  .scenarios table { width:100%; border-collapse:collapse; }
+  .scenarios th {
+    padding:18px 20px; text-align:right; font-size:13px;
+    letter-spacing:0.16em; font-weight:700;
+    background:var(--navy-deep); color:var(--white);
+    text-transform:uppercase;
+  }
+  .scenarios th:first-child { text-align:left; }
+  .scenarios th.cons { background:#3D4A6B; }
+  .scenarios th.exp { background:var(--blue); }
+  .scenarios th.asp { background:var(--teal); }
+  .scenarios td {
+    padding:14px 20px; border-bottom:1px solid var(--rule);
+    text-align:right; font-size:16px;
+    font-variant-numeric: tabular-nums;
+  }
+  .scenarios td:first-child { text-align:left; color:var(--navy); font-weight:500; }
+  .scenarios tr.accent td { background:#E9EFF8; font-weight:700; color:var(--navy-deep); }
+  .scenarios tr.total td {
+    background:var(--navy-deep); color:var(--white);
+    font-weight:900; font-size:20px; border-bottom:none; border-top:3px solid var(--gold);
+    padding:20px 22px; letter-spacing:0.01em;
+  }
+  /* Active scenario column emphasis */
+  .scenarios table[data-scenario] tbody td:not(:first-child) { transition:all 0.25s ease; }
+  .scenarios table[data-scenario="cons"] tbody td:nth-child(3),
+  .scenarios table[data-scenario="cons"] tbody td:nth-child(4),
+  .scenarios table[data-scenario="exp"]  tbody td:nth-child(2),
+  .scenarios table[data-scenario="exp"]  tbody td:nth-child(4),
+  .scenarios table[data-scenario="asp"]  tbody td:nth-child(2),
+  .scenarios table[data-scenario="asp"]  tbody td:nth-child(3) { opacity:0.4; filter:saturate(0.5); }
+  .scenarios table[data-scenario="cons"] tbody td:nth-child(2) { background:linear-gradient(180deg, rgba(61,74,107,0.10), transparent); font-weight:700; }
+  .scenarios table[data-scenario="exp"]  tbody td:nth-child(3) { background:linear-gradient(180deg, rgba(47,111,191,0.12), rgba(47,111,191,0.02)); font-weight:700; color:var(--navy-deep); }
+  .scenarios table[data-scenario="asp"]  tbody td:nth-child(4) { background:linear-gradient(180deg, rgba(31,165,149,0.12), rgba(31,165,149,0.02)); font-weight:700; color:var(--navy-deep); }
+  .scenarios table[data-scenario="cons"] thead th:nth-child(2),
+  .scenarios table[data-scenario="exp"]  thead th:nth-child(3),
+  .scenarios table[data-scenario="asp"]  thead th:nth-child(4) { box-shadow:inset 0 -4px 0 var(--gold); }
+  .scenarios tr.total td:first-child { color:var(--white); }
+
+  /* PANELS ROW */
+  .panel-row { display:grid; grid-template-columns:1.2fr 1fr; gap:20px; }
+  .panel {
+    background:var(--white); border-radius:12px;
+    padding:22px 24px; box-shadow:0 2px 10px rgba(15,27,51,0.06);
+  }
+  .panel h3 {
+    font-size:12px; letter-spacing:0.14em;
+    color:var(--navy); font-weight:700;
+    margin-bottom:10px; text-transform:uppercase;
+  }
+  .scenario-pills {
+    display:flex; gap:4px; background:var(--bg); border-radius:8px; padding:3px;
+  }
+  .scenario-pills button {
+    flex:1;
+    border:none; background:transparent; font-family:inherit;
+    padding:6px 10px; border-radius:5px; cursor:pointer;
+    font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--muted); transition:all 0.15s;
+  }
+  .scenario-pills button:hover { color:var(--navy); }
+  .scenario-pills button.active { background:var(--white); color:var(--navy-deep); box-shadow:0 1px 3px rgba(15,27,51,0.12); }
+  .scenario-pills button.active.cons { color:#3D4A6B; }
+  .scenario-pills button.active.exp  { color:var(--blue); }
+  .scenario-pills button.active.asp  { color:var(--teal); }
+  .panel.cost { background:var(--navy-deep); color:var(--white); }
+  .panel.cost h3 { color:var(--gold); }
+  .cost .amount-range {
+    font-size:56px; font-weight:900; line-height:1;
+    letter-spacing:-0.02em; color:var(--gold-light);
+    font-variant-numeric: tabular-nums;
+  }
+  #out-cost-sub {
+    font-size:12px !important; font-weight:600 !important; color:#F2C055 !important;
+    text-transform:uppercase; letter-spacing:0.14em; opacity:0.75; margin-top:10px;
+  }
+  .cost .amount-range small { display:block; font-size:13px; font-weight:500; color:#A9B4CC; margin-top:4px; letter-spacing:0.06em; text-transform:uppercase; }
+  .cost .breakdown { margin-top:16px; font-size:13px; color:#C6CEDF; line-height:1.6; }
+  .cost .breakdown .line { display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px dashed rgba(255,255,255,0.1); }
+  .cost .breakdown .line:last-child { border-bottom:none; }
+  .cost .breakdown strong { color:var(--white); font-variant-numeric:tabular-nums; }
+
+  .payback .stat-row {
+    display:grid;
+    grid-template-columns:1.6fr 1fr 1fr;
+    grid-template-rows:auto auto;
+    gap:14px;
+  }
+  .stat-box {
+    background:var(--bg); border-radius:8px;
+    padding:16px 18px; text-align:center;
+    display:flex; flex-direction:column; justify-content:center;
+  }
+  .stat-box .num { font-size:32px; font-weight:800; color:var(--navy-deep); font-variant-numeric:tabular-nums; line-height:1; }
+  .stat-box .label { font-size:11px; color:var(--muted); margin-top:8px; letter-spacing:0.1em; text-transform:uppercase; font-weight:600; }
+  .stat-box.hero {
+    grid-column:1; grid-row:1 / span 2;
+    background:linear-gradient(135deg, #EEF2FA, #FFFFFF);
+    border:1px solid rgba(47,111,191,0.25);
+    padding:22px 20px;
+  }
+  .stat-box.hero .num { font-size:48px; color:var(--blue); font-weight:900; letter-spacing:-0.02em; }
+  .stat-box.hero .label { font-size:13px; margin-top:10px; }
+  .stat-box.wide { grid-column:2 / span 2; }
+
+  /* SOURCES STRIP (subtle, single-line) */
+  .assumptions {
+    background:transparent;
+    padding:6px 4px;
+    font-size:10.5px; color:var(--muted); line-height:1.5;
+  }
+  .assumptions strong { color:var(--navy); font-weight:700; }
+
+  /* FOOTER */
+  footer {
+    text-align:center; padding:24px;
+    color:var(--muted-light); font-size:12px;
+  }
+  footer a { color:var(--blue); text-decoration:none; }
+
+  /* PRINT */
+  @media print {
+    header { background:var(--navy-deep) !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    header .actions, .inputs .reset-btn { display:none !important; }
+    .wrap { grid-template-columns:260px 1fr !important; padding:12px !important; gap:12px !important; }
+    .headline { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .scenarios th { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .panel.cost { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    body { background:white !important; font-size:12px; }
+    .inputs { position:static !important; box-shadow:none; }
+    @page { size: landscape; margin: 0.25in; }
+  }
+
+  @media (max-width: 1100px) {
+    .wrap { grid-template-columns:1fr; }
+    .inputs { position:static; }
+    .panel-row { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800;900&display=swap">
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo"><img src="assets/mdally-logo.png" alt="MD Ally" /></div>
+    <h1>MD Ally ROI Calculator<small>Public Safety · Year-1 Impact + Program Cost</small></h1>
+  </div>
+  <div class="actions">
+    <a id="btn-book" href="https://outlook.office.com/bookwithme/user/81b4be3503e34b2d8911a7ce2a100372@mdally.com?anonymous&ep=signature&ismsaljsauthenabled" target="_blank" rel="noopener" style="background:var(--gold); border:1px solid var(--gold); color:var(--navy-deep); padding:8px 14px; border-radius:6px; font-size:13px; font-weight:700; text-decoration:none; font-family:inherit;">📅 Book a meeting</a>
+    <button id="btn-copy-ppt">📸 Copy for PPT</button>
+    <button id="btn-share">🔗 Copy Link</button>
+    <button id="btn-print">📄 Export PDF</button>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ===== INPUTS ===== -->
+  <aside class="inputs">
+    <h2>Your Agency</h2>
+    <p class="subtitle">Minimum inputs return a coarse range. Add detail to tighten.</p>
+
+    <div class="field" style="position:relative;">
+      <label>Agency name <span class="hint">searches CMS NPI registry</span></label>
+      <input type="text" id="in-name" placeholder="Type agency name, e.g. Hillsborough County Fire Rescue" autocomplete="off">
+      <div id="agency-results" style="display:none; position:absolute; left:0; right:0; top:100%; z-index:50; max-height:240px; overflow-y:auto; background:white; border:1px solid #D6DCE6; border-radius:8px; box-shadow:0 4px 14px rgba(15,27,51,0.12); margin-top:4px;"></div>
+      <div class="note" id="agency-hint"></div>
+      <button type="button" id="btn-brief-me" style="margin-top:10px; width:100%; padding:11px 14px; background:linear-gradient(135deg, var(--teal) 0%, #178578 100%); color:var(--white); border:none; border-radius:8px; font-family:inherit; font-size:13px; font-weight:700; cursor:pointer; letter-spacing:0.04em; box-shadow:0 2px 6px rgba(31,165,149,0.25); transition:all 0.15s;">🎯 Brief Me on This Agency</button>
+      <div class="note" id="brief-status" style="display:none; margin-top:6px;"></div>
+      <div id="intel-artifacts" style="display:none; margin-top:12px; padding:14px; background:linear-gradient(135deg, #F4F6FA 0%, #FFFFFF 100%); border:1px solid #D6DCE6; border-radius:10px; box-shadow:0 1px 4px rgba(15,27,51,0.06);">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+          <div style="font-size:10px; font-weight:700; letter-spacing:1.4px; color:var(--navy); text-transform:uppercase;">Meeting Intel</div>
+          <div id="intel-meta" style="font-size:10px; color:var(--muted); letter-spacing:0.4px;"></div>
+        </div>
+        <div id="intel-agency" style="font-size:14px; font-weight:700; color:var(--navy-mid); margin-bottom:8px;"></div>
+        <div style="display:grid; grid-template-columns:1fr; gap:8px;">
+          <button type="button" id="btn-intel-pdf" style="width:100%; padding:12px 14px; background:var(--navy); color:#fff; border:none; border-radius:8px; font-family:inherit; font-size:13px; font-weight:700; cursor:pointer; letter-spacing:0.03em; box-shadow:0 2px 6px rgba(10,21,37,0.18); transition:all 0.15s; display:flex; align-items:center; justify-content:center; gap:8px;">📄 Download Meeting Intel PDF</button>
+          <button type="button" id="btn-intel-ppt" style="width:100%; padding:11px 14px; background:#fff; color:var(--navy); border:1px solid var(--navy); border-radius:8px; font-family:inherit; font-size:12px; font-weight:700; cursor:pointer; letter-spacing:0.03em; transition:all 0.15s; display:none; align-items:center; justify-content:center; gap:8px;">📊 Curated Overview PPT (with logo)</button>
+          <button type="button" id="btn-intel-share" style="width:100%; padding:9px 14px; background:transparent; color:var(--muted); border:1px dashed #B8C2D4; border-radius:8px; font-family:inherit; font-size:11px; font-weight:600; cursor:pointer; letter-spacing:0.04em; transition:all 0.15s;">🔗 Copy shareable PDF link</button>
+        </div>
+        <div id="intel-nuggets" style="margin-top:10px; padding-top:10px; border-top:1px solid #E5E9F0; font-size:11.5px; color:var(--ink); line-height:1.55;"></div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Population Served <span class="req">*</span> <span class="hint">agency jurisdiction</span></label>
+      <input type="number" id="in-pop" min="0" step="1000" value="250000">
+      <div class="note" id="pop-display">Enter the population your agency serves.</div>
+      <div style="font-size:10px; color:var(--muted-light); margin-top:3px; letter-spacing:0.04em;" id="pop-source-line">Source: manual entry</div>
+    </div>
+
+    <div class="field">
+      <label>Annual medical 911 calls <span class="hint">optional, overrides pop-based eligibility</span></label>
+      <input type="number" id="in-medical-calls" min="0" step="100" placeholder="If known, e.g. 86,000 for high-volume urban">
+      <div class="note" id="medical-display"></div>
+    </div>
+
+    <div class="field">
+      <label>ZIP code <span class="hint">validates jurisdiction + projects growth</span></label>
+      <input type="text" id="in-zip" maxlength="5" inputmode="numeric" pattern="\d{5}" placeholder="e.g. 33602">
+      <div class="note" id="zip-display"></div>
+    </div>
+
+    <div class="field">
+      <label>Area type</label>
+      <div class="segmented" id="seg-area">
+        <label><input type="radio" name="area" value="rural"><span>Rural</span></label>
+        <label><input type="radio" name="area" value="suburban" checked><span>Suburban</span></label>
+        <label><input type="radio" name="area" value="urban"><span>Urban</span></label>
+      </div>
+      <div class="note">Drives runs-per-1K, EMS hours per call, unit count estimates.</div>
+    </div>
+
+    <div class="field">
+      <label>Partner rate adjustment <span class="hint">0% standard · up to 20%</span></label>
+      <input type="number" id="in-discount" min="0" max="20" step="1" value="0">
+      <div class="note" id="discount-display">Standard partner rate</div>
+    </div>
+
+    <div class="field">
+      <label>CAD integration depth</label>
+      <div class="segmented" id="seg-depth">
+        <label><input type="radio" name="depth" value="parallel" checked><span>Parallel</span></label>
+        <label><input type="radio" name="depth" value="uni"><span>Unidirectional</span></label>
+        <label><input type="radio" name="depth" value="bi"><span>Bi-directional</span></label>
+      </div>
+      <div class="note" id="depth-note">Day-1 parallel = no CAD changes, $0 BUILD uplift, 45–60d go-live.</div>
+    </div>
+
+    <div class="field">
+      <label>Core 911 diversion modules</label>
+      <div class="modules" id="modules">
+        <label class="module-chip active" data-module="path"><input type="checkbox" value="path" checked>PATH</label>
+        <label class="module-chip active" data-module="apm"><input type="checkbox" value="apm" checked>Performance Mgmt</label>
+      </div>
+      <div class="note">Core stack: BUILD + PRIME + CASE always included. PATH + Performance Mgmt drive diversion.</div>
+      <details style="margin-top:10px;">
+        <summary style="font-size:11px; color:var(--muted); cursor:pointer; padding:4px 0; user-select:none;">Advanced (post-pilot)</summary>
+        <div class="modules" style="margin-top:6px;">
+          <label class="module-chip" data-module="terf"><input type="checkbox" value="terf">TERF</label>
+          <label class="module-chip" data-module="vamc"><input type="checkbox" value="vamc">VAMC</label>
+        </div>
+        <div class="note" style="margin-top:6px; font-size:10px;">Hospital coordination + VA. Typically layered after the core 911 diversion pilot is running.</div>
+      </details>
+    </div>
+
+    <button class="reset-btn" id="btn-reset">Reset to defaults</button>
+  </aside>
+
+  <!-- ===== OUTPUTS ===== -->
+  <main class="outputs">
+
+    <div id="impact-area">
+
+    <div class="hero-strip">
+      <div class="hero-savings">
+        <span class="hero-eyebrow">Year-1 Avoided Spending · <span id="hero-scen">Expected</span></span>
+        <span class="hero-amount" id="out-savings">$5.87M</span>
+        <span class="hero-context">to <strong id="out-savings-asp">$6.69M</strong> aspirational · vs. <strong id="out-savings-cost">$220K</strong> Year-1 program cost</span>
+      </div>
+      <div class="hero-ratio">
+        <span class="hero-ratio-num" id="out-ratio">$17 : $1</span>
+        <span class="hero-ratio-label">Agency $ avoided per $ invested<br><span style="font-size:11px; opacity:0.7;" id="out-ratio-context">community ED savings &amp; new revenue not counted</span></span>
+      </div>
+    </div>
+    <div id="hero-outcome" style="display:flex; align-items:center; gap:14px; padding:14px 4px 0; font-size:14px; color:var(--navy); flex-wrap:wrap; line-height:1.5;">
+      <span style="font-size:10px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:var(--teal); background:rgba(31,165,149,0.10); padding:5px 10px; border-radius:4px; white-space:nowrap;">What this means</span>
+      <span><strong id="out-callers">1,374</strong> callers aligned with the right care</span>
+      <span style="color:var(--muted-light);">·</span>
+      <span><strong id="out-unitdays-hero">143</strong> ambulance-days back in service</span>
+      <span style="color:var(--muted-light);">·</span>
+      <span><strong id="out-edsaved">$2.19M</strong> in community ED visits avoided</span>
+    </div>
+    <div class="hero-footnote" id="hero-footnote">Modeled estimate · Sources: CMS GAPDS, NEMSIS · Actual quotes scoped during discovery</div>
+
+    <div class="scenarios">
+      <table data-scenario="exp" id="scenario-table">
+        <thead>
+          <tr>
+            <th>Inputs / Outputs</th>
+            <th class="cons">Conservative</th>
+            <th class="exp">Expected</th>
+            <th class="asp">Aspirational</th>
+          </tr>
+        </thead>
+        <tbody id="scenario-tbody">
+          <!-- populated by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel-row">
+      <div class="panel cost">
+        <h3>Program Cost · Year 1</h3>
+        <div class="amount-range" id="out-cost">$220K</div>
+        <div class="amount-range" style="font-size:13px; font-weight:500; color:#A9B4CC; margin-top:6px;" id="out-cost-sub">Year-1 total</div>
+        <div class="breakdown" id="out-cost-breakdown"></div>
+      </div>
+      <div class="panel payback">
+        <h3>Payback + Scale</h3>
+        <div class="scenario-pills" id="scen-pills" role="tablist" style="margin-bottom:14px;">
+          <button type="button" data-scen="Conservative" class="cons">Conservative</button>
+          <button type="button" data-scen="Expected" class="exp active">Expected</button>
+          <button type="button" data-scen="Aspirational" class="asp">Aspirational</button>
+        </div>
+        <div class="stat-row">
+          <div class="stat-box hero"><div class="num" id="out-payback">~8 mo</div><div class="label">Year-1 ROI realized</div><div style="font-size:10.5px; color:var(--muted); margin-top:8px; line-height:1.45; font-weight:500;" id="out-payback-sub">52-day implementation. Steady state by month 6.</div></div>
+          <div class="stat-box"><div class="num" id="out-unitdays">143</div><div class="label">Unit-Days Returned</div></div>
+          <div class="stat-box"><div class="num" id="out-diversions">1,374</div><div class="label">Callers Re-routed / Year</div></div>
+          <div class="stat-box wide"><div class="num" id="out-3yr">$10.5M</div><div class="label">3-Year Agency Value</div></div>
+        </div>
+      </div>
+    </div>
+
+    </div><!-- /#impact-area -->
+
+    <div class="assumptions">
+      <span style="font-weight:600; color:var(--navy); margin-right:6px;">Sources:</span>
+      <span><strong>$2,673</strong> per ALS transport call · <strong>$2,453</strong> per ED visit · CMS GAPDS</span>
+      <span style="margin-left:12px;"><strong>1.48h</strong> urban &amp; suburban · <strong>3.0h</strong> rural unit-hours per call · NEMSIS</span>
+    </div>
+
+    <div id="cta-bottom" style="background:linear-gradient(135deg, var(--navy) 0%, var(--navy-deep) 100%); border-radius:12px; padding:20px 28px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; box-shadow:0 4px 14px rgba(15,27,51,0.12);">
+      <div style="color:var(--white); flex:1; min-width:280px; display:flex; align-items:center; gap:18px; flex-wrap:wrap;">
+        <div>
+          <div style="font-size:16px; font-weight:700; letter-spacing:-0.01em;">Want a tailored scoping for your agency?</div>
+          <div style="font-size:13px; color:#A9B4CC; margin-top:3px;">30-minute conversation. Real Year-1 model. Modeled estimates only; actual quotes scoped during discovery.</div>
+        </div>
+      </div>
+      <a href="https://outlook.office.com/bookwithme/user/81b4be3503e34b2d8911a7ce2a100372@mdally.com?anonymous&ep=signature&ismsaljsauthenabled" target="_blank" rel="noopener" style="background:var(--gold); color:var(--navy-deep); padding:13px 26px; border-radius:8px; font-weight:700; font-size:14px; text-decoration:none; box-shadow:0 2px 8px rgba(229,168,23,0.3); white-space:nowrap;">📅 Book a meeting with Mike</a>
+    </div>
+
+  </main>
+</div>
+
+<footer>
+  <div style="display:flex; justify-content:space-between; align-items:center; max-width:1600px; margin:0 auto; padding:0 40px; flex-wrap:wrap; gap:12px;">
+    <div>MD Ally Technologies · Calculator <strong id="ver">v2.3</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
+    <div>
+      <button id="btn-feedback" style="background:var(--gold); color:var(--navy-deep); border:none; padding:12px 22px; border-radius:8px; font-family:inherit; font-size:16px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(229,168,23,0.3); transition:all 0.15s;">💡 Suggest an enhancement</button>
+      &nbsp;&nbsp;
+      <a href="#" id="btn-view-suggestions" style="color:var(--muted); text-decoration:none; font-size:14px;">📋 View suggestions (<span id="sug-count">0</span>)</a>
+      &nbsp;·&nbsp;
+      <a href="#" id="btn-changelog" style="color:var(--muted); text-decoration:none; font-size:14px;">What's new</a>
+    </div>
+  </div>
+  <div id="changelog-box" style="display:none; max-width:800px; margin:16px auto 0; background:var(--white); border:1px solid var(--rule); border-radius:8px; padding:16px 20px; text-align:left; font-size:12px; color:var(--muted); line-height:1.6;">
+    <strong style="color:var(--navy); font-size:13px;">Changelog</strong>
+    <ul style="margin:8px 0 0 18px;">
+      <li><strong>v2.1</strong> (2026-05-12) · Meeting Intel PDF is now a first-class artifact. After "Brief Me on This Agency" runs, a dedicated Intel panel appears with prominent Download Intel PDF button, optional Curated Overview PPT button, and a Copy Shareable Link button (PDF stays hosted on Pulse, paste the link in email/Slack). Top 3 golden nuggets render inline with kind tags. Pulse server now writes a NOTE engagement back to the HubSpot company on every brief generation (PDF link + nugget summary). Pulse golden-nuggets prompt now state-aware: AZ briefs reference the public Tucson Fire MD Ally case (KOLD News 13, Jan 2026); FL + AZ briefs frame procurement around the discounted state rate.</li>
+      <li><strong>v2.0</strong> (2026-05-11) · "Brief Me on This Agency" button under agency input. Calls Pulse's /api/agency-brief endpoint (when wired) to pull intel, contacts, golden nuggets, connections, and curated collateral (Meeting Intelligence PDF + agency-branded MD Ally Overview PPT). Templates live in Pulse Collateral, not in this app. Default modules collapsed to core 911 diversion (PATH + Performance Management); TERF and VAMC moved to an "Advanced (post-pilot)" expandable section. APM renamed to "Performance Management" throughout the UI. Payback now expressed in months from kickoff (implementation + recovery), default 250K-pop suburban baseline aligned with typical pipeline.</li>
+      <li><strong>v1.22</strong> (2026-05-11) · Headline savings now uses a single per-ALS-transport benchmark from CMS GAPDS (prior versions stacked a separate transport line and overstated total impact). CAD-integration depth and optional modules now actually adjust Year-1 program cost. Year-1 cost panel splits subscription vs. implementation. 3-Year Agency Value subtracts all three years of subscription. Reset clears medical-calls. URL share preserves medical-calls. Dead inputs removed. Discount field language scrubbed.</li>
+      <li><strong>v2.3</strong> (2026-05-13) · Buyer-credible payback framing. The hero stat now reads "Year-1 ROI realized" with implementation timeline + 6-month ramp to steady state, replacing the earlier "break even from kickoff" claim that buyers would (rightly) push back on. Population source now shown under the input ("manual entry" / "Pulse brief (NPI ...)") so anyone reading the calc can trace where the number came from.</li>
+      <li><strong>v2.2</strong> (2026-05-13) · Pulse intel API live in production. "Brief Me" now returns real golden nuggets, 20+ named contacts per agency, 10 ranked news headlines, and a branded Meeting Intelligence PDF.</li>
+      <li><strong>v2.0</strong> (2026-05-12) · "🎯 Brief Me on This Agency" wired to Pulse intel API: golden nuggets, named contacts, Meeting Intelligence PDF, branded Overview PPTX. Math fixes: removed double-counted transport line, reactive CAD depth + optional modules, honest payback in months from kickoff (was "~2 wks"), default population 250K, sanity cap on extreme ratios. Logo confirmation modal for PPT branding.</li>
+      <li><strong>v1.21</strong> (2026-04-29) · Hero strip redesign. Dollar savings is now the headline at 108px; ratio drops to a supporting column. Active scenario column highlighted in the table. Numbers count up on scenario change.</li>
+      <li><strong>v1.20</strong> (2026-04-29) · PPT-ready impact area. New "📸 Copy for PPT" button captures the impact area as a PNG to your clipboard for instant paste into PowerPoint.</li>
+      <li><strong>v1.19</strong> (2026-04-29) · Scenario pills sit on their own row above the stats. PATH and APM modules default to checked.</li>
+      <li><strong>v1.17</strong> (2026-04-29) · Scenario pills (Conservative / Expected / Aspirational) drive the Payback + Scale stats and ROI ratio. Booking CTA moved to bottom of page.</li>
+      <li><strong>v1.15</strong> (2026-04-29) · Optional "Annual medical 911 calls" override for high-volume urban systems. Payback + 3-yr value + ROI ratio anchored to displayed Year-1 cost.</li>
+      <li><strong>v1.13</strong> (2026-04-29) · Population Served field rename; assumptions block scrubbed to public CMS / NEMSIS benchmarks.</li>
+      <li><strong>v1.11</strong> (2026-04-29) · Agency-name typeahead via CMS NPI Registry. Selecting a match auto-fills the ZIP.</li>
+      <li><strong>v1.10</strong> (2026-04-29) · Population now agency-jurisdiction (manual). ZIP code becomes a validator with reference county pop, Census growth trend, and 5-year contract projection.</li>
+      <li><strong>v1.9</strong> (2026-04-29) · One-click branded PDF download replaces browser print.</li>
+      <li><strong>v1.8</strong> (2026-04-29) · ZIP auto-classifies area type (rural / suburban / urban) by population density.</li>
+      <li><strong>v1.7</strong> (2026-04-29) · ZIP code field auto-fills service-area population from US Census ACS 5-year with growth projection to current year.</li>
+      <li><strong>v1.5</strong> (2026-04-29) · MD Ally logo, in-header booking CTA, prospect-close CTA banner under results, Railway-deployed live URL.</li>
+      <li><strong>v1.2</strong> (2026-04-22) · In-browser suggestion capture form with localStorage queue.</li>
+      <li><strong>v1.0</strong> (2026-04-21) · Initial build.</li>
+    </ul>
+  </div>
+</footer>
+
+<!-- ============ LOGO / BRANDING MODAL ============ -->
+<div id="logo-modal" style="display:none; position:fixed; inset:0; background:rgba(15,27,51,0.65); z-index:1100; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(4px);">
+  <div style="background:var(--white); border-radius:14px; max-width:560px; width:100%; max-height:92vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.4);">
+    <div style="background:linear-gradient(135deg, var(--navy-deep), var(--navy)); color:var(--white); padding:22px 28px; border-radius:14px 14px 0 0; display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <h3 style="margin:0; font-size:19px;">📊 Branding for the Curated PPT</h3>
+        <p style="margin:4px 0 0; font-size:13px; color:#A9B4CC;" id="logo-modal-agency">Pick how the deck gets branded for this agency.</p>
+      </div>
+      <button id="logo-close" type="button" style="background:rgba(255,255,255,0.1); color:var(--white); border:1px solid rgba(255,255,255,0.25); padding:6px 12px; border-radius:6px; cursor:pointer; font-size:18px;">&times;</button>
+    </div>
+    <div style="padding:22px 28px;">
+      <div style="margin-bottom:18px;">
+        <div style="font-size:12px; font-weight:700; color:var(--navy); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:6px;">Option 1 · Use a public logo URL</div>
+        <div style="display:flex; gap:8px; margin-bottom:8px;">
+          <input id="logo-url" type="url" placeholder="https://… (paste a PNG/JPEG URL)" style="flex:1; padding:10px 12px; border:1px solid var(--rule); border-radius:6px; font-family:inherit; font-size:14px;">
+          <button id="logo-google" type="button" style="background:var(--bg); border:1px solid var(--rule); padding:10px 14px; border-radius:6px; font-family:inherit; font-size:13px; cursor:pointer; white-space:nowrap;" title="Open Google Images in a new tab. Copy the image address (right-click, then Copy image address) and paste it above.">🔍 Google Images</button>
+        </div>
+        <img id="logo-preview" alt="" style="display:none; max-height:90px; max-width:100%; padding:8px; background:#f7f7f7; border:1px dashed var(--rule); border-radius:6px; margin-bottom:8px;">
+        <button id="logo-use-url" type="button" style="width:100%; background:var(--teal); color:var(--white); border:none; padding:11px; border-radius:6px; font-family:inherit; font-size:14px; font-weight:700; cursor:pointer;">Use this logo</button>
+      </div>
+      <div style="margin-bottom:18px; padding-top:16px; border-top:1px dashed var(--rule);">
+        <div style="font-size:12px; font-weight:700; color:var(--navy); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:6px;">Option 2 · Upload a PNG / JPEG</div>
+        <input id="logo-file" type="file" accept="image/png,image/jpeg" style="display:block; width:100%; padding:6px 0; font-family:inherit; font-size:13px; margin-bottom:8px;">
+        <button id="logo-use-upload" type="button" style="width:100%; background:var(--navy); color:var(--white); border:none; padding:11px; border-radius:6px; font-family:inherit; font-size:14px; font-weight:700; cursor:pointer;">Use uploaded logo</button>
+      </div>
+      <div style="padding-top:16px; border-top:1px dashed var(--rule);">
+        <div style="font-size:12px; font-weight:700; color:var(--navy); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:6px;">Option 3 · Skip branding</div>
+        <p style="font-size:12px; color:var(--muted); margin-bottom:8px;">Ship a generic MD Ally Overview without the agency name or logo. Removes the agency-branded title slide.</p>
+        <button id="logo-skip" type="button" style="width:100%; background:var(--bg); color:var(--navy); border:1px solid var(--rule); padding:11px; border-radius:6px; font-family:inherit; font-size:14px; font-weight:600; cursor:pointer;">Skip (generic deck)</button>
+      </div>
+      <div id="logo-status" style="display:none; margin-top:14px; padding:10px 14px; border-radius:6px; font-size:13px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SUGGESTION MODAL ============ -->
+<div id="sug-overlay" style="display:none; position:fixed; inset:0; background:rgba(15,27,51,0.65); z-index:1000; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(4px);">
+  <div style="background:var(--white); border-radius:14px; max-width:620px; width:100%; max-height:92vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.4);">
+    <div style="background:linear-gradient(135deg, var(--navy-deep), var(--navy)); color:var(--white); padding:22px 28px; border-radius:14px 14px 0 0; display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <h3 style="margin:0; font-size:19px;">💡 Suggest an enhancement</h3>
+        <p style="margin:4px 0 0; font-size:13px; color:#A9B4CC;">Context auto-captures. Just tell us what should change.</p>
+      </div>
+      <button id="sug-close" style="background:rgba(255,255,255,0.1); color:var(--white); border:1px solid rgba(255,255,255,0.25); padding:6px 12px; border-radius:6px; cursor:pointer; font-size:18px;">&times;</button>
+    </div>
+    <form id="sug-form" style="padding:24px 28px;">
+      <div style="margin-bottom:18px;">
+        <div style="font-size:12px; font-weight:700; color:#1B2A4A; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:6px;">What should change? <span style="color:#B2483D;">*</span></div>
+        <textarea name="what" required rows="4" placeholder="e.g. Add 'Uninsured %' as an input (currently a fixed assumption)" style="display:block; width:100%; padding:10px 12px; border:1px solid #D6DCE6; border-radius:6px; font-family:inherit; font-size:14px; color:#0F1B33; background:#FFFFFF; resize:vertical; box-sizing:border-box;"></textarea>
+      </div>
+      <div style="margin-bottom:18px;">
+        <div style="font-size:12px; font-weight:700; color:#1B2A4A; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:6px;">Why <span style="font-weight:400; text-transform:none; letter-spacing:0; color:#5E6B85; font-style:italic;">(optional)</span></div>
+        <textarea name="why" rows="2" placeholder="e.g. 30% default overstates savings for rural areas" style="display:block; width:100%; padding:10px 12px; border:1px solid #D6DCE6; border-radius:6px; font-family:inherit; font-size:14px; color:#0F1B33; background:#FFFFFF; resize:vertical; box-sizing:border-box;"></textarea>
+      </div>
+      <div style="margin-bottom:18px;">
+        <div style="font-size:12px; font-weight:700; color:#1B2A4A; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:6px;">Priority</div>
+        <div id="prio-group" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px;">
+          <button type="button" data-prio="high" class="prio-btn" style="padding:10px; border:1px solid #D6DCE6; border-radius:6px; font-family:inherit; font-size:13px; font-weight:600; background:#F4F6FA; color:#5E6B85; cursor:pointer;">High</button>
+          <button type="button" data-prio="medium" class="prio-btn active" style="padding:10px; border:1px solid #E5A817; border-radius:6px; font-family:inherit; font-size:13px; font-weight:600; background:#E5A817; color:#0F1B33; cursor:pointer;">Medium</button>
+          <button type="button" data-prio="low" class="prio-btn" style="padding:10px; border:1px solid #D6DCE6; border-radius:6px; font-family:inherit; font-size:13px; font-weight:600; background:#F4F6FA; color:#5E6B85; cursor:pointer;">Low</button>
+        </div>
+        <input type="hidden" name="priority" value="medium">
+      </div>
+      <details style="background:#F4F6FA; border-radius:6px; padding:10px 14px; margin-bottom:18px;">
+        <summary style="cursor:pointer; font-size:11px; font-weight:600; color:#5E6B85;">🔍 Auto-captured context</summary>
+        <div id="sug-context-preview" style="margin-top:10px; font-size:11px; color:#5E6B85; line-height:1.5; font-family:ui-monospace, Consolas, monospace; white-space:pre-wrap;"></div>
+      </details>
+      <div style="display:flex; gap:10px; justify-content:flex-end;">
+        <button type="button" id="sug-cancel" style="background:transparent; color:#5E6B85; border:1px solid #D6DCE6; padding:10px 18px; border-radius:6px; font-family:inherit; font-size:14px; cursor:pointer;">Cancel</button>
+        <button type="submit" style="background:#E5A817; color:#0F1B33; border:none; padding:10px 26px; border-radius:6px; font-family:inherit; font-size:14px; font-weight:700; cursor:pointer;">Submit</button>
+      </div>
+      <div id="sug-status" style="display:none; padding:10px 14px; border-radius:6px; font-size:13px; margin-top:14px;"></div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ SUGGESTION LIST MODAL ============ -->
+<div id="list-overlay" style="display:none; position:fixed; inset:0; background:rgba(15,27,51,0.65); z-index:1000; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(4px);">
+  <div style="background:var(--white); border-radius:14px; max-width:880px; width:100%; max-height:92vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.4);">
+    <div style="background:var(--navy-deep); color:var(--white); padding:22px 28px; border-radius:14px 14px 0 0; display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <h3 style="margin:0; font-size:19px;">📋 Captured suggestions</h3>
+        <p style="margin:4px 0 0; font-size:13px; color:#A9B4CC;">Queue for auto-build. Export for processing.</p>
+      </div>
+      <button id="list-close" style="background:rgba(255,255,255,0.1); color:var(--white); border:1px solid rgba(255,255,255,0.25); padding:6px 12px; border-radius:6px; cursor:pointer; font-size:18px;">&times;</button>
+    </div>
+    <div style="padding:22px 28px;">
+      <div style="display:flex; gap:10px; margin-bottom:16px;">
+        <button id="btn-export-json" style="background:var(--blue); color:var(--white); border:none; padding:10px 16px; border-radius:6px; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer;">⬇ Export as JSON (for auto-build)</button>
+        <button id="btn-clear-queue" style="background:transparent; color:var(--red); border:1px solid var(--red); padding:10px 16px; border-radius:6px; font-family:inherit; font-size:13px; cursor:pointer;">Clear queue</button>
+      </div>
+      <div id="list-content" style="font-size:13px;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ SUGGESTION CAPTURE SYSTEM ============
+const SUG_STORAGE_KEY = 'mdally_calc_suggestions';
+const SUG_WEBHOOK_URL = ''; // PASTE webhook URL here (Make.com, Zapier, HubSpot, n8n) — leave blank for offline-only
+
+function getInputSnapshot() {
+  return {
+    agency: document.getElementById('in-name').value || null,
+    population: document.getElementById('in-pop').value || null,
+    area_type: (document.querySelector('input[name="area"]:checked')||{}).value,
+    medical_calls_entered: document.getElementById('in-medical-calls').value || null,
+    integration_depth: (document.querySelector('input[name="depth"]:checked')||{}).value,
+    modules: Array.from(document.querySelectorAll('#modules input:checked')).map(cb => cb.value),
+    calculator_version: document.getElementById('ver').textContent,
+    url: window.location.href,
+    timestamp: new Date().toISOString(),
+    user_agent: navigator.userAgent.substring(0, 150),
+  };
+}
+
+function loadSuggestions() {
+  try { return JSON.parse(localStorage.getItem(SUG_STORAGE_KEY) || '[]'); }
+  catch(e) { return []; }
+}
+
+function saveSuggestion(sug) {
+  const list = loadSuggestions();
+  list.push(sug);
+  localStorage.setItem(SUG_STORAGE_KEY, JSON.stringify(list));
+  updateSuggestionCount();
+}
+
+function updateSuggestionCount() {
+  document.getElementById('sug-count').textContent = loadSuggestions().length;
+}
+
+// Pre-populate context preview on modal open
+function updateContextPreview() {
+  try {
+    const ctx = getInputSnapshot();
+    const lines = Object.entries(ctx).map(([k,v]) => `${k}: ${Array.isArray(v) ? v.join(', ') || '(none)' : (v || '(blank)')}`);
+    const el = document.getElementById('sug-context-preview');
+    if (el) el.textContent = lines.join('\n');
+  } catch(err) {
+    console.warn('Context preview failed:', err);
+  }
+}
+
+// Open modal
+document.getElementById('btn-feedback').addEventListener('click', (e) => {
+  e.preventDefault();
+  updateContextPreview();
+  const overlay = document.getElementById('sug-overlay');
+  overlay.style.display = 'flex';
+  document.querySelector('textarea[name="what"]').focus();
+});
+
+// Priority button toggle
+const PRIO_COLORS = {
+  high:   {bg:'#B2483D', border:'#B2483D', text:'#FFFFFF'},
+  medium: {bg:'#E5A817', border:'#E5A817', text:'#0F1B33'},
+  low:    {bg:'#5E6B85', border:'#5E6B85', text:'#FFFFFF'},
+};
+document.querySelectorAll('.prio-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const prio = btn.dataset.prio;
+    document.querySelector('input[name="priority"]').value = prio;
+    document.querySelectorAll('.prio-btn').forEach(b => {
+      if (b === btn) {
+        const c = PRIO_COLORS[prio];
+        b.classList.add('active');
+        b.style.background = c.bg;
+        b.style.borderColor = c.border;
+        b.style.color = c.text;
+      } else {
+        b.classList.remove('active');
+        b.style.background = '#F4F6FA';
+        b.style.borderColor = '#D6DCE6';
+        b.style.color = '#5E6B85';
+      }
+    });
+  });
+});
+// Close modal
+['sug-close', 'sug-cancel'].forEach(id => {
+  document.getElementById(id).addEventListener('click', () => {
+    document.getElementById('sug-overlay').style.display = 'none';
+    document.getElementById('sug-status').style.display = 'none';
+  });
+});
+// Esc to close
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    document.getElementById('sug-overlay').style.display = 'none';
+    document.getElementById('list-overlay').style.display = 'none';
+  }
+});
+
+// Submit handler
+document.getElementById('sug-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const suggestion = {
+    id: 'sug_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+    priority: fd.get('priority') || 'medium',
+    what: fd.get('what'),
+    why: fd.get('why') || '',
+    status: 'pending',
+    context: getInputSnapshot(),
+  };
+
+  const statusEl = document.getElementById('sug-status');
+  statusEl.style.display = 'block';
+  statusEl.style.background = '#F4F6FA';
+  statusEl.style.color = 'var(--muted)';
+  statusEl.textContent = 'Submitting...';
+
+  // Always save to localStorage first (offline-safe)
+  saveSuggestion(suggestion);
+  let webhookSuccess = false;
+
+  // Try webhook if configured
+  if (SUG_WEBHOOK_URL) {
+    try {
+      const r = await fetch(SUG_WEBHOOK_URL, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(suggestion),
+        mode: 'no-cors',
+      });
+      webhookSuccess = true;
+    } catch(err) {
+      console.warn('Webhook failed, saved locally:', err);
+    }
+  }
+
+  statusEl.style.background = '#E3F4EE';
+  statusEl.style.color = 'var(--teal)';
+  statusEl.innerHTML = webhookSuccess
+    ? '✓ Submitted! Your request is in the build queue and synced to webhook.'
+    : '✓ Saved locally! ' + (SUG_WEBHOOK_URL ? 'Webhook failed; will retry on next submission.' : 'Configure webhook URL in the HTML to auto-sync to team systems.');
+
+  setTimeout(() => {
+    document.getElementById('sug-overlay').style.display = 'none';
+    document.getElementById('sug-status').style.display = 'none';
+    e.target.reset();
+  }, 2200);
+});
+
+// View suggestions modal
+document.getElementById('btn-view-suggestions').addEventListener('click', (e) => {
+  e.preventDefault();
+  renderSuggestionList();
+  document.getElementById('list-overlay').style.display = 'flex';
+});
+document.getElementById('list-close').addEventListener('click', () => {
+  document.getElementById('list-overlay').style.display = 'none';
+});
+
+function renderSuggestionList() {
+  const list = loadSuggestions();
+  const el = document.getElementById('list-content');
+  if (list.length === 0) {
+    el.innerHTML = '<div style="padding:40px; text-align:center; color:var(--muted); background:var(--bg); border-radius:8px;">No suggestions captured yet.<br>Click <strong>💡 Suggest an enhancement</strong> above to log your first.</div>';
+    return;
+  }
+  el.innerHTML = list.map((s, i) => `
+    <div style="background:var(--bg); border-radius:8px; padding:14px 18px; margin-bottom:10px; border-left:4px solid ${s.priority === 'high' ? 'var(--red)' : s.priority === 'medium' ? 'var(--gold)' : 'var(--muted)'};">
+      <div style="display:flex; justify-content:space-between; align-items:start; gap:12px;">
+        <div style="flex:1;">
+          <div style="font-size:14px; color:var(--navy-deep); line-height:1.4;">${escapeHtml(s.what)}</div>
+          ${s.why ? `<div style="font-size:12px; color:var(--muted); line-height:1.5; margin-top:6px; padding-top:6px; border-top:1px dashed var(--rule);"><strong style="color:var(--navy);">Why:</strong> ${escapeHtml(s.why)}</div>` : ''}
+          <div style="font-size:10px; color:var(--muted-light); margin-top:8px; letter-spacing:0.05em;">
+            <span style="background:${s.priority === 'high' ? 'var(--red)' : s.priority === 'medium' ? 'var(--gold)' : 'var(--muted)'}; color:${s.priority === 'medium' ? 'var(--navy-deep)' : 'var(--white)'}; padding:2px 8px; border-radius:10px; font-weight:700; text-transform:uppercase;">${s.priority}</span>
+            · ${new Date(s.context.timestamp).toLocaleString()}
+            ${s.context.agency ? ' · ' + escapeHtml(s.context.agency) : ''}
+          </div>
+        </div>
+        <button onclick="deleteSuggestion('${s.id}')" style="background:transparent; border:1px solid var(--rule); color:var(--muted); padding:4px 10px; border-radius:4px; cursor:pointer; font-size:11px;">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function escapeHtml(s) { return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+
+function deleteSuggestion(id) {
+  if (!confirm('Delete this suggestion?')) return;
+  const list = loadSuggestions().filter(s => s.id !== id);
+  localStorage.setItem(SUG_STORAGE_KEY, JSON.stringify(list));
+  updateSuggestionCount();
+  renderSuggestionList();
+}
+window.deleteSuggestion = deleteSuggestion;
+
+// Export all suggestions as JSON (for auto-build Python script)
+document.getElementById('btn-export-json').addEventListener('click', () => {
+  const list = loadSuggestions();
+  if (list.length === 0) { alert('No suggestions to export.'); return; }
+  const blob = new Blob([JSON.stringify(list, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `mdally_calc_suggestions_${new Date().toISOString().split('T')[0]}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+// Clear queue
+document.getElementById('btn-clear-queue').addEventListener('click', () => {
+  if (!confirm('Clear all captured suggestions from this browser? Export first if you need them.')) return;
+  localStorage.removeItem(SUG_STORAGE_KEY);
+  updateSuggestionCount();
+  renderSuggestionList();
+});
+
+// Changelog toggle
+document.getElementById('btn-changelog').addEventListener('click', (e) => {
+  e.preventDefault();
+  const box = document.getElementById('changelog-box');
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+});
+
+// Init count on load
+updateSuggestionCount();
+</script>
+
+<script>
+// ========== CONSTANTS (CMS GAPDS, NEMSIS, MD Ally Public Safety price book) ==========
+const C = {
+  // 0.0077 × pop = annual alpha/omega-eligible volume (already IAED-filtered).
+  // Equivalent identity: 0.12 × annual medical 911 calls.
+  // Default uses pop; medical-call field overrides for high-volume urban systems.
+  // Validated: REMSA ~520K pop → ~11/day.
+  annual_eligible_factor: 0.0077,
+  md_ally_pct_of_medical: 0.12,
+  days_per_year: 365,
+  // CMS GAPDS: $2,673 = average cost per ALS transport call (apparatus + crew + transport).
+  // Used ONCE per diversion — combining a separate "transport" line would double-count.
+  cost_per_diverted_call: 2673,
+  cost_per_ed_visit: 2453,
+  hrs_per_unit_day: 14.256,
+  hrs_per_run: { rural:3.0, suburban:1.48, urban:1.48 },
+  // Year-1 implementation add-ons (one-time; years 2-3 are ARR only)
+  build_base: 23245,
+  build_uplift: { parallel:0, uni:7500, bi:22500 },
+  // Midpoints of go-live windows (see depthNotes): savings start after implementation.
+  impl_days: { parallel: 52, uni: 75, bi: 105 },
+  module_costs: {
+    path: 11000,
+    apm: 17000,
+    terf_tiers: [
+      [150000, 15000],[330000, 18650],[450000, 22118],[800000, 25412],
+      [2000000, 28541],[3500000, 31514],[5000000, 34338],[Infinity, 37021]
+    ],
+    vamc_tiers: [
+      [450000, 15000],[1100000, 21500],[1750000, 28000],[2400000, 34000],
+      [3050000, 40000],[3700000, 44500],[4350000, 50000],[Infinity, 55000]
+    ],
+  },
+};
+
+// ========== DIRECT ARR PRICING (matches Public Safety Offering Price Book) ==========
+const PRICE = {
+  uninsured_pct: 0.10,                 // National avg per price book 2026-04-29 (median 9.3%; rounded to 10.0% in book).
+  platform_fee: 100000,                // C5
+  pop_to_eligible_rate: 0.0077,        // M11
+  eligible_to_triaged: 0.5,            // M12
+  uninsured_call_uplift: 1.7,          // M16 (uninsured rate = base × (1 + 1.7))
+  followup_eoc_rate: 0.4,              // M22
+  insured_per_call: 43,                // M13 = anchor / 3
+  uninsured_per_call: 64.5,            // M19 = anchor / 2
+  eoc_per_call: 32.25,                 // M23 = anchor / 4
+  // Call-volume tiers: [max_calls, marginal_discount]
+  call_tiers: [
+    [1875,    0],
+    [3750,    0.05],
+    [5625,    0.0575],
+    [10000,   0.069],
+    [25000,   0.08625],
+    [43750,   0.112125],
+  ],
+  max_discount: 0.20,                  // 20% max with approval
+};
+function priceForPop(pop, partnerDiscount) {
+  pop = Math.max(0, pop || 0);
+  const uninsuredPop = pop * PRICE.uninsured_pct;
+  const insuredPop   = pop * (1 - PRICE.uninsured_pct);
+  const uninsuredCalls = uninsuredPop * PRICE.pop_to_eligible_rate * (1 + PRICE.uninsured_call_uplift) * PRICE.eligible_to_triaged;
+  const insuredCalls   = insuredPop   * PRICE.pop_to_eligible_rate * PRICE.eligible_to_triaged;
+  const eocCalls       = (uninsuredCalls + insuredCalls) * PRICE.followup_eoc_rate;
+  const totalCalls     = uninsuredCalls + insuredCalls + eocCalls;
+  if (totalCalls <= 0) return { listPrice: PRICE.platform_fee, effectivePrice: PRICE.platform_fee, totalCalls: 0, discount: 0 };
+  const totalAtAnchor = uninsuredCalls * PRICE.uninsured_per_call
+                      + insuredCalls   * PRICE.insured_per_call
+                      + eocCalls       * PRICE.eoc_per_call;
+  const blendedPricePerCall = totalAtAnchor / totalCalls;
+  let listPrice = PRICE.platform_fee;
+  let prevPrice = blendedPricePerCall, prevMax = 0;
+  for (let i = 0; i < PRICE.call_tiers.length; i++) {
+    const [tierMax, tierDiscount] = PRICE.call_tiers[i];
+    const tierPrice = i === 0 ? blendedPricePerCall : prevPrice * (1 - tierDiscount);
+    const callsInTier = Math.min(totalCalls, tierMax) - prevMax;
+    if (callsInTier <= 0) break;
+    listPrice += callsInTier * tierPrice;
+    prevPrice = tierPrice;
+    prevMax = tierMax;
+    if (totalCalls <= tierMax) break;
+  }
+  const discount = Math.max(0, Math.min(PRICE.max_discount, partnerDiscount || 0));
+  const effectivePrice = listPrice * (1 - discount);
+  return { listPrice, effectivePrice, totalCalls, blendedPricePerCall, discount };
+}
+
+// Scenarios
+const SCENARIOS = {
+  Conservative: { consent:0.70, diversion:0.70, full:0.55 },
+  Expected:     { consent:0.85, diversion:0.84, full:0.65 },
+  Aspirational: { consent:0.90, diversion:0.88, full:0.70 },
+};
+
+// ========== HELPERS ==========
+const $ = (id) => document.getElementById(id);
+function fmtUSD(n, abbr=true) {
+  if (abbr) {
+    if (Math.abs(n) >= 1e6) return '$' + (n/1e6).toFixed(2) + 'M';
+    if (Math.abs(n) >= 1e3) return '$' + (n/1e3).toFixed(0) + 'K';
+  }
+  return '$' + Math.round(n).toLocaleString();
+}
+function fmtNum(n) { return Math.round(n).toLocaleString(); }
+function popTier(pop, tiers) {
+  for (const [bound, price] of tiers) {
+    if (pop <= bound) return price;
+  }
+  return tiers[tiers.length-1][1];
+}
+// Year-1 implementation add-ons. Year 2-3 use only priceForPop() ARR.
+function buildExtras(pop, depth, modules) {
+  let extra = C.build_base + (C.build_uplift[depth] || 0);
+  if (modules.includes('path')) extra += C.module_costs.path;
+  if (modules.includes('apm'))  extra += C.module_costs.apm;
+  if (modules.includes('terf')) extra += popTier(pop, C.module_costs.terf_tiers);
+  if (modules.includes('vamc')) extra += popTier(pop, C.module_costs.vamc_tiers);
+  return extra;
+}
+function getAreaType() {
+  const el = document.querySelector('input[name="area"]:checked');
+  return el ? el.value : 'suburban';
+}
+function getDepth() {
+  const el = document.querySelector('input[name="depth"]:checked');
+  return el ? el.value : 'parallel';
+}
+function getModules() {
+  const mods = [];
+  document.querySelectorAll('#modules input[type="checkbox"]').forEach(cb => {
+    if (cb.checked) mods.push(cb.value);
+  });
+  return mods;
+}
+
+// ========== CORE CALCULATION ==========
+function calculate() {
+  const pop = Math.max(0, parseInt($('in-pop').value || 0));
+  const area = getAreaType();
+  const userMedicalCalls = parseInt($('in-medical-calls').value) || null;
+  const depth = getDepth();
+  const modules = getModules();
+
+  // Eligibility: prefer manual medical-call override; else pop default.
+  const annualEligible = userMedicalCalls
+    ? userMedicalCalls * C.md_ally_pct_of_medical
+    : pop * C.annual_eligible_factor;
+  const eligibleCalls = annualEligible;
+
+  // Pop-display 5-yr projection is owned by updatePopProjection() (called on input + init).
+  // Refresh it here so the projection updates whenever the population field changes via calc.
+  updatePopProjection();
+
+  // Depth note
+  const depthNotes = {
+    parallel: 'Day-1 parallel = no CAD changes, $0 BUILD uplift, 45–60d go-live.',
+    uni:      'Unidirectional CAD feed = +$7.5K BUILD, 60–90d go-live. Removes dispatcher friction.',
+    bi:       'Bi-directional CAD = +$22.5K BUILD, 90–120d go-live. Full automation + ePCR reconciliation.',
+  };
+  $('depth-note').textContent = depthNotes[depth];
+
+  // Scenarios
+  const hrsPerRun = C.hrs_per_run[area];
+  const rows = [];
+  const scenResults = {};
+
+  for (const [name, s] of Object.entries(SCENARIOS)) {
+    const consented = eligibleCalls * s.consent;
+    const diversions = consented * s.diversion;
+    const fullDiv = diversions * s.full;
+    const emsHrsAvoided = diversions * hrsPerRun;
+    const unitDays = emsHrsAvoided / C.hrs_per_unit_day;
+    // $2,673/diversion = full ALS transport-call cost (CMS GAPDS, single line — no transport-billing add-on).
+    const agencyCost = diversions * C.cost_per_diverted_call;
+    const edCost = fullDiv * C.cost_per_ed_visit;
+    const totalImpact = agencyCost + edCost;
+
+    scenResults[name] = {
+      diversions, fullDiv, emsHrsAvoided, unitDays,
+      agencyCost, edCost, totalImpact,
+    };
+  }
+
+  // Render scenario table
+  const tbody = $('scenario-tbody');
+  tbody.innerHTML = '';
+  const cons = scenResults.Conservative, exp = scenResults.Expected, asp = scenResults.Aspirational;
+
+  const rowData = [
+    { label:'Eligible MD Ally encounters / yr', cons:fmtNum(eligibleCalls), exp:fmtNum(eligibleCalls), asp:fmtNum(eligibleCalls) },
+    { label:'Total diversions', accent:true, cons:fmtNum(cons.diversions), exp:fmtNum(exp.diversions), asp:fmtNum(asp.diversions) },
+    { label:'Staffed unit-days returned', cons:fmtNum(cons.unitDays), exp:fmtNum(exp.unitDays), asp:fmtNum(asp.unitDays) },
+    { label:'Agency cost avoided (ALS transport)', accent:true, cons:fmtUSD(cons.agencyCost), exp:fmtUSD(exp.agencyCost), asp:fmtUSD(asp.agencyCost) },
+    { label:'ED visit cost avoided (community)', cons:fmtUSD(cons.edCost), exp:fmtUSD(exp.edCost), asp:fmtUSD(asp.edCost) },
+    { label:'Total Year-1 Impact', total:true, cons:fmtUSD(cons.totalImpact), exp:fmtUSD(exp.totalImpact), asp:fmtUSD(asp.totalImpact) },
+  ];
+  for (const r of rowData) {
+    const cls = r.total ? 'total' : (r.accent ? 'accent' : '');
+    tbody.innerHTML += `<tr class="${cls}"><td>${r.label}</td><td>${r.cons}</td><td>${r.exp}</td><td>${r.asp}</td></tr>`;
+  }
+
+  // === Program cost ===
+  // Year 1 = subscription ARR + one-time implementation (build + depth uplift + selected modules).
+  // Years 2-3 = subscription ARR only.
+  const partnerDiscount = (parseFloat($('in-discount').value) || 0) / 100;
+  const priced = priceForPop(pop, partnerDiscount);
+  const ongoingYearly = priced.effectivePrice;
+  const oneTimeYear1 = buildExtras(pop, depth, modules);
+  const year1Total = ongoingYearly + oneTimeYear1;
+
+  $('out-cost').textContent = fmtUSD(year1Total);
+  $('out-cost-sub').textContent = `Year-1 total · ${fmtUSD(ongoingYearly)} ongoing`;
+  $('out-cost-breakdown').innerHTML = `
+    <div class="line" style="opacity:0.85;"><span>Subscription (Year 1)</span><strong>${fmtUSD(ongoingYearly)}</strong></div>
+    <div class="line" style="opacity:0.85;"><span>Implementation (one-time)</span><strong>${fmtUSD(oneTimeYear1)}</strong></div>
+  `;
+
+  // === Payback + scale (driven by selected scenario) ===
+  // Buyer-credible framing: time to "Year-1 ROI realized" = implementation period + ramp-to-steady-state.
+  // Even when the raw recovery math is fast (annual savings >> Y1 cost), agencies don't hit steady-state
+  // diversion until call-takers are fluent, community awareness has built, and protocols have stabilized.
+  // Industry-typical ramp to steady state is ~6 months post-go-live.
+  const sel = scenResults[selectedScenario] || exp;
+  const agencySavings = sel.agencyCost;
+  const implDays = C.impl_days[depth] || 60;
+  const RAMP_TO_STEADY_DAYS = 180;
+  const totalPaybackDays = implDays + RAMP_TO_STEADY_DAYS;
+  const paybackMonths = totalPaybackDays / 30.4;
+  $('out-payback').textContent = paybackMonths >= 12 ? `~${(paybackMonths/12).toFixed(1)} yrs`
+                              : `~${Math.round(paybackMonths)} mo`;
+  $('out-payback-sub').textContent = `${implDays}-day implementation. Steady state by month ${Math.round((implDays + RAMP_TO_STEADY_DAYS) / 30.4)}.`;
+  $('out-unitdays').textContent = fmtNum(sel.unitDays);
+  $('out-diversions').textContent = fmtNum(sel.diversions);
+  // Patient-outcome subline beneath the hero
+  $('out-callers').textContent = fmtNum(sel.diversions);
+  $('out-unitdays-hero').textContent = fmtNum(sel.unitDays);
+  $('out-edsaved').textContent = fmtUSD(sel.edCost);
+  const threeYrCost = year1Total + 2 * ongoingYearly;
+  const threeYrValue = (sel.agencyCost * 3) - threeYrCost;
+  $('out-3yr').textContent = fmtUSD(threeYrValue);
+
+  // === Hero headline (savings + ratio) ===
+  // Ratio uses agency-only savings vs. Year-1 total (conservative; community + ED + revenue not counted).
+  const ratio = year1Total > 0 ? agencySavings / year1Total : 0;
+  const heroAnimate = window._animateHeroNext === true;
+  window._animateHeroNext = false;
+  setHeroNumbers({
+    savings: sel.totalImpact,
+    aspSavings: asp.totalImpact,
+    cost: year1Total,
+    ratio,
+  }, heroAnimate);
+  $('hero-scen').textContent = selectedScenario;
+  $('out-ratio-context').textContent = `before community value or new revenue`;
+
+  // Update URL (shareable) without reload
+  updateURL();
+}
+
+// ========== URL SHARING ==========
+function updateURL() {
+  const params = new URLSearchParams();
+  params.set('name', $('in-name').value);
+  params.set('zip', $('in-zip').value);
+  params.set('pop', $('in-pop').value);
+  params.set('area', getAreaType());
+  if ($('in-medical-calls').value) params.set('calls', $('in-medical-calls').value);
+  params.set('discount', $('in-discount').value);
+  params.set('depth', getDepth());
+  params.set('mods', getModules().join(','));
+  const url = window.location.pathname + '?' + params.toString();
+  window.history.replaceState({}, '', url);
+}
+
+// ========== SCENARIO SELECTOR ==========
+let selectedScenario = 'Expected';
+const SCEN_KEY = { Conservative:'cons', Expected:'exp', Aspirational:'asp' };
+function setScenario(name) {
+  selectedScenario = name;
+  document.querySelectorAll('#scen-pills button').forEach(b => {
+    b.classList.toggle('active', b.dataset.scen === name);
+  });
+  const table = document.getElementById('scenario-table');
+  if (table) table.setAttribute('data-scenario', SCEN_KEY[name] || 'exp');
+  window._animateHeroNext = true;
+  calculate();
+}
+function wireScenarioPills() {
+  document.querySelectorAll('#scen-pills button[data-scen]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setScenario(btn.dataset.scen);
+    });
+  });
+}
+
+// ========== NUMBER ANIMATION (for scenario-pill changes) ==========
+const REDUCE_MOTION = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function animateNumber(el, toRaw, formatter, duration = 600) {
+  if (!el) return;
+  const fromRaw = (typeof el._currentValue === 'number') ? el._currentValue : toRaw;
+  if (REDUCE_MOTION || fromRaw === toRaw) {
+    el.textContent = formatter(toRaw);
+    el._currentValue = toRaw;
+    return;
+  }
+  const start = performance.now();
+  const ease = t => 1 - Math.pow(1 - t, 3);
+  function tick(now) {
+    const t = Math.min(1, (now - start) / duration);
+    const v = fromRaw + (toRaw - fromRaw) * ease(t);
+    el.textContent = formatter(v);
+    if (t < 1) requestAnimationFrame(tick);
+    else el._currentValue = toRaw;
+  }
+  requestAnimationFrame(tick);
+}
+function fmtBigUSD(v) {
+  if (Math.abs(v) >= 1e6) return '$' + (v/1e6).toFixed(2).replace(/\.?0+$/, '') + 'M';
+  if (Math.abs(v) >= 1e3) return '$' + Math.round(v/1e3) + 'K';
+  return '$' + Math.round(v);
+}
+function fmtRatio(v) {
+  if (v > 100) return `$100+ : $1`;
+  return `$${Math.round(v)} : $1`;
+}
+function setHeroNumbers({ savings, aspSavings, cost, ratio }, animate = false) {
+  const set = animate
+    ? (id, v, fmt) => animateNumber($(id), v, fmt)
+    : (id, v, fmt) => { const el = $(id); if (!el) return; el.textContent = fmt(v); el._currentValue = v; };
+  set('out-savings', savings, fmtBigUSD);
+  set('out-savings-asp', aspSavings, fmtBigUSD);
+  set('out-savings-cost', cost, fmtBigUSD);
+  set('out-ratio', ratio, fmtRatio);
+}
+
+// ========== NPI AGENCY LOOKUP ==========
+const NPI_API = 'https://npiregistry.cms.hhs.gov/api/';
+const AGENCY_TAXONOMY_FILTER = /emergency medical|ambulance|fire|public safety|public health/i;
+let _agencySearchTimer = null;
+async function searchNPI(name) {
+  if (!name || name.length < 4) return [];
+  const params = new URLSearchParams({
+    version: '2.1',
+    enumeration_type: 'NPI-2',
+    organization_name: name + '*',
+    limit: '20',
+  });
+  const resp = await fetch(`${NPI_API}?${params}`);
+  if (!resp.ok) throw new Error(`NPI API ${resp.status}`);
+  const data = await resp.json();
+  const raw = (data.results || []).map(r => {
+    const basic = r.basic || {};
+    const addr = (r.addresses || []).find(a => a.address_purpose === 'LOCATION') || (r.addresses || [])[0] || {};
+    const tax = (r.taxonomies || []).find(t => t.primary) || (r.taxonomies || [])[0] || {};
+    return {
+      npi: r.number,
+      name: basic.organization_name || basic.name || '',
+      city: addr.city || '',
+      state: addr.state || '',
+      zip: (addr.postal_code || '').slice(0, 5),
+      taxonomy: tax.desc || '',
+    };
+  });
+  // Prefer taxonomies relevant to public safety / EMS / fire
+  const relevant = raw.filter(r => AGENCY_TAXONOMY_FILTER.test(r.taxonomy));
+  const ordered = relevant.length ? relevant : raw;
+  return ordered.slice(0, 8);
+}
+function renderAgencyResults(results, query) {
+  const box = $('agency-results');
+  const hint = $('agency-hint');
+  if (!results.length) {
+    box.style.display = 'none';
+    box.innerHTML = '';
+    hint.innerHTML = `No NPI match. <a href="https://www.google.com/search?q=${encodeURIComponent(query + ' population served jurisdiction')}" target="_blank" rel="noopener" style="color:var(--navy); text-decoration:underline;">Search "${escHtml(query)} jurisdiction" on Google →</a>`;
+    return;
+  }
+  hint.innerHTML = '';
+  box.style.display = 'block';
+  box.innerHTML = results.map((r, i) => `
+    <div class="agency-result" data-i="${i}" style="padding:10px 12px; cursor:pointer; border-bottom:1px solid #F0F0F0;">
+      <div style="font-weight:600; color:var(--navy); font-size:13px;">${escHtml(r.name)}</div>
+      <div style="font-size:11px; color:var(--muted); margin-top:2px;">${escHtml(r.city)}, ${escHtml(r.state)}${r.zip ? ' · ZIP ' + escHtml(r.zip) : ''} · <em>${escHtml(r.taxonomy || 'n/a')}</em></div>
+    </div>
+  `).join('');
+  window._agencyResults = results;
+}
+async function selectAgency(r) {
+  $('in-name').value = r.name;
+  window._selectedNpi = r.npi || null;
+  $('agency-results').style.display = 'none';
+  $('agency-hint').innerHTML = `<a href="https://www.google.com/search?q=${encodeURIComponent(r.name + ' population served jurisdiction')}" target="_blank" rel="noopener" style="color:var(--navy); text-decoration:underline;">Verify "${escHtml(r.name)}" jurisdiction population on Google →</a>`;
+  if (r.zip && /^\d{5}$/.test(r.zip)) {
+    $('in-zip').value = r.zip;
+    await onZipChange();
+  }
+  calculate();
+}
+function onAgencyInput() {
+  clearTimeout(_agencySearchTimer);
+  const q = $('in-name').value.trim();
+  if (q.length < 4) {
+    $('agency-results').style.display = 'none';
+    $('agency-hint').innerHTML = '';
+    return;
+  }
+  _agencySearchTimer = setTimeout(async () => {
+    $('agency-hint').textContent = 'Searching CMS NPI registry...';
+    try {
+      const results = await searchNPI(q);
+      renderAgencyResults(results, q);
+    } catch(err) {
+      $('agency-hint').innerHTML = `NPI lookup failed (${escHtml(err.message)}). <a href="https://www.google.com/search?q=${encodeURIComponent(q + ' population served jurisdiction')}" target="_blank" rel="noopener" style="color:var(--navy); text-decoration:underline;">Search online →</a>`;
+      $('agency-results').style.display = 'none';
+    }
+  }, 400);
+}
+
+// ========== CENSUS ZIP LOOKUP ==========
+const CENSUS = {
+  acs_year: 2022,           // Latest ACS 5-year estimate vintage
+  growth_rate_yr: 0.005,    // 0.5%/yr default population growth (US national avg)
+};
+async function lookupZip(zip) {
+  if (!/^\d{5}$/.test(zip)) return null;
+  // ZIP → county FIPS comes from offline map (SimpleMaps, MIT). County pop comes from live Census ACS.
+  // We use county pop because EMS/fire agencies serve a county, not a single ZCTA.
+  const map = await loadOfflineZipMap();
+  const entry = map[zip];
+  if (!entry || !entry.f) throw new Error('ZIP not in US dataset');
+  const stateFips = entry.f.slice(0, 2);
+  const countyFips = entry.f.slice(2);
+  const url = `https://api.census.gov/data/${CENSUS.acs_year}/acs/acs5?get=NAME,B01003_001E&for=county:${countyFips}&in=state:${stateFips}`;
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error(`Census ACS ${resp.status}`);
+  const data = await resp.json();
+  if (!Array.isArray(data) || data.length < 2) throw new Error('County not in ACS');
+  const popDataYear = parseInt(data[1][1]);
+  if (!popDataYear || popDataYear < 0) throw new Error('No population data');
+  const currentYear = new Date().getFullYear();
+  const yearsSince = Math.max(0, currentYear - CENSUS.acs_year);
+  const growth = Math.pow(1 + CENSUS.growth_rate_yr, yearsSince);
+  const projectedPop = Math.round(popDataYear * growth);
+  return {
+    zip,
+    name: data[1][0],          // e.g. "Washoe County, Nevada"
+    popDataYear,
+    projectedPop,
+    dataYear: CENSUS.acs_year,
+    currentYear,
+    growthPct: ((growth - 1) * 100),
+    densityClass: entry.d,     // 'R' | 'S' | 'U' from offline classifier
+  };
+}
+// ========== PDF EXPORT ==========
+const BOOKING_URL = 'https://outlook.office.com/bookwithme/user/81b4be3503e34b2d8911a7ce2a100372@mdally.com?anonymous&ep=signature&ismsaljsauthenabled';
+const HTML2PDF_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.3/html2pdf.bundle.min.js';
+const HTML2CANVAS_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error('CDN load failed: ' + src));
+    document.head.appendChild(s);
+  });
+}
+let _h2pPromise = null;
+function ensureHtml2Pdf() {
+  if (window.html2pdf) return Promise.resolve(window.html2pdf);
+  if (_h2pPromise) return _h2pPromise;
+  _h2pPromise = loadScript(HTML2PDF_CDN).then(() => window.html2pdf).catch(err => { _h2pPromise = null; throw err; });
+  return _h2pPromise;
+}
+let _h2cPromise = null;
+function ensureHtml2Canvas() {
+  if (window.html2canvas) return Promise.resolve(window.html2canvas);
+  if (_h2cPromise) return _h2cPromise;
+  _h2cPromise = loadScript(HTML2CANVAS_CDN).then(() => window.html2canvas).catch(err => { _h2cPromise = null; throw err; });
+  return _h2cPromise;
+}
+function escHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function buildPdfWrapper() {
+  const agency = ($('in-name').value || 'Untitled Agency').trim();
+  const zip = $('in-zip').value.trim();
+  const pop = parseInt($('in-pop').value || 0).toLocaleString();
+  const area = (document.querySelector('input[name="area"]:checked')||{}).value || 'n/a';
+  const depth = (document.querySelector('input[name="depth"]:checked')||{}).value || 'n/a';
+  const modules = getModules().map(m => m.toUpperCase()).join(', ') || 'None';
+  const date = new Date().toISOString().slice(0,10);
+  const ver = $('ver').textContent;
+
+  const w = document.createElement('div');
+  w.style.cssText = 'position:fixed; left:-12000px; top:0; width:8.5in; background:#ffffff; font-family:Inter,system-ui,Segoe UI,sans-serif; color:#0F1B33;';
+  w.innerHTML = `
+    <div style="background:linear-gradient(135deg,#0F1B33,#1B2A4A); padding:22px 36px; border-bottom:4px solid #E5A817; color:white; display:flex; align-items:center; justify-content:space-between; gap:20px;">
+      <div style="display:flex; align-items:center; gap:16px;">
+        <div style="background:white; padding:6px 14px; border-radius:8px; height:50px; display:flex; align-items:center;">
+          <img src="assets/mdally-logo.png" style="height:38px; width:auto;" />
+        </div>
+        <div>
+          <div style="font-size:22px; font-weight:700; letter-spacing:-0.01em;">MD Ally ROI Estimate</div>
+          <div style="font-size:11px; color:#A9B4CC; letter-spacing:0.1em; text-transform:uppercase; margin-top:4px;">Public Safety · Year-1 Impact + Program Cost</div>
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:17px; font-weight:700;">${escHtml(agency)}</div>
+        <div style="font-size:11px; color:#A9B4CC; margin-top:3px;">${date} · ${ver}</div>
+      </div>
+    </div>
+    <div style="padding:14px 36px; background:#F6F7FB; border-bottom:1px solid #D6DCE6; display:grid; grid-template-columns:repeat(5,1fr); gap:12px; font-size:11px;">
+      <div><div style="color:#5E6B85; text-transform:uppercase; letter-spacing:0.08em; font-size:9px; font-weight:700;">ZIP</div><div style="font-weight:600; margin-top:3px;">${escHtml(zip||'n/a')}</div></div>
+      <div><div style="color:#5E6B85; text-transform:uppercase; letter-spacing:0.08em; font-size:9px; font-weight:700;">Population</div><div style="font-weight:600; margin-top:3px;">${pop}</div></div>
+      <div><div style="color:#5E6B85; text-transform:uppercase; letter-spacing:0.08em; font-size:9px; font-weight:700;">Area</div><div style="font-weight:600; margin-top:3px; text-transform:capitalize;">${area}</div></div>
+      <div><div style="color:#5E6B85; text-transform:uppercase; letter-spacing:0.08em; font-size:9px; font-weight:700;">CAD Depth</div><div style="font-weight:600; margin-top:3px; text-transform:capitalize;">${escHtml(depth)}</div></div>
+      <div><div style="color:#5E6B85; text-transform:uppercase; letter-spacing:0.08em; font-size:9px; font-weight:700;">Modules</div><div style="font-weight:600; margin-top:3px;">${escHtml(modules)}</div></div>
+    </div>
+    <div id="pdf-body" style="padding:20px 36px;"></div>
+    <div style="padding:16px 36px 20px; border-top:2px solid #D6DCE6; font-size:10px; color:#5E6B85; line-height:1.55; background:#FAFBFC;">
+      <div style="font-size:11px; color:#0F1B33;"><strong>Modeled estimate. Not a quote.</strong> Actual figures scoped during discovery. Cost is flat platform plus modules plus BUILD; per-call pricing not modeled.</div>
+      <div style="margin-top:6px;">Book a scoping conversation: <strong style="color:#0F1B33;">${BOOKING_URL}</strong></div>
+      <div style="margin-top:6px; opacity:0.65;">MD Ally Technologies · Calculator ${ver} · Generated ${date} · roi-calc-production.up.railway.app</div>
+    </div>`;
+
+  const mainClone = document.querySelector('main').cloneNode(true);
+  // strip the in-page CTA banner (PDF has its own footer)
+  mainClone.querySelectorAll('a[href*="bookwithme"]').forEach(a => {
+    const banner = a.closest('div[style*="gradient"]');
+    if (banner) banner.remove();
+  });
+  w.querySelector('#pdf-body').appendChild(mainClone);
+  return w;
+}
+async function copyImpactToClipboard() {
+  const btn = $('btn-copy-ppt');
+  const orig = btn.innerHTML;
+  btn.innerHTML = '⏳ Capturing…';
+  btn.disabled = true;
+  try {
+    const html2canvas = await ensureHtml2Canvas();
+    const target = document.getElementById('impact-area');
+    const canvas = await html2canvas(target, {
+      scale: 2.5,
+      backgroundColor: '#F6F7FB',
+      useCORS: true,
+      logging: false,
+    });
+    await new Promise((resolve, reject) => {
+      canvas.toBlob(async (blob) => {
+        if (!blob) return reject(new Error('blob conversion failed'));
+        try {
+          await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+          btn.innerHTML = '✓ Copied! Paste into PPT';
+          setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 2200);
+          resolve();
+        } catch (e) {
+          // Clipboard API blocked / unsupported — fall back to download
+          const a = document.createElement('a');
+          a.href = canvas.toDataURL('image/png');
+          a.download = `MD_Ally_ROI_Impact_${new Date().toISOString().slice(0,10)}.png`;
+          a.click();
+          btn.innerHTML = '↓ Downloaded (paste blocked)';
+          setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 2200);
+          resolve();
+        }
+      }, 'image/png');
+    });
+  } catch(err) {
+    alert('Capture failed: ' + err.message);
+    btn.innerHTML = orig;
+    btn.disabled = false;
+  }
+}
+
+async function exportPDF() {
+  const btn = $('btn-print');
+  const orig = btn.innerHTML;
+  btn.innerHTML = '⏳ Generating…';
+  btn.disabled = true;
+  try {
+    const html2pdf = await ensureHtml2Pdf();
+    const wrapper = buildPdfWrapper();
+    document.body.appendChild(wrapper);
+    const agency = ($('in-name').value || 'Agency').trim();
+    const safe = agency.replace(/[^a-zA-Z0-9]+/g,'_').replace(/^_+|_+$/g,'') || 'Agency';
+    const filename = `MD_Ally_ROI_${safe}_${new Date().toISOString().slice(0,10)}.pdf`;
+    await html2pdf().set({
+      margin: 0,
+      filename,
+      image: { type: 'jpeg', quality: 0.95 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false },
+      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait', compress: true },
+      pagebreak: { mode: ['css', 'legacy'] },
+    }).from(wrapper).save();
+    document.body.removeChild(wrapper);
+  } catch(err) {
+    alert('PDF export failed: ' + err.message + '\\n\\nFalling back to browser print dialog.');
+    window.print();
+  } finally {
+    btn.innerHTML = orig;
+    btn.disabled = false;
+  }
+}
+
+function classifyDensity(d) {
+  if (d < 500) return 'rural';
+  if (d < 2500) return 'suburban';
+  return 'urban';
+}
+let _zipMap = null;
+async function loadOfflineZipMap() {
+  if (_zipMap) return _zipMap;
+  const resp = await fetch('assets/zip-density.json');
+  if (!resp.ok) throw new Error('Offline ZIP density JSON missing');
+  _zipMap = await resp.json();
+  return _zipMap;
+}
+function densityClassToAreaType(code) {
+  return code === 'R' ? 'rural' : code === 'S' ? 'suburban' : code === 'U' ? 'urban' : null;
+}
+async function onZipChange() {
+  const zip = $('in-zip').value.trim();
+  const display = $('zip-display');
+  if (!zip) { display.textContent = ''; updatePopProjection(); return; }
+  if (!/^\d{5}$/.test(zip)) { display.textContent = 'Enter a 5-digit ZIP'; return; }
+  display.textContent = 'Looking up county via Census ACS...';
+  try {
+    const r = await lookupZip(zip);
+    // 5-yr contract horizon at the same growth rate
+    const fiveYrGrowth = Math.pow(1 + CENSUS.growth_rate_yr, 5);
+    const popIn5Yr = Math.round(r.projectedPop * fiveYrGrowth);
+    let line = `Ref: <strong>${r.name}</strong> · county pop ${fmtNum(r.popDataYear)} (${r.dataYear} ACS) → ${r.currentYear}: ${fmtNum(r.projectedPop)} (+${r.growthPct.toFixed(1)}%) → +5yr: ${fmtNum(popIn5Yr)}`;
+    const areaType = densityClassToAreaType(r.densityClass);
+    if (areaType) {
+      const radio = document.querySelector(`input[name="area"][value="${areaType}"]`);
+      if (radio) radio.checked = true;
+      line += `. Density: <strong>${areaType}</strong>`;
+    }
+    display.innerHTML = line;
+    // Cache county growth context for the 5-yr pop projection on entered pop
+    window._zipContext = { growthRateYr: CENSUS.growth_rate_yr, source: r.name };
+    updatePopProjection();
+    calculate();
+  } catch(err) {
+    display.textContent = `Lookup failed: ${err.message}. Population stays as entered.`;
+    window._zipContext = null;
+    updatePopProjection();
+  }
+}
+function updatePopProjection() {
+  const pop = parseInt($('in-pop').value || 0);
+  const note = $('pop-display');
+  if (!pop) { note.textContent = 'Enter the population your agency serves.'; return; }
+  const ctx = window._zipContext;
+  const rate = (ctx && ctx.growthRateYr) || CENSUS.growth_rate_yr;
+  const pop5 = Math.round(pop * Math.pow(1 + rate, 5));
+  const delta = pop5 - pop;
+  note.innerHTML = `5-yr contract at ${(rate*100).toFixed(2)}%/yr → <strong>${fmtNum(pop5)}</strong> (+${fmtNum(delta)})`;
+  updateEligibilityNote();
+}
+function updateEligibilityNote() {
+  const pop = parseInt($('in-pop').value || 0);
+  const medical = parseInt($('in-medical-calls').value) || 0;
+  const display = $('medical-display');
+  if (medical > 0) {
+    const elig = medical * C.md_ally_pct_of_medical;
+    let warn = '';
+    if (pop > 0) {
+      const callsPer1k = medical / (pop / 1000);
+      // NEMSIS national avg ~65-80/1K; high-volume urban tops out around 150-180/1K.
+      if (callsPer1k > 200) {
+        warn = `<div style="color:#B2483D; font-size:11px; margin-top:4px; font-weight:600;">⚠ ${callsPer1k.toFixed(0)} medical calls per 1K population is well above the NEMSIS range (~65-180/1K). Verify the source before sharing.</div>`;
+      } else if (callsPer1k > 150) {
+        warn = `<div style="color:var(--gold); font-size:11px; margin-top:4px;">High end of NEMSIS range (${callsPer1k.toFixed(0)}/1K). Confirm with the agency.</div>`;
+      }
+    }
+    display.innerHTML = `MD Ally-eligible volume: <strong>${fmtNum(elig)}/yr</strong> · ~${fmtNum(elig/365)}/day${warn}`;
+  } else if (pop > 0) {
+    const elig = pop * C.annual_eligible_factor;
+    display.innerHTML = `Modeled from population: <strong>${fmtNum(elig)}/yr</strong> eligible · ~${fmtNum(elig/365)}/day`;
+  } else {
+    display.textContent = '';
+  }
+}
+
+function loadFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('name')) $('in-name').value = params.get('name');
+  if (params.get('zip')) $('in-zip').value = params.get('zip');
+  if (params.get('pop')) $('in-pop').value = params.get('pop');
+  if (params.get('area')) {
+    const r = document.querySelector(`input[name="area"][value="${params.get('area')}"]`);
+    if (r) r.checked = true;
+  }
+  if (params.get('calls')) $('in-medical-calls').value = params.get('calls');
+  if (params.get('discount')) $('in-discount').value = params.get('discount');
+  if (params.get('depth')) {
+    const r = document.querySelector(`input[name="depth"][value="${params.get('depth')}"]`);
+    if (r) r.checked = true;
+  }
+  if (params.get('mods')) {
+    params.get('mods').split(',').forEach(m => {
+      const cb = document.querySelector(`#modules input[value="${m}"]`);
+      if (cb) { cb.checked = true; cb.parentElement.classList.add('active'); }
+    });
+  }
+}
+
+// ========== EVENT LISTENERS ==========
+function wire() {
+  document.querySelectorAll('input, select').forEach(el => {
+    el.addEventListener('input', calculate);
+    el.addEventListener('change', calculate);
+  });
+  $('in-pop').addEventListener('input', () => {
+    updatePopProjection();
+    setPopSource('manual entry');
+  });
+  $('in-medical-calls').addEventListener('input', updateEligibilityNote);
+  $('in-discount').addEventListener('input', () => {
+    const d = parseFloat($('in-discount').value) || 0;
+    $('discount-display').textContent = d === 0 ? 'Standard partner rate' :
+      d > 20 ? '⚠ Maximum adjustment is 20%' : `Effective: ${(100-d).toFixed(0)}% of standard rate`;
+  });
+  $('in-name').addEventListener('input', onAgencyInput);
+  $('agency-results').addEventListener('click', (e) => {
+    const row = e.target.closest('.agency-result');
+    if (!row) return;
+    const i = parseInt(row.dataset.i);
+    const r = (window._agencyResults || [])[i];
+    if (r) selectAgency(r);
+  });
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#agency-results') && e.target.id !== 'in-name') {
+      $('agency-results').style.display = 'none';
+    }
+  });
+  // Module chip active-class toggle
+  document.querySelectorAll('.module-chip').forEach(chip => {
+    const cb = chip.querySelector('input');
+    cb.addEventListener('change', () => {
+      chip.classList.toggle('active', cb.checked);
+    });
+  });
+  $('btn-share').addEventListener('click', async () => {
+    updateURL();
+    const url = window.location.href;
+    try {
+      await navigator.clipboard.writeText(url);
+      $('btn-share').textContent = '✓ Copied!';
+      setTimeout(() => $('btn-share').innerHTML = '🔗 Copy Link', 1800);
+    } catch(e) {
+      prompt('Copy this URL:', url);
+    }
+  });
+  $('btn-print').addEventListener('click', exportPDF);
+  $('btn-copy-ppt').addEventListener('click', copyImpactToClipboard);
+  // ZIP: prevent the live "input" handler from running calculate() before lookup completes;
+  // we trigger calculate() ourselves after auto-fill.
+  $('in-zip').addEventListener('blur', onZipChange);
+  $('in-zip').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); onZipChange(); }
+  });
+  $('btn-reset').addEventListener('click', () => {
+    $('in-name').value = '';
+    $('agency-hint').innerHTML = '';
+    $('in-zip').value = '';
+    $('zip-display').textContent = '';
+    $('in-pop').value = '250000';
+    $('in-medical-calls').value = '';
+    document.querySelector('input[name="area"][value="suburban"]').checked = true;
+    $('in-discount').value = '0';
+    $('discount-display').textContent = 'Standard partner rate';
+    document.querySelector('input[name="depth"][value="parallel"]').checked = true;
+    document.querySelectorAll('#modules input').forEach(cb => {
+      const def = cb.value === 'path' || cb.value === 'apm';
+      cb.checked = def;
+      cb.parentElement.classList.toggle('active', def);
+    });
+    updateEligibilityNote();
+    updatePopProjection();
+    calculate();
+  });
+}
+
+// ========== BRIEF ME ON THIS AGENCY (Pulse /api/agency-brief client) ==========
+// Pulse owns the intel + collateral generation. Calc is a thin client that:
+// 1) POSTs agency_name → gets back calc_inputs + intel + artifact URLs from Pulse
+// 2) Auto-fills the calc, renders the golden nuggets, exposes PDF/PPT downloads
+// Resolution order (highest wins): ?pulse_base= URL param, window.PULSE_API_BASE default, stub mode.
+// Swap the default to pulse.mdally.com once the custom domain is mapped.
+// Bearer key is NEVER hardcoded here (would leak in view-source). Pulse gates writes via CORS + rate-limit;
+// for stricter access pass ?pulse_key=... at runtime or set window.PULSE_BRIEF_KEY before this script loads.
+window.PULSE_API_BASE = window.PULSE_API_BASE || 'https://pulse-production-71ee.up.railway.app';
+const _pulseUrlParam = new URLSearchParams(window.location.search).get('pulse_base');
+const PULSE_API_BASE = (_pulseUrlParam || window.PULSE_API_BASE || '').replace(/\/+$/, '');
+const PULSE_STUB = !PULSE_API_BASE;
+// Bearer key can also be supplied via ?pulse_key= for testing; persist to global so artifact downloads pick it up.
+const _pulseKeyParam = new URLSearchParams(window.location.search).get('pulse_key');
+if (_pulseKeyParam) window.PULSE_BRIEF_KEY = _pulseKeyParam;
+
+async function callAgencyBrief(agencyName, npi) {
+  if (PULSE_STUB) {
+    // Stub mirrors the real contract so the calc renders the same UX today.
+    await new Promise(r => setTimeout(r, 600));
+    return {
+      brief_id: 'stub-' + Date.now(),
+      status: 'stub',
+      agency: { name: agencyName, npi: npi || null },
+      calc_inputs: null, // Pulse will return pop/area/etc. once wired
+      intel: {
+        golden_nuggets: [
+          { kind: 'stub', text: 'Pulse /api/agency-brief not yet wired. Calc auto-fill from NPI typeahead still works.', source_url: null, source_date: null }
+        ],
+        contacts: [],
+        connections: {},
+        discovery_questions: []
+      },
+      artifacts: { pdf_url: null, ppt_url: null }
+    };
+  }
+  const headers = { 'Content-Type': 'application/json' };
+  if (window.PULSE_BRIEF_KEY) headers['X-Pulse-Brief-Key'] = window.PULSE_BRIEF_KEY;
+  // Zod validates npi as string|undefined, NOT string|null — omit when missing.
+  const payload = { agency_name: agencyName, requested_artifacts: ['meeting_intel_pdf', 'overview_pptx'] };
+  if (npi && /^\d{10}$/.test(String(npi))) payload.npi = String(npi);
+  const resp = await fetch(`${PULSE_API_BASE}/api/agency-brief`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(payload)
+  });
+  if (!resp.ok) throw new Error(`Pulse ${resp.status}`);
+  const data = await resp.json();
+  // Sync path: server returns the complete brief in the POST body (status: "complete" | "error" | "stub").
+  // Async path (when Pulse later adds 202+poll): { brief_id, poll_url }.
+  if (data.status === 'complete' || data.status === 'error' || data.status === 'stub' || data.agency) {
+    return data;
+  }
+  // Fallback to the async pattern.
+  const briefId = data.brief_id;
+  const pollUrl = data.poll_url || `/api/agency-brief/${briefId}`;
+  for (let i = 0; i < 30; i++) {
+    await new Promise(r => setTimeout(r, 2000));
+    const r2 = await fetch(`${PULSE_API_BASE}${pollUrl}`, { headers });
+    if (r2.status === 200) return await r2.json();
+  }
+  throw new Error('Pulse brief timed out');
+}
+
+// Resolve relative artifact URLs against PULSE_API_BASE so download links work cross-origin.
+function pulseUrl(path) {
+  if (!path) return null;
+  if (/^https?:\/\//.test(path)) return path;
+  return `${PULSE_API_BASE}${path}`;
+}
+
+function setPopSource(label) {
+  const el = $('pop-source-line');
+  if (el) el.textContent = `Source: ${label}`;
+}
+
+function applyBriefToCalc(brief) {
+  if (brief.calc_inputs) {
+    if (brief.calc_inputs.pop) {
+      $('in-pop').value = brief.calc_inputs.pop;
+      // Prefer Pulse's explicit population_source label when available (e.g.
+      // "San Ramon + Danville + portions of unincorporated Contra Costa (SRVFPD...)").
+      // Falls back to NPI / county tagging for agencies without a seed.
+      const popSource = brief.agency && brief.agency.population_source;
+      const npi = brief.agency && brief.agency.npi;
+      const county = brief.agency && brief.agency.county && brief.agency.county.name;
+      const tag = popSource || (npi ? `Pulse brief (NPI ${npi})` : (county ? `Pulse brief (${county} County)` : 'Pulse brief'));
+      setPopSource(tag);
+    }
+    // County-as-upsell: when Pulse identifies an expansion ceiling, surface it
+    // as a small advisory under the pop input so the rep can frame the call.
+    if (brief.agency && brief.agency.upsell) {
+      const u = brief.agency.upsell;
+      const el = $('pop-source-line');
+      if (el) {
+        const upsellLine = ` · Upsell ceiling: ${u.county_name} County (${(u.county_population/1000).toFixed(0)}K, ${u.multiplier}x)`;
+        el.textContent = el.textContent + upsellLine;
+      }
+    }
+    if (brief.calc_inputs.area) {
+      const r = document.querySelector(`input[name="area"][value="${brief.calc_inputs.area}"]`);
+      if (r) r.checked = true;
+    }
+    if (brief.calc_inputs.depth) {
+      const r = document.querySelector(`input[name="depth"][value="${brief.calc_inputs.depth}"]`);
+      if (r) r.checked = true;
+    }
+    if (Array.isArray(brief.calc_inputs.modules)) {
+      document.querySelectorAll('#modules input, details .modules input').forEach(cb => {
+        const on = brief.calc_inputs.modules.includes(cb.value);
+        cb.checked = on;
+        cb.parentElement.classList.toggle('active', on);
+      });
+    }
+    updatePopProjection();
+    calculate();
+  }
+}
+
+function renderBriefStatus(html, kind = 'info') {
+  const el = $('brief-status');
+  const color = kind === 'error' ? 'var(--red)' : kind === 'success' ? 'var(--teal)' : 'var(--muted)';
+  el.style.display = 'block';
+  el.style.color = color;
+  el.innerHTML = html;
+}
+
+function renderIntelArtifacts(brief) {
+  const panel = $('intel-artifacts');
+  if (!panel) return;
+  const pdfUrl = pulseUrl(brief.artifacts && brief.artifacts.pdf_url);
+  const hasPdf = Boolean(pdfUrl);
+  const hasPpt = Boolean(brief.artifacts && brief.artifacts.ppt_url && brief.brief_id);
+  // Header line
+  const ag = brief.agency || {};
+  const stateLine = [ag.state, ag.city, ag.npi ? `NPI ${ag.npi}` : ''].filter(Boolean).join(' · ');
+  $('intel-agency').textContent = ag.name || $('in-name').value.trim() || 'Selected agency';
+  const counts = [];
+  const n = (brief.intel && brief.intel.golden_nuggets) || [];
+  counts.push(`${n.length} nuggets`);
+  if (brief.intel && brief.intel.contacts) counts.push(`${brief.intel.contacts.length} contacts`);
+  if (brief.intel && brief.intel.news) counts.push(`${brief.intel.news.length} news`);
+  $('intel-meta').textContent = [stateLine, counts.join(' · ')].filter(Boolean).join(' · ');
+
+  const pdfBtn = $('btn-intel-pdf');
+  pdfBtn.style.display = hasPdf ? 'flex' : 'none';
+  pdfBtn.onclick = async () => {
+    if (!pdfUrl) return;
+    const orig = pdfBtn.innerHTML;
+    pdfBtn.disabled = true;
+    pdfBtn.innerHTML = '⏳ Rendering PDF…';
+    try {
+      const opts = { method: 'GET' };
+      if (window.PULSE_BRIEF_KEY) opts.headers = { 'X-Pulse-Brief-Key': window.PULSE_BRIEF_KEY };
+      const resp = await fetch(pdfUrl, opts);
+      if (!resp.ok) throw new Error(`Pulse ${resp.status}`);
+      const blob = await resp.blob();
+      const cd = resp.headers.get('content-disposition') || '';
+      const m = /filename="([^"]+)"/.exec(cd);
+      const filename = m ? m[1] : 'MD_Ally_Meeting_Intelligence.pdf';
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => { URL.revokeObjectURL(link.href); link.remove(); }, 1000);
+    } catch (err) {
+      alert(`PDF download failed: ${err.message}`);
+    } finally {
+      pdfBtn.disabled = false;
+      pdfBtn.innerHTML = orig;
+    }
+  };
+
+  const pptBtn = $('btn-intel-ppt');
+  pptBtn.style.display = hasPpt ? 'flex' : 'none';
+  pptBtn.onclick = (e) => openLogoModal(e);
+
+  const shareBtn = $('btn-intel-share');
+  shareBtn.style.display = hasPdf ? 'block' : 'none';
+  shareBtn.onclick = async () => {
+    if (!pdfUrl) return;
+    try {
+      await navigator.clipboard.writeText(pdfUrl);
+      const orig = shareBtn.innerHTML;
+      shareBtn.innerHTML = '✓ Link copied';
+      setTimeout(() => { shareBtn.innerHTML = orig; }, 1600);
+    } catch {
+      window.prompt('Copy this link:', pdfUrl);
+    }
+  };
+
+  // Top 3 nuggets summary inline
+  const nug = $('intel-nuggets');
+  if (n.length === 0) {
+    nug.innerHTML = '<span style="color:var(--muted); font-style:italic;">No nuggets returned. Check brief status for diagnostics.</span>';
+  } else {
+    nug.innerHTML = n.slice(0, 3).map(item => {
+      const kindTag = `<span style="display:inline-block; padding:1px 6px; background:var(--bg-soft, #F4F6FA); color:var(--navy-mid, #1B2A4A); font-size:9px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; border-radius:3px; margin-right:6px;">${escHtml((item.kind || '').replace(/_/g, ' '))}</span>`;
+      const src = item.source_url ? ` <a href="${item.source_url}" target="_blank" rel="noopener" style="color:var(--blue, #2F6FBF); text-decoration:none;">↗</a>` : '';
+      return `<div style="margin-bottom:6px;">${kindTag}${escHtml(item.text)}${src}</div>`;
+    }).join('');
+  }
+
+  panel.style.display = 'block';
+}
+
+async function onBriefMe() {
+  const agency = $('in-name').value.trim();
+  if (!agency) { renderBriefStatus('Enter an agency name first.', 'error'); return; }
+  const btn = $('btn-brief-me');
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Briefing…';
+  renderBriefStatus(PULSE_STUB ? 'Stub mode: Pulse /api/agency-brief not yet wired. Auto-fill from NPI typeahead is live.' : 'Calling Pulse… (~60–90s first call, ~10s cached)');
+  $('intel-artifacts').style.display = 'none';
+  try {
+    const brief = await callAgencyBrief(agency, window._selectedNpi || null);
+    window._lastBrief = brief;
+    applyBriefToCalc(brief);
+    renderIntelArtifacts(brief);
+    renderBriefStatus('Brief ready. Auto-filled calculator inputs above.', 'success');
+  } catch (err) {
+    renderBriefStatus(`Brief failed: ${escHtml(err.message)}`, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = orig;
+  }
+}
+
+// ========== LOGO / BRANDING MODAL ==========
+function openLogoModal(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  const brief = window._lastBrief;
+  if (!brief || !brief.brief_id) {
+    alert('Generate a brief first ("Brief Me on This Agency").');
+    return;
+  }
+  $('logo-modal-agency').textContent = `Pick how the deck gets branded for ${brief.agency?.name ?? 'this agency'}.`;
+  $('logo-url').value = '';
+  $('logo-file').value = '';
+  $('logo-preview').style.display = 'none';
+  $('logo-preview').src = '';
+  $('logo-status').style.display = 'none';
+  $('logo-modal').style.display = 'flex';
+}
+function closeLogoModal() { $('logo-modal').style.display = 'none'; }
+window.openLogoModal = openLogoModal;
+
+function logoStatus(html, kind = 'info') {
+  const el = $('logo-status');
+  const colors = { info: '#5E6B85', success: '#1FA595', error: '#B2483D' };
+  el.style.display = 'block';
+  el.style.background = '#F4F6FA';
+  el.style.color = colors[kind] || colors.info;
+  el.innerHTML = html;
+}
+
+async function downloadPptx(url, fetchOpts) {
+  const opts = fetchOpts || { method: 'GET' };
+  if (window.PULSE_BRIEF_KEY) {
+    opts.headers = { ...(opts.headers || {}), 'X-Pulse-Brief-Key': window.PULSE_BRIEF_KEY };
+  }
+  const resp = await fetch(url, opts);
+  if (!resp.ok) {
+    let err = `Pulse ${resp.status}`;
+    try {
+      const j = await resp.json();
+      if (j.error) err += `: ${j.error}`;
+      if (j.detail) err += ` (${j.detail})`;
+    } catch {}
+    throw new Error(err);
+  }
+  const blob = await resp.blob();
+  const cd = resp.headers.get('content-disposition') || '';
+  const m = /filename="([^"]+)"/.exec(cd);
+  const filename = m ? m[1] : 'MD_Ally_Overview.pptx';
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  setTimeout(() => { URL.revokeObjectURL(link.href); link.remove(); }, 1000);
+  return { logoStatus: resp.headers.get('x-pulse-logo-status'), filename };
+}
+
+async function submitLogoModal(mode) {
+  const brief = window._lastBrief;
+  if (!brief || !brief.brief_id) return;
+  const baseUrl = `${PULSE_API_BASE}/api/agency-brief/${brief.brief_id}/pptx`;
+  try {
+    if (mode === 'url') {
+      const url = $('logo-url').value.trim();
+      if (!url) { logoStatus('Paste a logo URL first.', 'error'); return; }
+      logoStatus('Fetching logo and rendering deck (~15 sec)…');
+      const result = await downloadPptx(`${baseUrl}?logo_url=${encodeURIComponent(url)}`);
+      logoStatus(`✓ Downloaded ${result.filename} (logo: ${result.logoStatus || 'unknown'}).`, 'success');
+    } else if (mode === 'upload') {
+      const file = $('logo-file').files[0];
+      if (!file) { logoStatus('Choose a file first.', 'error'); return; }
+      if (file.size > 5 * 1024 * 1024) { logoStatus('Logo too large (5 MiB max).', 'error'); return; }
+      logoStatus('Encoding and rendering deck (~15 sec)…');
+      const b64 = await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result);
+        r.onerror = () => rej(new Error('file read failed'));
+        r.readAsDataURL(file);
+      });
+      const result = await downloadPptx(baseUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ logo_b64: b64 }),
+      });
+      logoStatus(`✓ Downloaded ${result.filename} (logo: ${result.logoStatus || 'unknown'}).`, 'success');
+    } else if (mode === 'skip') {
+      logoStatus('Rendering generic deck (~15 sec)…');
+      const result = await downloadPptx(`${baseUrl}?skip_branding=true`);
+      logoStatus(`✓ Downloaded ${result.filename} (generic, no branding).`, 'success');
+    }
+  } catch (err) {
+    logoStatus(`Failed: ${escHtml(err.message)}`, 'error');
+  }
+}
+
+// Logo URL preview on input change
+function wireLogoPreview() {
+  let t = null;
+  $('logo-url').addEventListener('input', () => {
+    clearTimeout(t);
+    const url = $('logo-url').value.trim();
+    const img = $('logo-preview');
+    if (!url || !/^https?:\/\//.test(url)) {
+      img.style.display = 'none';
+      img.src = '';
+      return;
+    }
+    t = setTimeout(() => {
+      img.src = url;
+      img.style.display = 'block';
+    }, 400);
+  });
+}
+
+function wireLogoModal() {
+  $('logo-close').addEventListener('click', closeLogoModal);
+  $('logo-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'logo-modal') closeLogoModal();
+  });
+  $('logo-google').addEventListener('click', () => {
+    const name = (window._lastBrief && window._lastBrief.agency && window._lastBrief.agency.name) || $('in-name').value;
+    if (!name) return;
+    const q = encodeURIComponent(`${name} logo transparent`);
+    window.open(`https://www.google.com/search?q=${q}&tbm=isch`, '_blank', 'noopener');
+  });
+  $('logo-use-url').addEventListener('click', () => submitLogoModal('url'));
+  $('logo-use-upload').addEventListener('click', () => submitLogoModal('upload'));
+  $('logo-skip').addEventListener('click', () => submitLogoModal('skip'));
+  wireLogoPreview();
+}
+
+// ========== INIT ==========
+document.addEventListener('DOMContentLoaded', () => {
+  wire();
+  wireScenarioPills();
+  loadFromURL();
+  updatePopProjection();
+  calculate();
+  $('btn-brief-me').addEventListener('click', onBriefMe);
+  wireLogoModal();
+});
+</script>
+</body>
+</html>
