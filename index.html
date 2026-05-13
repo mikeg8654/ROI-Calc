@@ -551,7 +551,7 @@
 
 <footer>
   <div style="display:flex; justify-content:space-between; align-items:center; max-width:1600px; margin:0 auto; padding:0 40px; flex-wrap:wrap; gap:12px;">
-    <div>MD Ally Technologies · Calculator <strong id="ver">v2.1</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
+    <div>MD Ally Technologies · Calculator <strong id="ver">v2.2</strong> · Modeled estimates; actual quotes scoped during discovery.</div>
     <div>
       <button id="btn-feedback" style="background:var(--gold); color:var(--navy-deep); border:none; padding:12px 22px; border-radius:8px; font-family:inherit; font-size:16px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(229,168,23,0.3); transition:all 0.15s;">💡 Suggest an enhancement</button>
       &nbsp;&nbsp;
@@ -566,6 +566,7 @@
       <li><strong>v2.1</strong> (2026-05-12) · Meeting Intel PDF is now a first-class artifact. After "Brief Me on This Agency" runs, a dedicated Intel panel appears with prominent Download Intel PDF button, optional Curated Overview PPT button, and a Copy Shareable Link button (PDF stays hosted on Pulse, paste the link in email/Slack). Top 3 golden nuggets render inline with kind tags. Pulse server now writes a NOTE engagement back to the HubSpot company on every brief generation (PDF link + nugget summary). Pulse golden-nuggets prompt now state-aware: AZ briefs reference the public Tucson Fire MD Ally case (KOLD News 13, Jan 2026); FL + AZ briefs frame procurement around the discounted state rate.</li>
       <li><strong>v2.0</strong> (2026-05-11) · "Brief Me on This Agency" button under agency input. Calls Pulse's /api/agency-brief endpoint (when wired) to pull intel, contacts, golden nuggets, connections, and curated collateral (Meeting Intelligence PDF + agency-branded MD Ally Overview PPT). Templates live in Pulse Collateral, not in this app. Default modules collapsed to core 911 diversion (PATH + Performance Management); TERF and VAMC moved to an "Advanced (post-pilot)" expandable section. APM renamed to "Performance Management" throughout the UI. Payback now expressed in months from kickoff (implementation + recovery), default 250K-pop suburban baseline aligned with typical pipeline.</li>
       <li><strong>v1.22</strong> (2026-05-11) · Headline savings now uses a single per-ALS-transport benchmark from CMS GAPDS (prior versions stacked a separate transport line and overstated total impact). CAD-integration depth and optional modules now actually adjust Year-1 program cost. Year-1 cost panel splits subscription vs. implementation. 3-Year Agency Value subtracts all three years of subscription. Reset clears medical-calls. URL share preserves medical-calls. Dead inputs removed. Discount field language scrubbed.</li>
+      <li><strong>v2.2</strong> (2026-05-13) · Pulse intel API live in production. "Brief Me" now returns real golden nuggets, 20+ named contacts per agency, 10 ranked news headlines, and a branded Meeting Intelligence PDF.</li>
       <li><strong>v2.0</strong> (2026-05-12) · "🎯 Brief Me on This Agency" wired to Pulse intel API: golden nuggets, named contacts, Meeting Intelligence PDF, branded Overview PPTX. Math fixes: removed double-counted transport line, reactive CAD depth + optional modules, honest payback in months from kickoff (was "~2 wks"), default population 250K, sanity cap on extreme ratios. Logo confirmation modal for PPT branding.</li>
       <li><strong>v1.21</strong> (2026-04-29) · Hero strip redesign. Dollar savings is now the headline at 108px; ratio drops to a supporting column. Active scenario column highlighted in the table. Numbers count up on scenario change.</li>
       <li><strong>v1.20</strong> (2026-04-29) · PPT-ready impact area. New "📸 Copy for PPT" button captures the impact area as a PNG to your clipboard for instant paste into PowerPoint.</li>
@@ -1696,9 +1697,11 @@ function wire() {
 // Pulse owns the intel + collateral generation. Calc is a thin client that:
 // 1) POSTs agency_name → gets back calc_inputs + intel + artifact URLs from Pulse
 // 2) Auto-fills the calc, renders the golden nuggets, exposes PDF/PPT downloads
-// Until Pulse is live, this stub fakes the contract so the UI flow is real.
-// Resolution order (highest wins): ?pulse_base= URL param, window.PULSE_API_BASE global, stub mode.
-// This lets us point at Pulse via URL (?pulse_base=https://pulse.mdally.com) without a redeploy.
+// Resolution order (highest wins): ?pulse_base= URL param, window.PULSE_API_BASE default, stub mode.
+// Swap the default to pulse.mdally.com once the custom domain is mapped.
+// Bearer key is NEVER hardcoded here (would leak in view-source). Pulse gates writes via CORS + rate-limit;
+// for stricter access pass ?pulse_key=... at runtime or set window.PULSE_BRIEF_KEY before this script loads.
+window.PULSE_API_BASE = window.PULSE_API_BASE || 'https://pulse-production-71ee.up.railway.app';
 const _pulseUrlParam = new URLSearchParams(window.location.search).get('pulse_base');
 const PULSE_API_BASE = (_pulseUrlParam || window.PULSE_API_BASE || '').replace(/\/+$/, '');
 const PULSE_STUB = !PULSE_API_BASE;
