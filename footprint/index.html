@@ -4,269 +4,458 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MD Ally · National Footprint</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
   :root {
-    --navy: #1B2A4A;
-    --navy-deep: #0F1B33;
-    --gold: #E5A817;
-    --gold-light: #F5C13F;
-    --teal: #1FA595;
-    --red: #B2483D;
-    --green: #1E8E5A;
-    --ink: #0F1B33;
-    --muted: #5E6B85;
-    --muted-light: #8895B0;
-    --rule: #D6DCE6;
-    --bg: #F4F6FA;
-    --bg-deeper: #E9EDF4;
-    --white: #FFFFFF;
+    --bg-page: #0F1B33;
+    --bg-panel: #14223E;
+    --bg-elevated: #1B2A4A;
+    --bg-elevated-2: #22325A;
+    --stroke-subtle: #2B3A5C;
+    --stroke-rule: #3A4D78;
+    --text-primary: #FFFFFF;
+    --text-secondary: #9FB0CC;
+    --text-tertiary: #6B7CA0;
+    --accent-gold: #E5A817;
+    --accent-gold-light: #F5C13F;
+    --accent-teal: #1FA595;
+    --accent-teal-light: #2DC7B5;
+    --accent-periwinkle: #6B8AFD;
+    --accent-muted-gold: #C9A961;
+    --accent-red: #D86B5C;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body {
     font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-    background: var(--bg);
-    color: var(--ink);
+    background: #07101F;
+    color: var(--text-primary);
     font-size: 14px;
     line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
   }
+
+  /* TOOLBAR — outside the capture area */
   .toolbar {
-    background: var(--navy-deep);
+    background: #050B17;
     color: white;
     padding: 12px 24px;
     display: flex; align-items: center; justify-content: space-between;
     gap: 12px;
+    border-bottom: 1px solid var(--stroke-subtle);
   }
   .toolbar h1 {
-    font-size: 14px; font-weight: 700; letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-size: 13px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--text-secondary);
   }
+  .toolbar h1 strong { color: white; }
   .toolbar .actions { display: flex; gap: 8px; }
   .toolbar button, .toolbar a {
-    background: var(--gold); color: var(--navy-deep);
+    background: var(--accent-gold); color: var(--bg-page);
     border: none; padding: 9px 16px; border-radius: 6px;
     font-family: inherit; font-size: 12px; font-weight: 700;
     cursor: pointer; text-decoration: none;
     display: inline-flex; align-items: center; gap: 6px;
+    letter-spacing: 0.02em;
   }
-  .toolbar button:hover, .toolbar a:hover { background: var(--gold-light); }
+  .toolbar button:hover, .toolbar a:hover { background: var(--accent-gold-light); }
   .toolbar a.secondary {
     background: transparent; color: white;
-    border: 1px solid rgba(255,255,255,0.3);
+    border: 1px solid rgba(255,255,255,0.25);
   }
-  .toolbar a.secondary:hover { background: rgba(255,255,255,0.1); }
+  .toolbar a.secondary:hover { background: rgba(255,255,255,0.08); }
 
+  /* PAGE — the captured PDF region (1280 × 900) */
   .page {
     width: 1280px;
-    min-height: 800px;
-    padding: 40px 48px;
-    background: var(--white);
-    margin: 0 auto;
-  }
-  header {
-    display: flex; align-items: baseline; justify-content: space-between;
-    padding-bottom: 18px;
-    border-bottom: 3px solid var(--gold);
-    margin-bottom: 28px;
-  }
-  header h1 {
-    font-size: 28px; font-weight: 800; letter-spacing: -0.01em;
-    color: var(--navy-deep);
-  }
-  header h1 span {
-    color: var(--muted); font-weight: 500; font-size: 14px;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    margin-left: 12px;
-  }
-  header .tagline {
-    font-size: 13px; color: var(--muted);
-    font-style: italic;
-  }
-  .question {
-    font-size: 16px; color: var(--navy);
-    margin-bottom: 24px;
-    padding: 12px 18px;
-    background: var(--bg);
-    border-left: 4px solid var(--gold);
-    border-radius: 0 8px 8px 0;
-    font-weight: 600;
-  }
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 360px;
-    gap: 32px;
-  }
-  .map-panel {
-    background: var(--bg);
-    border-radius: 14px;
-    padding: 24px;
-    position: relative;
-    min-height: 520px;
-  }
-  .map-panel h2 {
-    font-size: 11px; font-weight: 700;
-    letter-spacing: 0.14em; text-transform: uppercase;
-    color: var(--muted); margin-bottom: 14px;
-  }
-  #us-map { width: 100%; height: auto; display: block; }
-  .state-default { fill: #E9EDF4; stroke: #C0CADC; stroke-width: 0.5; }
-  .state-active { fill: rgba(31,165,149,0.13); stroke: var(--teal); stroke-width: 1.4; }
-  .state-label {
-    font-size: 11px; font-weight: 700;
-    fill: var(--teal); letter-spacing: 0.06em;
-    text-anchor: middle; pointer-events: none;
-  }
-  .pin {
-    fill: var(--gold); stroke: var(--navy-deep); stroke-width: 1.4;
-  }
-  .pin-label {
-    font-size: 10.5px; font-weight: 700;
-    fill: var(--navy-deep);
-    paint-order: stroke fill;
-    stroke: white; stroke-width: 3; stroke-linejoin: round;
-    pointer-events: none;
-  }
-  .pop-callout {
-    position: absolute;
-    left: 24px; bottom: 24px;
-    background: linear-gradient(135deg, var(--navy-deep) 0%, var(--navy) 100%);
-    color: white;
-    padding: 18px 24px;
-    border-radius: 12px;
-    box-shadow: 0 4px 16px rgba(15,27,51,0.18);
-  }
-  .pop-callout .num {
-    font-size: 38px; font-weight: 900;
-    color: var(--gold-light); line-height: 1;
-    letter-spacing: -0.01em;
-  }
-  .pop-callout .lbl {
-    font-size: 10.5px; font-weight: 700;
-    color: #A9B4CC; letter-spacing: 0.1em;
-    text-transform: uppercase; margin-top: 8px;
-  }
-  .pop-callout .sub {
-    font-size: 11.5px; color: #C6CEDF;
-    margin-top: 4px;
+    height: 900px;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    margin: 24px auto;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.5);
   }
 
-  .side {
-    display: flex; flex-direction: column; gap: 22px;
+  /* HERO (110px) */
+  .hero {
+    height: 110px;
+    padding: 0 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: linear-gradient(180deg, #0F1B33 0%, #0B1530 100%);
+    border-bottom: 4px solid var(--accent-gold);
   }
-  .side h2 {
+  .hero-left { display: flex; align-items: center; gap: 18px; }
+  .hero-mark {
+    width: 64px; height: 64px;
+    background: linear-gradient(135deg, var(--accent-gold) 0%, #C48A0B 100%);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 22px; color: var(--bg-page);
+    letter-spacing: -0.02em;
+    box-shadow: 0 4px 12px rgba(229,168,23,0.25);
+  }
+  .hero-titles h1 {
+    font-size: 30px; font-weight: 800; letter-spacing: -0.015em;
+    color: var(--text-primary);
+    line-height: 1.05;
+  }
+  .hero-titles .sub {
+    font-size: 12px; font-weight: 600;
+    color: var(--text-secondary); letter-spacing: 0.12em;
+    text-transform: uppercase; margin-top: 6px;
+  }
+  .hero-right { text-align: right; }
+  .hero-right .question {
+    font-size: 13px; color: var(--text-secondary);
+    font-style: italic; font-weight: 500;
+    max-width: 380px;
+  }
+  .hero-right .answer {
+    font-size: 14px; color: var(--accent-gold-light);
+    font-weight: 700; margin-top: 4px;
+    letter-spacing: 0.02em;
+  }
+
+  /* KPI STRIP (96px) */
+  .kpi-strip {
+    height: 96px;
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--stroke-subtle);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding: 0;
+  }
+  .kpi {
+    padding: 16px 28px;
+    border-right: 1px solid var(--stroke-subtle);
+    display: flex; flex-direction: column; justify-content: center;
+    position: relative;
+  }
+  .kpi:last-child { border-right: none; }
+  .kpi .num {
+    font-size: 42px; font-weight: 900;
+    color: var(--accent-gold);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+  .kpi .num .unit {
+    font-size: 22px; color: var(--accent-gold-light);
+    font-weight: 700; margin-left: 2px;
+  }
+  .kpi .lbl {
+    font-size: 10.5px; font-weight: 700;
+    color: var(--text-secondary);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .kpi .sub {
+    font-size: 10.5px; color: var(--text-tertiary);
+    margin-top: 2px; font-weight: 500;
+  }
+
+  /* MAIN: map + rail (600px) */
+  .main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 860px 1fr;
+    min-height: 600px;
+  }
+
+  /* MAP CANVAS */
+  .map-zone {
+    background: var(--bg-panel);
+    position: relative;
+    overflow: hidden;
+  }
+  .map-eyebrow {
+    position: absolute;
+    top: 20px; left: 24px;
+    z-index: 2;
+    font-size: 10.5px; font-weight: 700;
+    color: var(--text-secondary);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .map-eyebrow .dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    background: var(--accent-teal);
+    border-radius: 50%;
+    margin-right: 8px;
+    box-shadow: 0 0 8px var(--accent-teal);
+    vertical-align: 1px;
+  }
+  #us-map { width: 100%; height: 100%; display: block; }
+  .state-default { fill: #14223E; stroke: #2B3A5C; stroke-width: 0.6; }
+  .state-active {
+    fill: rgba(31,165,149,0.22);
+    stroke: var(--accent-gold);
+    stroke-width: 1.4;
+    filter: drop-shadow(0 0 6px rgba(31,165,149,0.45));
+  }
+  .state-label {
+    font-size: 13px; font-weight: 800;
+    fill: var(--accent-teal-light); letter-spacing: 0.06em;
+    text-anchor: middle; pointer-events: none;
+    paint-order: stroke fill;
+    stroke: var(--bg-page); stroke-width: 3.5; stroke-linejoin: round;
+  }
+  .pin-halo {
+    fill: var(--accent-gold);
+    opacity: 0.25;
+  }
+  .pin {
+    fill: var(--accent-gold); stroke: var(--bg-page); stroke-width: 1.8;
+  }
+  .pin-label {
     font-size: 11px; font-weight: 700;
-    letter-spacing: 0.14em; text-transform: uppercase;
-    color: var(--muted); margin-bottom: 10px;
+    fill: var(--text-primary);
+    paint-order: stroke fill;
+    stroke: var(--bg-page); stroke-width: 3.5; stroke-linejoin: round;
+    pointer-events: none;
   }
-  .side h2 .count {
-    font-weight: 500; text-transform: none; letter-spacing: 0;
-    color: var(--muted-light);
+
+  /* AGENCY RAIL */
+  .rail {
+    background: var(--bg-page);
+    padding: 20px 24px 16px;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .rail-h {
+    font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    display: flex; align-items: baseline; justify-content: space-between;
+  }
+  .rail-h .count {
+    color: var(--accent-gold); font-weight: 800;
+    letter-spacing: 0;
+  }
+  .state-group {
+    margin-bottom: 12px;
+  }
+  .state-group-head {
+    font-size: 9.5px; font-weight: 800;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--accent-teal-light);
+    padding: 4px 0 6px;
+    border-bottom: 1px solid var(--stroke-subtle);
+    margin-bottom: 6px;
+    display: flex; align-items: baseline; justify-content: space-between;
+  }
+  .state-group-head .ct {
+    color: var(--text-tertiary); font-weight: 600;
   }
   .agency-list {
-    list-style: none; display: flex; flex-direction: column; gap: 6px;
+    list-style: none; display: flex; flex-direction: column; gap: 4px;
   }
   .agency-list li {
     display: flex; align-items: center; gap: 10px;
-    padding: 7px 10px;
-    background: var(--white);
-    border: 1px solid var(--rule);
-    border-radius: 8px;
-    font-size: 13px;
-  }
-  .logo {
-    width: 32px; height: 32px;
-    background: var(--bg-deeper);
+    padding: 6px 8px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--stroke-subtle);
     border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 800; color: var(--muted);
-    flex-shrink: 0; overflow: hidden;
+    font-size: 12.5px;
+  }
+  .crest {
+    width: 38px; height: 38px;
+    border-radius: 7px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, var(--bg-elevated-2) 0%, var(--bg-elevated) 100%);
+    border: 1px solid var(--stroke-rule);
     position: relative;
   }
-  .logo img {
-    max-width: 88%; max-height: 88%; display: block;
-    object-fit: contain;
+  .crest.fire { border-color: var(--accent-gold); }
+  .crest.ems  { border-color: var(--accent-teal); }
+  .crest.multi { border-color: var(--accent-muted-gold); }
+  .crest .mono {
+    font-size: 12.5px; font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: 0.02em;
+    line-height: 1;
   }
-  .agency-list .name {
-    flex: 1; font-weight: 600; color: var(--ink);
+  .crest .tag {
+    font-size: 6.5px; font-weight: 800;
+    color: var(--text-secondary);
+    letter-spacing: 0.1em;
+    margin-top: 2px;
+    text-transform: uppercase;
+  }
+  .crest.fire .tag { color: var(--accent-gold-light); }
+  .crest.ems .tag  { color: var(--accent-teal-light); }
+  .crest.multi .tag { color: var(--accent-muted-gold); }
+  .agency-meta { flex: 1; min-width: 0; }
+  .agency-meta .name {
+    font-weight: 700; color: var(--text-primary);
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-size: 12.5px;
+    line-height: 1.2;
   }
-  .agency-list .state-tag {
-    font-size: 10.5px; font-weight: 700;
-    color: var(--teal); letter-spacing: 0.06em;
-    background: #E8F6F1;
-    padding: 2px 6px; border-radius: 4px;
+  .agency-meta .pop {
+    font-size: 10.5px; color: var(--text-tertiary);
+    margin-top: 1px;
+  }
+  .state-pill {
+    font-size: 9.5px; font-weight: 800;
+    color: var(--bg-page); letter-spacing: 0.06em;
+    background: var(--accent-gold);
+    padding: 2px 7px; border-radius: 3px;
     flex-shrink: 0;
   }
-  .agency-list.payers li {
-    background: #FAF7EE;
-    border-color: #F0DCA3;
+
+  /* PROOF FOOTER (90px) */
+  .proof {
+    height: 90px;
+    background: linear-gradient(180deg, var(--bg-panel) 0%, #0E1A30 100%);
+    border-top: 1px solid var(--stroke-subtle);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding: 0;
   }
-  .agency-list.payers .state-tag {
-    color: #9A6B00; background: #FFF6E0;
+  .proof-pill {
+    padding: 18px 22px;
+    border-right: 1px solid var(--stroke-subtle);
+    display: flex; flex-direction: column; justify-content: center;
+    position: relative;
   }
-  footer {
-    margin-top: 28px;
-    text-align: center;
-    font-size: 11px;
-    color: var(--muted-light);
-    letter-spacing: 0.04em;
+  .proof-pill:last-child { border-right: none; }
+  .proof-pill::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 18px; bottom: 18px;
+    width: 3px;
+    background: var(--accent-teal);
+    border-radius: 0 2px 2px 0;
+  }
+  .proof-pill .lbl {
+    font-size: 10px; font-weight: 700;
+    color: var(--text-tertiary);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .proof-pill .hed {
+    font-size: 15px; font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.15;
+    letter-spacing: -0.005em;
+  }
+  .proof-pill .hed em {
+    font-style: normal;
+    color: var(--accent-gold);
+  }
+  .proof-pill .src {
+    font-size: 10px; color: var(--text-tertiary);
+    margin-top: 4px;
+    font-weight: 500;
   }
 
-  /* PRINT — clean PDF output */
+  /* PRINT */
   @media print {
     @page { size: 1280px 900px; margin: 0; }
     body { background: white; }
     .toolbar { display: none; }
-    .page { padding: 28px 36px; width: 1280px; }
-    header { margin-bottom: 20px; padding-bottom: 12px; }
-    .question { margin-bottom: 18px; padding: 10px 14px; font-size: 14px; }
-    .map-panel { box-shadow: none; }
-    .agency-list li { box-shadow: none; }
+    .page { margin: 0; box-shadow: none; }
   }
 </style>
 </head>
 <body>
 
 <div class="toolbar">
-  <h1>MD Ally · National Footprint</h1>
+  <h1><strong>MD Ally</strong> · National Footprint</h1>
   <div class="actions">
-    <button id="btn-download">📄 Download PDF</button>
+    <button id="btn-download">Download PDF</button>
     <a href="/" class="secondary">← Back to Inquiry</a>
   </div>
 </div>
 
 <div class="page" id="capture">
 
-  <header>
-    <h1>MD Ally <span>National Footprint · 2026</span></h1>
-    <div class="tagline">Where we do telehealth and for whom</div>
-  </header>
-
-  <div class="question">
-    Where do you do telehealth and for whom? 8 operating public safety agencies across 4 states, ~7M direct service area population.
-  </div>
-
-  <div class="grid">
-    <div class="map-panel">
-      <h2>Active service map</h2>
-      <svg id="us-map" viewBox="0 0 960 580"></svg>
-      <div class="pop-callout">
-        <div class="num" id="pop-num">…</div>
-        <div class="lbl">Direct service area</div>
-        <div class="sub">Population covered by partner agencies</div>
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-left">
+      <div class="hero-mark">MD</div>
+      <div class="hero-titles">
+        <h1>National Footprint</h1>
+        <div class="sub">Public Safety Telehealth · 2026</div>
       </div>
     </div>
+    <div class="hero-right">
+      <div class="question">"Where do you do telehealth, and for whom?"</div>
+      <div class="answer">8 public safety agencies · 4 states · ~7M residents</div>
+    </div>
+  </div>
 
-    <aside class="side">
-      <div>
-        <h2>Operating agencies <span class="count">(8)</span></h2>
-        <ul class="agency-list" id="agency-list"></ul>
+  <!-- KPI STRIP -->
+  <div class="kpi-strip">
+    <div class="kpi">
+      <div class="num">8</div>
+      <div class="lbl">Operating Agencies</div>
+      <div class="sub">Fire, EMS, multi-service</div>
+    </div>
+    <div class="kpi">
+      <div class="num">4</div>
+      <div class="lbl">Active States</div>
+      <div class="sub">CA · AZ · CO · FL</div>
+    </div>
+    <div class="kpi">
+      <div class="num">~7<span class="unit">M</span></div>
+      <div class="lbl">Population Served</div>
+      <div class="sub">Direct jurisdictional</div>
+    </div>
+    <div class="kpi">
+      <div class="num">41<span class="unit">d</span></div>
+      <div class="lbl">Fastest Launch</div>
+      <div class="sub">Hillsborough County FR</div>
+    </div>
+  </div>
+
+  <!-- MAP + RAIL -->
+  <div class="main">
+    <div class="map-zone">
+      <div class="map-eyebrow"><span class="dot"></span>Active Service Map</div>
+      <svg id="us-map" viewBox="0 0 860 600" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+
+    <aside class="rail">
+      <div class="rail-h">
+        <span>Operating Agencies</span>
+        <span class="count">8</span>
       </div>
+      <div id="state-groups"></div>
     </aside>
   </div>
 
-  <footer>
-    MD Ally Technologies · 2026 · Implementation timelines and operational outcomes available under MNDA.
-  </footer>
+  <!-- PROOF FOOTER -->
+  <div class="proof">
+    <div class="proof-pill">
+      <div class="lbl">Fastest Launch</div>
+      <div class="hed">Hillsborough FR · <em>41 days</em></div>
+      <div class="src">Florida · 1.5M residents</div>
+    </div>
+    <div class="proof-pill">
+      <div class="lbl">First New State</div>
+      <div class="hed">Aurora CO · <em>99 days</em></div>
+      <div class="src">Colorado · 400K residents</div>
+    </div>
+    <div class="proof-pill">
+      <div class="lbl">Public Reference</div>
+      <div class="hed">Tucson Fire · <em>2K+ diverted</em></div>
+      <div class="src">KOLD News 13 · Jan 2026</div>
+    </div>
+    <div class="proof-pill">
+      <div class="lbl">Major Metro</div>
+      <div class="hed">Phoenix FD · <em>90 days</em></div>
+      <div class="src">Arizona · 1.6M residents</div>
+    </div>
+  </div>
 
 </div>
 
@@ -276,49 +465,86 @@
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
 <script>
-// =============== DATA ===============
-// 8 operating agencies (parent only — pins on map). Lat/lng = jurisdiction
-// approx centroid. domain = used for Clearbit logo fetch with fallback.
+// ============== DATA ==============
 const AGENCIES = [
-  { name: "Hillsborough County Fire Rescue", state: "FL", lat: 27.99, lng: -82.30, pop: 1500000, domain: "hcflgov.net", monogram: "HCFR" },
-  { name: "Manatee County",                  state: "FL", lat: 27.49, lng: -82.34, pop: 400000,  domain: "mymanatee.org", monogram: "MC" },
-  { name: "Lee County",                      state: "FL", lat: 26.65, lng: -81.95, pop: 800000,  domain: "leegov.com", monogram: "LC" },
-  { name: "City of Aurora",                  state: "CO", lat: 39.73, lng: -104.83, pop: 400000, domain: "auroragov.org", monogram: "AU" },
-  { name: "City of Phoenix",                 state: "AZ", lat: 33.45, lng: -112.07, pop: 1600000, domain: "phoenix.gov", monogram: "PHX" },
-  { name: "City of Tucson",                  state: "AZ", lat: 32.22, lng: -110.93, pop: 547000,  domain: "tucsonaz.gov", monogram: "TUC" },
-  { name: "Buckeye Fire-Medical Rescue",     state: "AZ", lat: 33.37, lng: -112.58, pop: 100000,  domain: "buckeyeaz.gov", monogram: "BFM" },
-  { name: "Alameda County (Falck)",          state: "CA", lat: 37.65, lng: -121.91, pop: 1690000, domain: "falck.com", monogram: "FA" },
+  { name: "Hillsborough County Fire Rescue", state: "FL", lat: 27.99, lng: -82.30, pop: 1500000, mono: "HCFR", type: "FIRE/EMS", cls: "fire" },
+  { name: "Manatee County",                  state: "FL", lat: 27.49, lng: -82.34, pop: 400000,  mono: "MAN",  type: "MULTI",    cls: "multi" },
+  { name: "Lee County",                      state: "FL", lat: 26.65, lng: -81.95, pop: 800000,  mono: "LEE",  type: "MULTI",    cls: "multi" },
+  { name: "City of Aurora",                  state: "CO", lat: 39.73, lng: -104.83, pop: 400000, mono: "AUR",  type: "FIRE/EMS", cls: "fire" },
+  { name: "City of Phoenix",                 state: "AZ", lat: 33.45, lng: -112.07, pop: 1600000, mono: "PHX", type: "FIRE/EMS", cls: "fire" },
+  { name: "City of Tucson",                  state: "AZ", lat: 32.22, lng: -110.93, pop: 547000,  mono: "TUC", type: "FIRE/EMS", cls: "fire" },
+  { name: "Buckeye Fire-Medical Rescue",     state: "AZ", lat: 33.37, lng: -112.58, pop: 100000,  mono: "BFM", type: "FIRE/EMS", cls: "fire" },
+  { name: "Alameda County (Falck)",          state: "CA", lat: 37.65, lng: -121.91, pop: 1690000, mono: "ALA", type: "EMS",      cls: "ems" },
 ];
+
+// Parent-only pins (all 8 are parents in v2; could de-dup later)
+const PINS = AGENCIES;
+
 const HIGHLIGHT_STATES = new Set(["06", "04", "08", "12"]); // CA, AZ, CO, FL (FIPS)
-const STATE_LABEL_AT = { "06": [-119.4, 37.0], "04": [-111.8, 34.2], "08": [-105.5, 39.0], "12": [-81.6, 28.5] };
+const STATE_LABEL_AT = {
+  "06": [-119.4, 37.0],  // CA
+  "04": [-111.8, 34.2],  // AZ
+  "08": [-105.5, 39.0],  // CO
+  "12": [-81.6, 28.5],   // FL
+};
 const STATE_NAMES_BY_FIPS = { "06": "CA", "04": "AZ", "08": "CO", "12": "FL" };
 
-// =============== POP CALLOUT ===============
-const totalPop = AGENCIES.reduce((sum, a) => sum + a.pop, 0);
-document.getElementById("pop-num").textContent =
-  totalPop >= 1_000_000 ? `~${(totalPop / 1_000_000).toFixed(1)}M` : `~${Math.round(totalPop / 1000)}K`;
+const STATE_GROUPS = [
+  { code: "FL", name: "Florida",    color: "var(--accent-gold)" },
+  { code: "AZ", name: "Arizona",    color: "var(--accent-red)" },
+  { code: "CO", name: "Colorado",   color: "var(--accent-teal)" },
+  { code: "CA", name: "California", color: "var(--accent-periwinkle)" },
+];
 
-// =============== SIDE LIST ===============
-function logoCell(agency) {
-  const url = `https://logo.clearbit.com/${agency.domain}?size=64`;
-  return `<div class="logo">
-    <img src="${url}" alt="" onerror="this.outerHTML='<span>${agency.monogram}</span>'">
+// ============== RAIL: state-grouped agency list ==============
+function fmtPop(p) {
+  if (p >= 1_000_000) return `${(p/1_000_000).toFixed(1)}M residents`;
+  return `${Math.round(p/1000)}K residents`;
+}
+function crest(a) {
+  return `<div class="crest ${a.cls}">
+    <span class="mono">${a.mono}</span>
+    <span class="tag">${a.type}</span>
   </div>`;
 }
-document.getElementById("agency-list").innerHTML = AGENCIES.map(a => `
-  <li>${logoCell(a)}<span class="name">${a.name}</span><span class="state-tag">${a.state}</span></li>
-`).join('');
+const groupsEl = document.getElementById("state-groups");
+groupsEl.innerHTML = STATE_GROUPS.map(g => {
+  const inState = AGENCIES.filter(a => a.state === g.code);
+  if (!inState.length) return '';
+  return `
+    <div class="state-group">
+      <div class="state-group-head">
+        <span>${g.name}</span>
+        <span class="ct">${inState.length} ${inState.length === 1 ? 'agency' : 'agencies'}</span>
+      </div>
+      <ul class="agency-list">
+        ${inState.map(a => `
+          <li>
+            ${crest(a)}
+            <div class="agency-meta">
+              <div class="name">${a.name}</div>
+              <div class="pop">${fmtPop(a.pop)}</div>
+            </div>
+            <span class="state-pill">${a.state}</span>
+          </li>
+        `).join('')}
+      </ul>
+    </div>
+  `;
+}).join('');
 
-// =============== US MAP ===============
-const W = 960, H = 580;
-const projection = d3.geoAlbersUsa().scale(1200).translate([W/2, H/2]);
+// ============== US MAP ==============
+const W = 860, H = 600;
+const projection = d3.geoAlbersUsa().scale(1100).translate([W/2, H/2 - 10]);
 const path = d3.geoPath(projection);
-const svg = d3.select("#us-map").attr("viewBox", `0 0 ${W} ${H}`);
+const svg = d3.select("#us-map");
 
 fetch("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json")
   .then(r => r.json())
   .then(us => {
     const states = topojson.feature(us, us.objects.states).features;
+
+    // Base states
     svg.append("g")
       .selectAll("path")
       .data(states)
@@ -326,40 +552,76 @@ fetch("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json")
       .attr("d", path)
       .attr("class", d => HIGHLIGHT_STATES.has(String(d.id).padStart(2,"0")) ? "state-active" : "state-default");
 
-    // State labels on highlighted states
+    // State labels (on highlighted states only)
     svg.append("g")
       .selectAll("text")
       .data(states.filter(d => HIGHLIGHT_STATES.has(String(d.id).padStart(2,"0"))))
       .join("text")
       .attr("class", "state-label")
       .attr("transform", d => {
-        const [lng, lat] = STATE_LABEL_AT[String(d.id).padStart(2,"0")] || [0,0];
-        const xy = projection([lng, lat]);
+        const lonlat = STATE_LABEL_AT[String(d.id).padStart(2,"0")];
+        if (!lonlat) return "";
+        const xy = projection(lonlat);
         return xy ? `translate(${xy[0]},${xy[1]})` : "";
       })
       .text(d => STATE_NAMES_BY_FIPS[String(d.id).padStart(2,"0")] || "");
 
-    // Pins
-    const pins = svg.append("g");
-    AGENCIES.forEach(a => {
+    // Pins with halos
+    const pinG = svg.append("g");
+    PINS.forEach(a => {
       const xy = projection([a.lng, a.lat]);
       if (!xy) return;
-      pins.append("circle")
+      pinG.append("circle")
+        .attr("class", "pin-halo")
+        .attr("cx", xy[0]).attr("cy", xy[1]).attr("r", 12);
+      pinG.append("circle")
         .attr("class", "pin")
-        .attr("cx", xy[0]).attr("cy", xy[1]).attr("r", 7);
-      pins.append("text")
+        .attr("cx", xy[0]).attr("cy", xy[1]).attr("r", 6);
+    });
+
+    // Pin labels: place outside cluster zones with simple offset map
+    const labelOffsets = {
+      "Hillsborough County Fire Rescue": [12, 4],
+      "Manatee County":                  [12, 18],
+      "Lee County":                      [12, 4],
+      "City of Aurora":                  [12, 4],
+      "City of Phoenix":                 [-12, -8],
+      "City of Tucson":                  [12, 4],
+      "Buckeye Fire-Medical Rescue":     [-12, 10],
+      "Alameda County (Falck)":          [-12, -8],
+    };
+    const labelAnchor = {
+      "City of Phoenix": "end",
+      "Buckeye Fire-Medical Rescue": "end",
+      "Alameda County (Falck)": "end",
+    };
+    const labelText = {
+      "Hillsborough County Fire Rescue": "Hillsborough",
+      "Alameda County (Falck)": "Alameda (Falck)",
+      "City of Aurora": "Aurora",
+      "City of Phoenix": "Phoenix",
+      "City of Tucson": "Tucson",
+      "Buckeye Fire-Medical Rescue": "Buckeye",
+    };
+    PINS.forEach(a => {
+      const xy = projection([a.lng, a.lat]);
+      if (!xy) return;
+      const off = labelOffsets[a.name] || [12, 4];
+      svg.append("text")
         .attr("class", "pin-label")
-        .attr("x", xy[0] + 10).attr("y", xy[1] + 4)
-        .text(a.name.replace(/^(City of |Alameda County )/, "").replace(/ \(.*\)/, ""));
+        .attr("x", xy[0] + off[0])
+        .attr("y", xy[1] + off[1])
+        .attr("text-anchor", labelAnchor[a.name] || "start")
+        .text(labelText[a.name] || a.name);
     });
   })
   .catch(err => {
     console.error("us-atlas load failed:", err);
     svg.append("text").attr("x", W/2).attr("y", H/2).attr("text-anchor", "middle")
-      .style("fill", "var(--muted)").text("Map loading…");
+      .style("fill", "var(--text-secondary)").style("font-size", "14px").text("Map loading…");
   });
 
-// =============== PDF DOWNLOAD ===============
+// ============== PDF DOWNLOAD ==============
 document.getElementById("btn-download").addEventListener("click", () => {
   const btn = document.getElementById("btn-download");
   btn.disabled = true; btn.textContent = "Generating PDF…";
@@ -368,13 +630,20 @@ document.getElementById("btn-download").addEventListener("click", () => {
     margin: 0,
     filename: `MD_Ally_National_Footprint_${new Date().toISOString().slice(0,10)}.pdf`,
     image: { type: "jpeg", quality: 0.95 },
-    html2canvas: { scale: 2, useCORS: true, allowTaint: true, backgroundColor: "#ffffff" },
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: "#0F1B33",
+      windowWidth: 1280,
+      windowHeight: 900,
+    },
     jsPDF: { unit: "px", format: [1280, 900], orientation: "landscape" },
   }).from(node).save().then(() => {
-    btn.disabled = false; btn.textContent = "📄 Download PDF";
+    btn.disabled = false; btn.textContent = "Download PDF";
   }).catch(e => {
     console.error(e);
-    btn.disabled = false; btn.textContent = "✗ Failed — retry";
+    btn.disabled = false; btn.textContent = "Failed — retry";
   });
 });
 </script>
