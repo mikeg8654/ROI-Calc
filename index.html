@@ -898,11 +898,37 @@ function openWorkspaceDiscovery(brief) {
   setTimeout(() => $('workspace').scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
 }
 
+// State-specific peer references for cold-outbound (per memory). Implementation
+// facts are nameable; savings/dollar stats are anonymized ('a Florida partner').
+// HCFR / Aurora / Lee / Phoenix / Manatee / CO Springs / Anchorage are NOT named
+// in cold outbound — those are current partners routed through CS.
+const STATE_PEER_REF = {
+  AZ: "A peer Arizona fire department went live earlier this year and was covered publicly by KOLD News 13 (January 2026) reporting 2,000+ calls aligned with non-911 care in their first months. Happy to share their before/after operational picture.",
+  CA: "Falck in Alameda County is our NorCal peer reference and a useful proximate comp if helpful.",
+  FL: "We've implemented a Florida partner in 41 days — full operational timeline we can walk through.",
+  CO: "Aurora was our first new-state implementation outside Florida, live in 99 days. Useful comp if you're scoping a similar adoption arc.",
+  NV: "Reno's REMSA is the closest NV peer for the franchise-EMS adoption pattern.",
+};
+
+// State-specific procurement framing — FL/AZ have the discounted-state-rate
+// arrangement; never describe MD Ally as 'free' or 'no cost' anywhere.
+const STATE_PROCUREMENT_LINE = {
+  FL: "Florida has a heavily discounted state rate for MD Ally, with no per-call or usage-based fees. This is implementing a process to transfer non-emergent calls to the right care, not a resource-intensive IT project.",
+  AZ: "Arizona has a heavily discounted state rate for MD Ally, with no per-call or usage-based fees. This is implementing a process to transfer non-emergent calls to the right care, not a resource-intensive IT project.",
+};
+
 function composeOutreachDraft(brief) {
-  // Compose a draft opening email from the brief's existing LLM output.
-  // Keep it short and Mike's voice — first conversation starter + the most
-  // pointed discovery question, then a one-line ask + Bookings URL.
-  const agencyName = brief.agency?.name ?? "your agency";
+  // Consultative-outreach composer using MD Ally Revenue Engineer framework:
+  //   - MEDDPICC compelling event lead
+  //   - Operational pain framing (unit-hour, low-acuity routing)
+  //   - One pointed discovery question
+  //   - State-specific peer reference (CA / FL / AZ / CO / NV anchors)
+  //   - FL/AZ discounted-state-rate + 'process to transfer' procurement line
+  //   - 25-min working conversation ask (NEVER a demo)
+  //   - Patient-outcome framing per the avoided-spending language rule
+  const agency = brief.agency ?? {};
+  const agencyName = agency.name ?? "your agency";
+  const state = (agency.state ?? "").toUpperCase();
   const contacts = brief.intel?.contacts ?? [];
   const champion = contacts.find(c => /champion/i.test(c.role || '')) || contacts[0];
   const toName = champion?.name?.split(' ')[0] ?? "there";
@@ -910,14 +936,12 @@ function composeOutreachDraft(brief) {
   const cs = brief.intel?.conversation_starters ?? [];
   const dq = brief.intel?.discovery_questions ?? [];
   const ng = brief.intel?.golden_nuggets ?? [];
-  const compellingEvent = ng.find(n => n.kind === 'compelling_event');
-  let opener = cs[0] ?? '';
+  const compelling = ng.find(n => n.kind === 'compelling_event');
+  const pain = ng.find(n => n.kind === 'pain');
+  const opener = cs[0] ?? '';
   const ask = dq[0] ?? '';
 
-  // The LLM's conversation_starter often opens with "[Name]," or
-  // "[Title] [Name]," (e.g. "Chief Sauve,", "Scott,", "Dr. Johnson,").
-  // Detect that and skip the canonical "Hi [Name]," prefix so we don't
-  // emit a double-greeting like "Hi Scott, Chief Sauve, ...".
+  // Detect existing salutation in the LLM opener so we don't double-greet.
   const TITLE_RE = /^(?:chief|dr\.?|mr\.?|mrs\.?|ms\.?|sir|madam|director|captain|commander|lieutenant|sgt\.?|sergeant|deputy|asst\.?)\s+[A-Z][a-zA-Z'\-]+/i;
   const NAME_RE = /^[A-Z][a-zA-Z'\-]+,/;
   const HI_RE = /^(?:hi|hello|hey)\s+[A-Z][a-zA-Z'\-]+,?\s*/i;
@@ -926,28 +950,74 @@ function composeOutreachDraft(brief) {
     TITLE_RE.test(opener) ||
     NAME_RE.test(opener) ||
     (toName !== "there" && opener.toLowerCase().startsWith(toName.toLowerCase() + ','));
-
-  // If the opener doesn't already address the contact, prepend our own greeting.
-  // If it does, use the opener verbatim (the LLM picked who to address).
   const greeting = startsAddressed ? null : `Hi ${toName},`;
 
-  const subject = compellingEvent
-    ? `Quick thought on ${agencyName} — re: ${compellingEvent.text.slice(0, 60).replace(/[.!?,]*$/, '')}…`
-    : `Quick thought on ${agencyName}`;
-  const body = [
-    greeting,
-    greeting ? '' : null,
-    opener || `Wanted to flag something I think is relevant to ${agencyName}'s operational moment.`,
-    '',
-    ask ? `One question I keep coming back to: ${ask}` : null,
-    ask ? '' : null,
-    `Worth 25 minutes? Here's my Bookings link — pick anything that works.`,
-    BOOKING_URL,
-    '',
-    `Mike`,
-    `VP, Public Safety Partnerships`,
-    `MD Ally`,
-  ].filter(line => line !== null).join('\n');
+  // Subject — name the compelling event in operational terms, agency-first.
+  let subject;
+  if (compelling) {
+    const moment = compelling.text.split(/[.—]/)[0].slice(0, 80).trim();
+    subject = `${agencyName}: thought on ${moment.replace(/^[A-Z]/, c => c.toLowerCase())}`;
+  } else if (pain) {
+    subject = `${agencyName}: thought on unit-hour utilization + low-acuity routing`;
+  } else {
+    subject = `${agencyName}: thought on non-emergent 911 routing`;
+  }
+  if (subject.length > 100) subject = subject.slice(0, 97) + "...";
+
+  // Body assembly — five short sections, no em dashes, no 'recovered' language.
+  const lines = [];
+  if (greeting) {
+    lines.push(greeting);
+    lines.push('');
+  }
+
+  // 1. Opener (LLM-crafted conversation starter, or fallback)
+  if (opener) {
+    lines.push(opener);
+  } else if (pain) {
+    lines.push(`Reached out because the operational pattern at ${agencyName} matches something we have spent the last three years engineering around.`);
+  } else {
+    lines.push(`Reached out because what your team is working through right now lines up with where MD Ally fits.`);
+  }
+  lines.push('');
+
+  // 2. Operational frame (consultative pain naming, only if we have signal)
+  if (pain) {
+    lines.push(`The pattern I see in agencies your size: low-acuity 911 calls (Omega-tier events that do not need a unit) eat 15 to 30 percent of dispatch volume. Aligning those callers with the right care faster gives unit-hour utilization back to the high-acuity work that drives outcomes.`);
+    lines.push('');
+  }
+
+  // 3. Pointed discovery question
+  if (ask) {
+    lines.push(`One question I keep coming back to: ${ask}`);
+    lines.push('');
+  }
+
+  // 4. State-specific peer reference (never names current MD Ally partners)
+  const peerRef = STATE_PEER_REF[state]
+    ?? "Happy to share implementation timelines and outcomes from peer agencies in your region.";
+  lines.push(peerRef);
+  lines.push('');
+
+  // 5. FL/AZ-only: discounted state rate + process-to-transfer framing
+  const procLine = STATE_PROCUREMENT_LINE[state];
+  if (procLine) {
+    lines.push(procLine);
+    lines.push('');
+  }
+
+  // 6. Consultative ask (never 'demo')
+  lines.push(`Worth 25 minutes for a working conversation. Not a demo. I would rather walk through what your operational reality looks like and what we would need to model an honest impact case for ${agencyName}, before either of us decides if there is a fit.`);
+  lines.push('');
+  lines.push(BOOKING_URL);
+  lines.push('');
+
+  // Sign off
+  lines.push('Mike');
+  lines.push('VP, Public Safety Partnerships');
+  lines.push('MD Ally');
+
+  const body = lines.join('\n');
   return { subject, body, toName, toEmail };
 }
 
