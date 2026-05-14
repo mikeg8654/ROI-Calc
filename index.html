@@ -484,11 +484,12 @@
           <div class="status" id="status-discovery"></div>
         </div>
       </div>
-      <div class="action-card disabled" data-action="outreach">
+      <div class="action-card" data-action="outreach">
         <div class="action-icon">📧</div>
         <div>
           <div class="title">Drafted Outreach</div>
-          <div class="desc">AI-drafted opening email in Mike's voice, ready to paste into Outlook. <em>Coming soon.</em></div>
+          <div class="desc">Opening email composed from the brief's conversation starter + ask, ready to send from Outlook or paste anywhere.</div>
+          <div class="status" id="status-outreach"></div>
         </div>
       </div>
       <div class="action-card" data-action="link">
@@ -834,6 +835,8 @@ async function doAction(action) {
       openWorkspaceDiscovery(brief);
     } else if (action === 'ppt') {
       openWorkspacePpt(brief);
+    } else if (action === 'outreach') {
+      openWorkspaceOutreach(brief);
     }
   } catch (e) {
     card?.classList.remove('busy');
@@ -891,6 +894,107 @@ function openWorkspaceDiscovery(brief) {
   `;
   $('workspace').classList.add('open');
   setTimeout(() => $('workspace').scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+}
+
+function composeOutreachDraft(brief) {
+  // Compose a draft opening email from the brief's existing LLM output.
+  // Keep it short and Mike's voice — first conversation starter + the most
+  // pointed discovery question, then a one-line ask + Bookings URL.
+  const agencyName = brief.agency?.name ?? "your agency";
+  const contacts = brief.intel?.contacts ?? [];
+  const champion = contacts.find(c => /champion/i.test(c.role || '')) || contacts[0];
+  const toName = champion?.name?.split(' ')[0] ?? "there";
+  const toEmail = champion?.email ?? '';
+  const cs = brief.intel?.conversation_starters ?? [];
+  const dq = brief.intel?.discovery_questions ?? [];
+  const ng = brief.intel?.golden_nuggets ?? [];
+  const compellingEvent = ng.find(n => n.kind === 'compelling_event');
+  const opener = cs[0] ?? '';
+  const ask = dq[0] ?? '';
+  const subject = compellingEvent
+    ? `Quick thought on ${agencyName} — re: ${compellingEvent.text.slice(0, 60).replace(/[.!?,]*$/, '')}…`
+    : `Quick thought on ${agencyName}`;
+  const body = [
+    `Hi ${toName},`,
+    '',
+    opener || `Wanted to flag something I think is relevant to ${agencyName}'s operational moment.`,
+    '',
+    ask ? `One question I keep coming back to: ${ask}` : '',
+    '',
+    `Worth 25 minutes? Here's my Bookings link — pick anything that works.`,
+    BOOKING_URL,
+    '',
+    `Mike`,
+    `VP, Public Safety Partnerships`,
+    `MD Ally`,
+  ].filter(line => line !== null).join('\n');
+  return { subject, body, toName, toEmail };
+}
+
+function openWorkspaceOutreach(brief) {
+  $('workspace-icon').textContent = '📧';
+  $('workspace-label').textContent = `Drafted outreach — ${brief.agency?.name ?? "agency"}`;
+  const { subject, body, toName, toEmail } = composeOutreachDraft(brief);
+  const mailto = `mailto:${encodeURIComponent(toEmail || '')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  const safeId = (brief.agency?.name || 'agency').replace(/[^A-Za-z0-9]+/g, '_');
+  $('workspace-body').innerHTML = `
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
+      <a class="btn btn-primary" href="${escHtml(mailto)}" target="_blank" rel="noopener">📧 Open in Outlook${toEmail ? ` (to ${escHtml(toName)})` : ''}</a>
+      <button class="btn btn-secondary" id="btn-outreach-copy">📋 Copy body</button>
+      <button class="btn btn-secondary" id="btn-outreach-copy-subject">📋 Copy subject</button>
+      <button class="btn btn-secondary" id="btn-outreach-save-hs">💾 Save to deal as NOTE</button>
+    </div>
+    <div style="background:var(--white); border:1px solid var(--rule); border-radius:8px; padding:14px 18px; margin-bottom:14px;">
+      <div style="display:flex; gap:10px; align-items:center; padding-bottom:10px; border-bottom:1px solid var(--bg);">
+        <span style="font-size:10.5px; font-weight:700; color:var(--muted); letter-spacing:0.08em; text-transform:uppercase; min-width:54px;">Subject</span>
+        <span style="font-size:14px; color:var(--navy-deep); font-weight:600;">${escHtml(subject)}</span>
+      </div>
+      ${toEmail ? `<div style="display:flex; gap:10px; align-items:center; padding:10px 0; border-bottom:1px solid var(--bg);">
+        <span style="font-size:10.5px; font-weight:700; color:var(--muted); letter-spacing:0.08em; text-transform:uppercase; min-width:54px;">To</span>
+        <span style="font-size:13px; color:var(--ink);">${escHtml(toName)} &lt;${escHtml(toEmail)}&gt;</span>
+      </div>` : ''}
+      <pre id="outreach-body" style="margin:14px 0 0 0; font-family:'Inter','Segoe UI',sans-serif; font-size:13.5px; line-height:1.6; color:var(--ink); white-space:pre-wrap;">${escHtml(body)}</pre>
+    </div>
+    <div style="font-size:11px; color:var(--muted); font-style:italic;">Draft composed from brief data. Edit before sending. 'Save to deal' logs a NOTE on the HubSpot company if matched.</div>
+    <div class="status" id="status-outreach-action" style="margin-top:10px;"></div>
+  `;
+  $('workspace').classList.add('open');
+  setTimeout(() => $('workspace').scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+
+  $('btn-outreach-copy').addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(body);
+      $('btn-outreach-copy').textContent = '✓ Copied';
+      setTimeout(() => { $('btn-outreach-copy').textContent = '📋 Copy body'; }, 2000);
+    } catch {}
+  });
+  $('btn-outreach-copy-subject').addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(subject);
+      $('btn-outreach-copy-subject').textContent = '✓ Copied';
+      setTimeout(() => { $('btn-outreach-copy-subject').textContent = '📋 Copy subject'; }, 2000);
+    } catch {}
+  });
+  $('btn-outreach-save-hs').addEventListener('click', async () => {
+    const status = $('status-outreach-action');
+    status.textContent = 'Saving to HubSpot…';
+    try {
+      const resp = await fetch(`${PULSE_API_BASE}/api/agency-brief`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          agency_name: _selectedHit.name,
+          share_to_hubspot: true,
+        }),
+      });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      status.textContent = '✓ Saved as NOTE on HubSpot company (if matched)';
+      status.style.color = 'var(--green)';
+    } catch (e) {
+      status.textContent = '✗ Save failed: ' + (e.message || 'unknown error');
+      status.style.color = 'var(--red)';
+    }
+  });
 }
 
 function openWorkspacePpt(brief) {
