@@ -626,6 +626,9 @@ async function fetchDispatch(hit) {
       state: hit.state,
     });
     if (hit.county) params.set('county', hit.county);
+    // ZIP enables server-side ZIP->county resolution for NPI-sourced hits
+    // (which don't carry county). Lifts dispatch confidence from MEDIUM to HIGH.
+    if (hit.zip) params.set('zip', hit.zip);
     const resp = await fetch(`${PULSE_API_BASE}/api/inquiry/dispatch?${params}`);
     if (!resp.ok) return null;
     return await resp.json();
@@ -840,14 +843,28 @@ async function doAction(action) {
 
 function openWorkspacePdf(brief) {
   const url = `${PULSE_API_BASE}${brief.artifacts.pdf_url}`;
+  const agencyName = brief.agency?.name ?? "agency";
+  const nugCount = (brief.intel?.golden_nuggets ?? []).length;
+  const contactCount = (brief.intel?.contacts ?? []).length;
+  const newsCount = (brief.intel?.news ?? []).length;
   $('workspace-icon').textContent = '📄';
-  $('workspace-label').textContent = `Meeting Intelligence — ${brief.agency.name}`;
+  $('workspace-label').textContent = `Meeting Intelligence — ${agencyName}`;
+  // No iframe — cross-origin PDF embeds often blocked by X-Frame-Options.
+  // Surface explicit Open / Download / Copy actions instead, plus a stats
+  // strip so the user knows what's in the PDF before clicking.
   $('workspace-body').innerHTML = `
-    <div style="margin-bottom:14px; display:flex; gap:10px;">
-      <a class="btn btn-primary" href="${escHtml(url)}" download target="_blank" rel="noopener">📥 Download PDF</a>
-      <button class="btn btn-secondary" onclick="navigator.clipboard.writeText('${escHtml(url)}'); this.textContent='✓ Link copied'; setTimeout(()=>this.textContent='🔗 Copy link',2000)">🔗 Copy link</button>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+      <a class="btn btn-primary" href="${escHtml(url)}" target="_blank" rel="noopener">📄 Open PDF in new tab</a>
+      <a class="btn btn-secondary" href="${escHtml(url)}" download="MD_Ally_Meeting_Intelligence_${escHtml(agencyName).replace(/[^A-Za-z0-9]+/g,'_')}.pdf">📥 Download</a>
+      <button class="btn btn-secondary" onclick="navigator.clipboard.writeText('${escHtml(url)}'); this.textContent='✓ Link copied'; setTimeout(()=>this.textContent='🔗 Copy shareable link',2000)">🔗 Copy shareable link</button>
     </div>
-    <iframe src="${escHtml(url)}" title="Meeting Intelligence PDF"></iframe>
+    <div style="background:var(--bg); border-radius:8px; padding:14px 18px; display:grid; grid-template-columns:repeat(4,1fr); gap:12px; text-align:center;">
+      <div><div style="font-size:22px; font-weight:800; color:var(--navy-deep);">${nugCount}</div><div style="font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em;">Nuggets</div></div>
+      <div><div style="font-size:22px; font-weight:800; color:var(--navy-deep);">${(brief.intel?.discovery_questions ?? []).length}</div><div style="font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em;">Discovery Qs</div></div>
+      <div><div style="font-size:22px; font-weight:800; color:var(--navy-deep);">${contactCount}</div><div style="font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em;">Contacts</div></div>
+      <div><div style="font-size:22px; font-weight:800; color:var(--navy-deep);">${newsCount}</div><div style="font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em;">News items</div></div>
+    </div>
+    <div style="margin-top:14px; font-size:12px; color:var(--muted); font-style:italic;">PDF is a 3-page draft Meeting Intelligence brief. Verify each cited fact before referencing live with the agency.</div>
   `;
   $('workspace').classList.add('open');
   setTimeout(() => $('workspace').scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
