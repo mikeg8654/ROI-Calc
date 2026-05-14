@@ -645,14 +645,8 @@ document.getElementById("btn-download").addEventListener("click", () => {
       useCORS: true,
       allowTaint: true,
       backgroundColor: "#0F1B33",
-      width: 1280,
-      height: 900,
       windowWidth: 1280,
       windowHeight: 900,
-      x: 0,
-      y: 0,
-      scrollX: 0,
-      scrollY: 0,
     },
     jsPDF: {
       unit: "px",
@@ -660,7 +654,6 @@ document.getElementById("btn-download").addEventListener("click", () => {
       orientation: "landscape",
       hotfixes: ["px_scaling"],
     },
-    pagebreak: { mode: ["avoid-all"] },
   }).from(node).save().then(() => {
     node.classList.remove("capturing");
     btn.disabled = false; btn.textContent = "Download PDF";
