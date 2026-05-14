@@ -78,12 +78,20 @@
     box-shadow: 0 12px 48px rgba(0,0,0,0.5);
     position: relative;
   }
-  /* Strip the screen-only shadow while html2canvas is capturing —
-     box-shadow extends the visual bounding box and shifts the PDF crop. */
+  /* Pin the page to viewport (0,0) while html2canvas is capturing.
+     Without this, body's default 8px margin + the .page's centered
+     `margin: auto` cause html2canvas to compute the element's offset
+     wrong, shifting the captured image left and clipping the hero. */
   .page.capturing {
     box-shadow: none !important;
     margin: 0 !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 9999 !important;
   }
+  /* Body needs no default margin during capture either */
+  body.capturing { margin: 0 !important; padding: 0 !important; }
 
   /* HERO (110px) */
   .hero {
@@ -635,6 +643,7 @@ document.getElementById("btn-download").addEventListener("click", () => {
   btn.disabled = true; btn.textContent = "Generating PDF…";
   const node = document.getElementById("capture");
   node.classList.add("capturing");
+  document.body.classList.add("capturing");
 
   html2pdf().set({
     margin: 0,
@@ -656,10 +665,12 @@ document.getElementById("btn-download").addEventListener("click", () => {
     },
   }).from(node).save().then(() => {
     node.classList.remove("capturing");
+    document.body.classList.remove("capturing");
     btn.disabled = false; btn.textContent = "Download PDF";
   }).catch(e => {
     console.error(e);
     node.classList.remove("capturing");
+    document.body.classList.remove("capturing");
     btn.disabled = false; btn.textContent = "Failed — retry";
   });
 });
