@@ -632,6 +632,10 @@ async function fetchDispatch(hit) {
     // ZIP enables server-side ZIP->county resolution for NPI-sourced hits
     // (which don't carry county). Lifts dispatch confidence from MEDIUM to HIGH.
     if (hit.zip) params.set('zip', hit.zip);
+    // Type lets the dispatch resolver pick fire/EMS-capable PSAPs over
+    // police-only ones for fire/EMS agencies (Tucson Fire → Tucson Fire
+    // Medics, not Pima County Sheriffs Office).
+    if (hit.type) params.set('type', hit.type);
     const resp = await fetch(`${PULSE_API_BASE}/api/inquiry/dispatch?${params}`);
     if (!resp.ok) return null;
     return await resp.json();
