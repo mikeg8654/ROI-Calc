@@ -221,15 +221,15 @@
   /* AGENCY RAIL */
   .rail {
     background: var(--bg-page);
-    padding: 20px 24px 16px;
+    padding: 14px 20px 12px;
     overflow: hidden;
     display: flex; flex-direction: column;
   }
   .rail-h {
-    font-size: 10.5px; font-weight: 700;
+    font-size: 10px; font-weight: 700;
     letter-spacing: 0.18em; text-transform: uppercase;
     color: var(--text-secondary);
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     display: flex; align-items: baseline; justify-content: space-between;
   }
   .rail-h .count {
@@ -237,34 +237,35 @@
     letter-spacing: 0;
   }
   .state-group {
-    margin-bottom: 12px;
+    margin-bottom: 8px;
   }
+  .state-group:last-child { margin-bottom: 0; }
   .state-group-head {
-    font-size: 9.5px; font-weight: 800;
+    font-size: 9px; font-weight: 800;
     letter-spacing: 0.16em; text-transform: uppercase;
     color: var(--accent-teal-light);
-    padding: 4px 0 6px;
+    padding: 2px 0 4px;
     border-bottom: 1px solid var(--stroke-subtle);
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     display: flex; align-items: baseline; justify-content: space-between;
   }
   .state-group-head .ct {
     color: var(--text-tertiary); font-weight: 600;
   }
   .agency-list {
-    list-style: none; display: flex; flex-direction: column; gap: 4px;
+    list-style: none; display: flex; flex-direction: column; gap: 3px;
   }
   .agency-list li {
-    display: flex; align-items: center; gap: 10px;
-    padding: 6px 8px;
+    display: flex; align-items: center; gap: 9px;
+    padding: 5px 7px;
     background: var(--bg-elevated);
     border: 1px solid var(--stroke-subtle);
     border-radius: 6px;
-    font-size: 12.5px;
+    font-size: 12px;
   }
   .crest {
-    width: 38px; height: 38px;
-    border-radius: 7px;
+    width: 34px; height: 34px;
+    border-radius: 6px;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     flex-shrink: 0;
@@ -276,13 +277,13 @@
   .crest.ems  { border-color: var(--accent-teal); }
   .crest.multi { border-color: var(--accent-muted-gold); }
   .crest .mono {
-    font-size: 12.5px; font-weight: 800;
+    font-size: 11.5px; font-weight: 800;
     color: var(--text-primary);
     letter-spacing: 0.02em;
     line-height: 1;
   }
   .crest .tag {
-    font-size: 6.5px; font-weight: 800;
+    font-size: 6px; font-weight: 800;
     color: var(--text-secondary);
     letter-spacing: 0.1em;
     margin-top: 2px;
@@ -295,11 +296,11 @@
   .agency-meta .name {
     font-weight: 700; color: var(--text-primary);
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    font-size: 12.5px;
-    line-height: 1.2;
+    font-size: 12px;
+    line-height: 1.15;
   }
   .agency-meta .pop {
-    font-size: 10.5px; color: var(--text-tertiary);
+    font-size: 10px; color: var(--text-tertiary);
     margin-top: 1px;
   }
   .state-pill {
