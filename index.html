@@ -859,6 +859,8 @@ function openWorkspaceDiscovery(brief) {
   const dq = brief.intel?.discovery_questions || [];
   const cs = brief.intel?.conversation_starters || [];
   const ng = brief.intel?.golden_nuggets || [];
+  const ps = brief.agency?.public_sources || [];
+  const kindIcon = { transparency_portal: '📋', budget: '💰', board_packets: '📑', live_incidents: '🚨', social_feed: '📡', alternative_response: '🩺', strategic_plan: '📘' };
   $('workspace-body').innerHTML = `
     ${ng.length ? `<h4 style="font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); margin-bottom:8px;">Why now</h4>
     ${ng.map(n => `<div class="nugget"><div class="kind">${escHtml((n.kind||'').replace(/_/g,' '))}</div>${escHtml(n.text)}</div>`).join('')}` : ''}
@@ -866,7 +868,9 @@ function openWorkspaceDiscovery(brief) {
     ${cs.map(c => `<div class="nugget" style="border-left-color:var(--gold);">${escHtml(c)}</div>`).join('')}` : ''}
     ${dq.length ? `<h4 style="font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); margin:18px 0 8px 0;">Discovery questions</h4>
     ${dq.map((q, i) => `<div class="nugget" style="border-left-color:var(--teal);"><strong>Q${i+1}.</strong> ${escHtml(q)}</div>`).join('')}` : ''}
-    ${(!ng.length && !cs.length && !dq.length) ? '<div style="color:var(--muted); font-style:italic;">No discovery output yet. Brief may still be generating.</div>' : ''}
+    ${ps.length ? `<h4 style="font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); margin:18px 0 8px 0;">Public-data sources <span style="font-weight:500; letter-spacing:0; text-transform:none; color:var(--muted-light);">(what they publish themselves)</span></h4>
+    ${ps.map(s => `<div class="nugget" style="border-left-color:var(--navy);"><div style="display:flex; gap:8px; align-items:flex-start;"><div style="font-size:18px; line-height:1.2;">${kindIcon[s.kind] || '🔗'}</div><div style="flex:1;"><div style="font-weight:600;"><a href="${escHtml(s.url)}" target="_blank" rel="noopener" style="color:var(--navy); text-decoration:underline;">${escHtml(s.label)}</a></div>${s.notes ? `<div style="font-size:11px; color:var(--muted); margin-top:3px;">${escHtml(s.notes)}</div>` : ''}</div></div></div>`).join('')}` : ''}
+    ${(!ng.length && !cs.length && !dq.length && !ps.length) ? '<div style="color:var(--muted); font-style:italic;">No discovery output yet. Brief may still be generating.</div>' : ''}
   `;
   $('workspace').classList.add('open');
   setTimeout(() => $('workspace').scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
