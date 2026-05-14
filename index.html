@@ -957,9 +957,13 @@ $('btn-confirm').addEventListener('click', confirmAgency);
 $('btn-cancel').addEventListener('click', () => {
   _selectedHit = null;
   _dispatchResolution = null;
+  _suggestions = [];
+  _activeIndex = -1;
   $('identity-card').classList.remove('open');
   $('action-stack').classList.remove('open');
   $('workspace').classList.remove('open');
+  $('typeahead').classList.remove('open');
+  $('typeahead').innerHTML = '';
   $('q').value = '';
   $('q').focus();
 });
@@ -980,12 +984,16 @@ $('btn-workspace-close').addEventListener('click', () => {
 // Backward compat: prospect URLs from before 2026-05-14 hit / with calc
 // params (pop, calls, area, depth, mods). Redirect those to /calc preserving
 // everything. New inquiry shell takes / as the front door.
+//
+// Only `id` is unambiguously an inquiry-shell param. `name` is shared
+// between the inquiry shell and the calc (calc takes name as the agency
+// pre-fill), so we don't use it to distinguish modes.
 (function backwardCompatCalcRedirect() {
   const params = new URLSearchParams(window.location.search);
   const calcParams = ['pop', 'calls', 'area', 'depth', 'mods', 'discount', 'zip'];
   const hasCalcParam = calcParams.some(k => params.has(k));
-  const hasInquiryParam = params.has('id') || params.has('name');
-  if (hasCalcParam && !hasInquiryParam) {
+  const isInquiryDeeplink = params.has('id');
+  if (hasCalcParam && !isInquiryDeeplink) {
     window.location.replace(`/calc/?${params}`);
   }
 })();
