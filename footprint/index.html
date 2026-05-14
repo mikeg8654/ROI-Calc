@@ -76,6 +76,13 @@
     display: flex; flex-direction: column;
     overflow: hidden;
     box-shadow: 0 12px 48px rgba(0,0,0,0.5);
+    position: relative;
+  }
+  /* Strip the screen-only shadow while html2canvas is capturing —
+     box-shadow extends the visual bounding box and shifts the PDF crop. */
+  .page.capturing {
+    box-shadow: none !important;
+    margin: 0 !important;
   }
 
   /* HERO (110px) */
@@ -627,6 +634,8 @@ document.getElementById("btn-download").addEventListener("click", () => {
   const btn = document.getElementById("btn-download");
   btn.disabled = true; btn.textContent = "Generating PDF…";
   const node = document.getElementById("capture");
+  node.classList.add("capturing");
+
   html2pdf().set({
     margin: 0,
     filename: `MD_Ally_National_Footprint_${new Date().toISOString().slice(0,10)}.pdf`,
@@ -636,14 +645,28 @@ document.getElementById("btn-download").addEventListener("click", () => {
       useCORS: true,
       allowTaint: true,
       backgroundColor: "#0F1B33",
+      width: 1280,
+      height: 900,
       windowWidth: 1280,
       windowHeight: 900,
+      x: 0,
+      y: 0,
+      scrollX: 0,
+      scrollY: 0,
     },
-    jsPDF: { unit: "px", format: [1280, 900], orientation: "landscape" },
+    jsPDF: {
+      unit: "px",
+      format: [1280, 900],
+      orientation: "landscape",
+      hotfixes: ["px_scaling"],
+    },
+    pagebreak: { mode: ["avoid-all"] },
   }).from(node).save().then(() => {
+    node.classList.remove("capturing");
     btn.disabled = false; btn.textContent = "Download PDF";
   }).catch(e => {
     console.error(e);
+    node.classList.remove("capturing");
     btn.disabled = false; btn.textContent = "Failed — retry";
   });
 });
