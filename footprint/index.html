@@ -456,14 +456,14 @@
     </div>
     <div class="hero-right">
       <div class="question">"Where do you do telehealth, and for whom?"</div>
-      <div class="answer">11 public safety agencies · 4 states · ~7M residents</div>
+      <div class="answer">12 public safety agencies · 4 states · ~7M residents</div>
     </div>
   </div>
 
   <!-- KPI STRIP (3 tiles) -->
   <div class="kpi-strip">
     <div class="kpi">
-      <div class="num">11</div>
+      <div class="num">12</div>
       <div class="lbl">Operating Agencies</div>
       <div class="sub">Parent + subordinate</div>
     </div>
@@ -484,7 +484,7 @@
     <div class="map-zone">
       <div class="map-eyebrow">
         <div class="left"><span class="dot"></span>Active Service Map</div>
-        <div class="right">4 states · 11 agencies · <em>live</em></div>
+        <div class="right">4 states · 12 agencies · <em>live</em></div>
       </div>
       <div class="cell-row" id="cell-row">
         <!-- 4 state cells injected by JS -->
@@ -494,7 +494,7 @@
     <aside class="rail">
       <div class="rail-h">
         <span>Operating Agencies</span>
-        <span class="count">11</span>
+        <span class="count">12</span>
       </div>
       <div id="state-groups"></div>
     </aside>
@@ -510,7 +510,7 @@
       </div>
       <div>
         <div class="body">of eligible 911 calls diverted from ED transport</div>
-        <div class="micro">Oct 2025 – Mar 2026 · 11-agency network</div>
+        <div class="micro">Oct 2025 – Mar 2026 · 12-agency network</div>
       </div>
     </div>
 
@@ -574,6 +574,7 @@ const AGENCIES = [
   { name: "City of Tucson",                  short: "Tucson",        state: "AZ", lat: 32.22, lng: -110.93, pop: 547000,  mono: "TUC", type: "FIRE/EMS", parentMono: "" },
   { name: "Golder Ranch Fire District",      short: "Golder Ranch",  state: "AZ", lat: 32.42, lng: -110.94, pop: 75000,   mono: "GRF", type: "FIRE",     parentMono: "TUC" },
   { name: "Northwest Fire District",         short: "Northwest FD",  state: "AZ", lat: 32.42, lng: -111.10, pop: 120000,  mono: "NWF", type: "FIRE",     parentMono: "TUC" },
+  { name: "Drexel Heights Fire District",    short: "Drexel Heights",state: "AZ", lat: 32.16, lng: -110.99, pop: 28000,   mono: "DHF", type: "FIRE",     parentMono: "TUC" },
   { name: "Buckeye Fire-Medical Rescue",     short: "Buckeye",       state: "AZ", lat: 33.37, lng: -112.58, pop: 100000,  mono: "BFM", type: "FIRE/EMS", parentMono: "" },
 
   // CO — 1
@@ -643,7 +644,7 @@ renderRail();
 // Tucson cluster (3 pins ~25km apart) and Phoenix cluster (2 pins ~20km
 // apart) use leader lines + side label blocks to avoid overlap.
 
-const TUCSON_CLUSTER = new Set(["TUC", "GRF", "NWF"]);
+const TUCSON_CLUSTER = new Set(["TUC", "GRF", "NWF", "DHF"]);
 const PHOENIX_CLUSTER = new Set(["PHX", "LAV"]);
 
 function buildCells(usTopoData) {
