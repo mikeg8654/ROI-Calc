@@ -242,7 +242,7 @@
   </header>
 
   <div class="question">
-    Where do you do telehealth and for whom? 8 operating agencies across 4 states, 4 payer partners, ~7M direct service area population.
+    Where do you do telehealth and for whom? 8 operating public safety agencies across 4 states, ~7M direct service area population.
   </div>
 
   <div class="grid">
@@ -260,10 +260,6 @@
       <div>
         <h2>Operating agencies <span class="count">(8)</span></h2>
         <ul class="agency-list" id="agency-list"></ul>
-      </div>
-      <div>
-        <h2>Payer partners <span class="count">(4)</span></h2>
-        <ul class="agency-list payers" id="payer-list"></ul>
       </div>
     </aside>
   </div>
@@ -293,12 +289,6 @@ const AGENCIES = [
   { name: "Buckeye Fire-Medical Rescue",     state: "AZ", lat: 33.37, lng: -112.58, pop: 100000,  domain: "buckeyeaz.gov", monogram: "BFM" },
   { name: "Alameda County (Falck)",          state: "CA", lat: 37.65, lng: -121.91, pop: 1690000, domain: "falck.com", monogram: "FA" },
 ];
-const PAYERS = [
-  { name: "Banner Health (MA + Medicaid)",   state: "AZ", domain: "bannerhealth.com", monogram: "BH" },
-  { name: "Mercy Care (MA + Medicaid)",      state: "AZ", domain: "mercycareaz.org", monogram: "MC" },
-  { name: "UnitedHealthcare (Medicaid)",     state: "AZ", domain: "uhc.com", monogram: "UHC" },
-  { name: "Florida Blue (Medicare)",         state: "FL", domain: "floridablue.com", monogram: "FB" },
-];
 const HIGHLIGHT_STATES = new Set(["06", "04", "08", "12"]); // CA, AZ, CO, FL (FIPS)
 const STATE_LABEL_AT = { "06": [-119.4, 37.0], "04": [-111.8, 34.2], "08": [-105.5, 39.0], "12": [-81.6, 28.5] };
 const STATE_NAMES_BY_FIPS = { "06": "CA", "04": "AZ", "08": "CO", "12": "FL" };
@@ -317,9 +307,6 @@ function logoCell(agency) {
 }
 document.getElementById("agency-list").innerHTML = AGENCIES.map(a => `
   <li>${logoCell(a)}<span class="name">${a.name}</span><span class="state-tag">${a.state}</span></li>
-`).join('');
-document.getElementById("payer-list").innerHTML = PAYERS.map(p => `
-  <li>${logoCell(p)}<span class="name">${p.name}</span><span class="state-tag">${p.state}</span></li>
 `).join('');
 
 // =============== US MAP ===============
