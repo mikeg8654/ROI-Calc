@@ -36,7 +36,7 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  /* TOOLBAR — outside the capture area */
+  /* TOOLBAR (outside capture) */
   .toolbar {
     background: #050B17;
     color: white;
@@ -66,7 +66,7 @@
   }
   .toolbar a.secondary:hover { background: rgba(255,255,255,0.08); }
 
-  /* PAGE — the captured PDF region (1280 × 900) */
+  /* PAGE — captured PDF region (1280 × 900) */
   .page {
     width: 1280px;
     height: 900px;
@@ -78,320 +78,358 @@
     box-shadow: 0 12px 48px rgba(0,0,0,0.5);
     position: relative;
   }
-  /* PRINT — the canonical PDF path. We use window.print() because the
-     browser's native PDF engine produces a perfect 1280x900 single-page
-     output from these @page rules; html2pdf was producing left-clipped
-     and/or blank artifacts that we burned three iterations chasing. */
-  @media print {
-    @page {
-      size: 1280px 900px;
-      margin: 0;
-    }
-    html, body {
-      width: 1280px; height: 900px;
-      margin: 0 !important;
-      padding: 0 !important;
-      background: var(--bg-page) !important;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-    }
-    .toolbar { display: none !important; }
-    .page {
-      margin: 0 !important;
-      box-shadow: none !important;
-      width: 1280px !important;
-      height: 900px !important;
-      page-break-after: avoid;
-      page-break-inside: avoid;
-    }
-  }
 
-  /* HERO (110px) */
+  /* === GRID: hero 88 + rule 3 + KPI 84 + main 555 + proof 170 = 900 === */
+
+  /* HERO (88) */
   .hero {
-    height: 110px;
-    padding: 0 32px;
+    height: 88px;
+    padding: 0 28px;
     display: flex; align-items: center; justify-content: space-between;
     background: linear-gradient(180deg, #0F1B33 0%, #0B1530 100%);
-    border-bottom: 4px solid var(--accent-gold);
+    border-bottom: 3px solid var(--accent-gold);
   }
-  .hero-left { display: flex; align-items: center; gap: 18px; }
+  .hero-left { display: flex; align-items: center; gap: 16px; }
   .hero-mark {
-    width: 64px; height: 64px;
+    width: 52px; height: 52px;
     background: linear-gradient(135deg, var(--accent-gold) 0%, #C48A0B 100%);
-    border-radius: 12px;
+    border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
-    font-weight: 900; font-size: 22px; color: var(--bg-page);
+    font-weight: 900; font-size: 18px; color: var(--bg-page);
     letter-spacing: -0.02em;
     box-shadow: 0 4px 12px rgba(229,168,23,0.25);
+    flex-shrink: 0;
   }
   .hero-titles h1 {
-    font-size: 30px; font-weight: 800; letter-spacing: -0.015em;
-    color: var(--text-primary);
-    line-height: 1.05;
+    font-size: 26px; font-weight: 800; letter-spacing: -0.015em;
+    color: var(--text-primary); line-height: 1.05;
   }
   .hero-titles .sub {
-    font-size: 12px; font-weight: 600;
+    font-size: 11px; font-weight: 600;
     color: var(--text-secondary); letter-spacing: 0.12em;
-    text-transform: uppercase; margin-top: 6px;
+    text-transform: uppercase; margin-top: 4px;
   }
   .hero-right { text-align: right; }
   .hero-right .question {
-    font-size: 13px; color: var(--text-secondary);
+    font-size: 12px; color: var(--text-secondary);
     font-style: italic; font-weight: 500;
-    max-width: 380px;
   }
   .hero-right .answer {
-    font-size: 14px; color: var(--accent-gold-light);
-    font-weight: 700; margin-top: 4px;
+    font-size: 13px; color: var(--accent-gold-light);
+    font-weight: 700; margin-top: 3px;
     letter-spacing: 0.02em;
   }
 
-  /* KPI STRIP (96px) */
+  /* KPI STRIP (84) — 3 tiles, dropped Fastest Launch from prominent placement */
   .kpi-strip {
-    height: 96px;
+    height: 84px;
     background: var(--bg-panel);
     border-bottom: 1px solid var(--stroke-subtle);
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    padding: 0;
+    grid-template-columns: repeat(3, 1fr);
   }
   .kpi {
-    padding: 16px 28px;
+    padding: 14px 32px;
     border-right: 1px solid var(--stroke-subtle);
     display: flex; flex-direction: column; justify-content: center;
-    position: relative;
   }
   .kpi:last-child { border-right: none; }
   .kpi .num {
-    font-size: 42px; font-weight: 900;
+    font-size: 38px; font-weight: 900;
     color: var(--accent-gold);
-    line-height: 1;
-    letter-spacing: -0.02em;
+    line-height: 1; letter-spacing: -0.02em;
     margin-bottom: 4px;
   }
   .kpi .num .unit {
-    font-size: 22px; color: var(--accent-gold-light);
+    font-size: 20px; color: var(--accent-gold-light);
     font-weight: 700; margin-left: 2px;
   }
   .kpi .lbl {
     font-size: 10.5px; font-weight: 700;
     color: var(--text-secondary);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+    letter-spacing: 0.14em; text-transform: uppercase;
   }
   .kpi .sub {
     font-size: 10.5px; color: var(--text-tertiary);
     margin-top: 2px; font-weight: 500;
   }
 
-  /* MAIN: map + rail (600px) */
+  /* MAIN: 4-state cluster map + agency rail (555) */
   .main {
-    flex: 1;
+    height: 555px;
     display: grid;
-    grid-template-columns: 860px 1fr;
-    min-height: 600px;
+    grid-template-columns: 880px 400px;
   }
 
-  /* MAP CANVAS */
+  /* MAP ZONE — 4 state cells side by side */
   .map-zone {
     background: var(--bg-panel);
     position: relative;
     overflow: hidden;
+    padding: 18px 16px 14px;
   }
   .map-eyebrow {
-    position: absolute;
-    top: 20px; left: 24px;
-    z-index: 2;
-    font-size: 10.5px; font-weight: 700;
+    font-size: 10px; font-weight: 700;
     color: var(--text-secondary);
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex; align-items: baseline; justify-content: space-between;
   }
-  .map-eyebrow .dot {
-    display: inline-block;
-    width: 8px; height: 8px;
-    background: var(--accent-teal);
-    border-radius: 50%;
-    margin-right: 8px;
-    box-shadow: 0 0 8px var(--accent-teal);
-    vertical-align: 1px;
+  .map-eyebrow .left .dot {
+    display: inline-block; width: 7px; height: 7px;
+    background: var(--accent-teal); border-radius: 50%;
+    margin-right: 8px; vertical-align: 1px;
+    box-shadow: 0 0 6px var(--accent-teal);
   }
-  #us-map { width: 100%; height: 100%; display: block; }
-  .state-default { fill: #14223E; stroke: #2B3A5C; stroke-width: 0.6; }
-  .state-active {
-    fill: rgba(31,165,149,0.22);
-    stroke: var(--accent-gold);
-    stroke-width: 1.4;
-    filter: drop-shadow(0 0 6px rgba(31,165,149,0.45));
+  .map-eyebrow .right {
+    color: var(--text-tertiary); letter-spacing: 0.06em;
+    font-weight: 500; text-transform: none;
   }
-  .state-label {
-    font-size: 13px; font-weight: 800;
-    fill: var(--accent-teal-light); letter-spacing: 0.06em;
-    text-anchor: middle; pointer-events: none;
-    paint-order: stroke fill;
-    stroke: var(--bg-page); stroke-width: 3.5; stroke-linejoin: round;
-  }
-  .pin-halo {
-    fill: var(--accent-gold);
-    opacity: 0.25;
-  }
-  .pin {
-    fill: var(--accent-gold); stroke: var(--bg-page); stroke-width: 1.8;
-  }
-  .pin-label {
-    font-size: 11px; font-weight: 700;
-    fill: var(--text-primary);
-    paint-order: stroke fill;
-    stroke: var(--bg-page); stroke-width: 3.5; stroke-linejoin: round;
-    pointer-events: none;
+  .map-eyebrow .right em {
+    font-style: normal; color: var(--accent-gold-light);
+    font-weight: 700;
   }
 
-  /* AGENCY RAIL */
+  .cell-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    column-gap: 10px;
+    height: 488px;
+  }
+  .state-cell {
+    background: linear-gradient(180deg, #0E1A30 0%, #0B1730 100%);
+    border: 1px solid var(--stroke-subtle);
+    border-radius: 10px;
+    padding: 10px 8px 8px;
+    display: flex; flex-direction: column;
+    position: relative;
+  }
+  .state-cell-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 4px;
+    padding: 0 2px;
+  }
+  .state-cell-head .name {
+    font-size: 13px; font-weight: 800;
+    color: var(--accent-teal-light); letter-spacing: 0.04em;
+  }
+  .state-cell-head .ct {
+    font-size: 9.5px; font-weight: 700;
+    color: var(--text-tertiary); letter-spacing: 0.08em;
+  }
+  .state-cell-foot {
+    font-size: 8.5px; color: var(--text-tertiary);
+    text-align: center; padding: 4px 2px 0;
+    font-weight: 500; letter-spacing: 0.02em;
+  }
+  .state-cell-foot em {
+    font-style: normal;
+    color: var(--accent-gold-light); font-weight: 700;
+  }
+  .state-cell svg { width: 100%; flex: 1; display: block; }
+
+  /* State shape + pins inside cells */
+  .state-shape {
+    fill: rgba(31,165,149,0.18);
+    stroke: var(--accent-gold);
+    stroke-width: 1.4;
+    filter: drop-shadow(0 0 6px rgba(31,165,149,0.35));
+  }
+  .pin-halo { fill: var(--accent-gold); opacity: 0.25; }
+  .pin {
+    fill: var(--accent-gold);
+    stroke: var(--bg-page);
+    stroke-width: 1.4;
+  }
+  .pin-label {
+    font-size: 9.5px; font-weight: 700;
+    fill: var(--text-primary);
+    paint-order: stroke fill;
+    stroke: var(--bg-page); stroke-width: 3; stroke-linejoin: round;
+    pointer-events: none;
+  }
+  .leader-line {
+    stroke: var(--accent-gold); stroke-width: 1;
+    stroke-opacity: 0.55; fill: none;
+  }
+  .cluster-box {
+    fill: rgba(15,27,51,0.85);
+    stroke: var(--stroke-rule); stroke-width: 0.8;
+  }
+  .cluster-title {
+    font-size: 8.5px; font-weight: 800;
+    fill: var(--accent-teal-light); letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .cluster-item {
+    font-size: 9px; font-weight: 600;
+    fill: var(--text-primary);
+  }
+  .cluster-bullet { fill: var(--accent-gold); }
+
+  /* RAIL */
   .rail {
     background: var(--bg-page);
-    padding: 14px 20px 12px;
+    padding: 16px 20px 12px;
     overflow: hidden;
     display: flex; flex-direction: column;
   }
   .rail-h {
-    font-size: 10px; font-weight: 700;
+    font-size: 10.5px; font-weight: 700;
     letter-spacing: 0.18em; text-transform: uppercase;
     color: var(--text-secondary);
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     display: flex; align-items: baseline; justify-content: space-between;
   }
-  .rail-h .count {
-    color: var(--accent-gold); font-weight: 800;
-    letter-spacing: 0;
-  }
-  .state-group {
-    margin-bottom: 8px;
-  }
+  .rail-h .count { color: var(--accent-gold); font-weight: 800; letter-spacing: 0; }
+
+  .state-group { margin-bottom: 8px; }
   .state-group:last-child { margin-bottom: 0; }
   .state-group-head {
-    font-size: 9px; font-weight: 800;
+    font-size: 10px; font-weight: 800;
     letter-spacing: 0.16em; text-transform: uppercase;
     color: var(--accent-teal-light);
-    padding: 2px 0 4px;
-    border-bottom: 1px solid var(--stroke-subtle);
-    margin-bottom: 4px;
+    padding: 4px 0 6px;
+    border-bottom: 1.5px solid var(--accent-gold);
+    margin-bottom: 6px;
     display: flex; align-items: baseline; justify-content: space-between;
   }
   .state-group-head .ct {
-    color: var(--text-tertiary); font-weight: 600;
+    color: var(--text-tertiary); font-weight: 600; letter-spacing: 0.06em;
   }
-  .agency-list {
-    list-style: none; display: flex; flex-direction: column; gap: 3px;
-  }
-  .agency-list li {
-    display: flex; align-items: center; gap: 9px;
-    padding: 5px 7px;
-    background: var(--bg-elevated);
-    border: 1px solid var(--stroke-subtle);
-    border-radius: 6px;
+  .agency-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 4px 2px;
     font-size: 12px;
   }
-  .crest {
-    width: 34px; height: 34px;
-    border-radius: 6px;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    flex-shrink: 0;
-    background: linear-gradient(135deg, var(--bg-elevated-2) 0%, var(--bg-elevated) 100%);
-    border: 1px solid var(--stroke-rule);
-    position: relative;
-  }
-  .crest.fire { border-color: var(--accent-gold); }
-  .crest.ems  { border-color: var(--accent-teal); }
-  .crest.multi { border-color: var(--accent-muted-gold); }
-  .crest .mono {
-    font-size: 11.5px; font-weight: 800;
-    color: var(--text-primary);
-    letter-spacing: 0.02em;
-    line-height: 1;
-  }
-  .crest .tag {
-    font-size: 6px; font-weight: 800;
-    color: var(--text-secondary);
-    letter-spacing: 0.1em;
-    margin-top: 2px;
-    text-transform: uppercase;
-  }
-  .crest.fire .tag { color: var(--accent-gold-light); }
-  .crest.ems .tag  { color: var(--accent-teal-light); }
-  .crest.multi .tag { color: var(--accent-muted-gold); }
-  .agency-meta { flex: 1; min-width: 0; }
-  .agency-meta .name {
-    font-weight: 700; color: var(--text-primary);
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    font-size: 12px;
-    line-height: 1.15;
-  }
-  .agency-meta .pop {
-    font-size: 10px; color: var(--text-tertiary);
-    margin-top: 1px;
-  }
-  .state-pill {
-    font-size: 9.5px; font-weight: 800;
-    color: var(--bg-page); letter-spacing: 0.06em;
+  .agency-row .bullet {
+    width: 6px; height: 6px;
     background: var(--accent-gold);
-    padding: 2px 7px; border-radius: 3px;
+    border-radius: 50%; flex-shrink: 0;
+  }
+  .agency-row.parent .name {
+    color: var(--text-primary); font-weight: 700;
+    flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .agency-row.sub {
+    padding-left: 18px;
+    font-size: 11px;
+  }
+  .agency-row.sub .bullet { display: none; }
+  .agency-row.sub .corner {
+    color: var(--accent-teal); font-weight: 700;
+    font-size: 11px; margin-right: 4px;
+  }
+  .agency-row.sub .name {
+    color: rgba(255,255,255,0.72); font-weight: 600;
+    flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .agency-row .pop {
+    font-size: 10px; color: var(--text-tertiary);
     flex-shrink: 0;
   }
 
-  /* PROOF FOOTER (90px) */
+  /* PROOF FOOTER (170) — 4 bigger value-anchored boxes */
   .proof {
-    height: 90px;
+    height: 170px;
     background: linear-gradient(180deg, var(--bg-panel) 0%, #0E1A30 100%);
     border-top: 1px solid var(--stroke-subtle);
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     padding: 0;
   }
-  .proof-pill {
+  .proof-box {
     padding: 18px 22px;
     border-right: 1px solid var(--stroke-subtle);
-    display: flex; flex-direction: column; justify-content: center;
+    display: flex; flex-direction: column;
+    justify-content: space-between;
     position: relative;
   }
-  .proof-pill:last-child { border-right: none; }
-  .proof-pill::before {
+  .proof-box:last-child { border-right: none; }
+  .proof-box::before {
     content: '';
     position: absolute;
-    left: 0; top: 18px; bottom: 18px;
-    width: 3px;
-    background: var(--accent-teal);
+    left: 0; top: 20px; bottom: 20px;
+    width: 3px; background: var(--accent-teal);
     border-radius: 0 2px 2px 0;
   }
-  .proof-pill .lbl {
+  .proof-box .lbl {
     font-size: 10px; font-weight: 700;
-    color: var(--text-tertiary);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    margin-bottom: 4px;
+    color: var(--text-secondary);
+    letter-spacing: 0.16em; text-transform: uppercase;
   }
-  .proof-pill .hed {
-    font-size: 15px; font-weight: 800;
-    color: var(--text-primary);
-    line-height: 1.15;
-    letter-spacing: -0.005em;
-  }
-  .proof-pill .hed em {
-    font-style: normal;
+  .proof-box .num {
+    font-size: 48px; font-weight: 900;
     color: var(--accent-gold);
+    line-height: 1; letter-spacing: -0.025em;
+    margin: 4px 0;
   }
-  .proof-pill .src {
-    font-size: 10px; color: var(--text-tertiary);
+  .proof-box .num .unit {
+    font-size: 22px; color: var(--accent-gold-light);
+    font-weight: 700; margin-left: 1px;
+  }
+  .proof-box .num .prefix {
+    font-size: 24px; color: var(--accent-gold-light);
+    font-weight: 700; margin-right: 1px;
+  }
+  .proof-box .body {
+    font-size: 12px; font-weight: 600;
+    color: var(--text-primary); line-height: 1.3;
+  }
+  .proof-box .body em {
+    font-style: normal; color: var(--accent-gold-light);
+  }
+  .proof-box .micro {
+    font-size: 9.5px; color: var(--accent-teal-light);
+    font-weight: 600; letter-spacing: 0.04em;
     margin-top: 4px;
-    font-weight: 500;
   }
+  .proof-viz {
+    height: 6px; margin: 4px 0 0;
+    background: var(--bg-elevated-2);
+    border-radius: 3px; overflow: hidden;
+    position: relative;
+  }
+  .proof-viz .fill {
+    position: absolute; top: 0; bottom: 0; left: 0;
+    background: linear-gradient(90deg, var(--accent-gold) 0%, var(--accent-gold-light) 100%);
+    border-radius: 3px;
+  }
+  .proof-cost-bars { display: flex; flex-direction: column; gap: 3px; margin: 4px 0 0; }
+  .proof-cost-bars .bar-row {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 9px; color: var(--text-tertiary);
+  }
+  .proof-cost-bars .bar {
+    height: 5px; border-radius: 2px;
+  }
+  .proof-cost-bars .bar.cost { background: var(--text-tertiary); width: 100%; }
+  .proof-cost-bars .bar.reimb {
+    border: 1px solid var(--accent-gold); width: 43%;
+  }
+  .proof-cost-bars .lbl-tag {
+    flex-shrink: 0; width: 64px;
+    text-align: right; letter-spacing: 0.04em;
+  }
+  .proof-cost-bars .lbl-tag.cost-tag { color: var(--text-secondary); }
+  .proof-cost-bars .lbl-tag.reimb-tag { color: var(--accent-gold-light); }
 
-  /* PRINT */
+  /* PRINT — Save as PDF path */
   @media print {
     @page { size: 1280px 900px; margin: 0; }
-    body { background: white; }
-    .toolbar { display: none; }
-    .page { margin: 0; box-shadow: none; }
+    html, body {
+      width: 1280px; height: 900px;
+      margin: 0 !important; padding: 0 !important;
+      background: var(--bg-page) !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .toolbar { display: none !important; }
+    .page {
+      margin: 0 !important; box-shadow: none !important;
+      width: 1280px !important; height: 900px !important;
+      page-break-after: avoid; page-break-inside: avoid;
+    }
   }
 </style>
 </head>
@@ -418,16 +456,16 @@
     </div>
     <div class="hero-right">
       <div class="question">"Where do you do telehealth, and for whom?"</div>
-      <div class="answer">8 public safety agencies · 4 states · ~7M residents</div>
+      <div class="answer">11 public safety agencies · 4 states · ~7M residents</div>
     </div>
   </div>
 
-  <!-- KPI STRIP -->
+  <!-- KPI STRIP (3 tiles) -->
   <div class="kpi-strip">
     <div class="kpi">
-      <div class="num">8</div>
+      <div class="num">11</div>
       <div class="lbl">Operating Agencies</div>
-      <div class="sub">Fire, EMS, multi-service</div>
+      <div class="sub">Parent + subordinate</div>
     </div>
     <div class="kpi">
       <div class="num">4</div>
@@ -439,50 +477,78 @@
       <div class="lbl">Population Served</div>
       <div class="sub">Direct jurisdictional</div>
     </div>
-    <div class="kpi">
-      <div class="num">41<span class="unit">d</span></div>
-      <div class="lbl">Fastest Launch</div>
-      <div class="sub">Hillsborough County FR</div>
-    </div>
   </div>
 
   <!-- MAP + RAIL -->
   <div class="main">
     <div class="map-zone">
-      <div class="map-eyebrow"><span class="dot"></span>Active Service Map</div>
-      <svg id="us-map" viewBox="0 0 860 600" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="map-eyebrow">
+        <div class="left"><span class="dot"></span>Active Service Map</div>
+        <div class="right">4 states · 11 agencies · <em>live</em></div>
+      </div>
+      <div class="cell-row" id="cell-row">
+        <!-- 4 state cells injected by JS -->
+      </div>
     </div>
 
     <aside class="rail">
       <div class="rail-h">
         <span>Operating Agencies</span>
-        <span class="count">8</span>
+        <span class="count">11</span>
       </div>
       <div id="state-groups"></div>
     </aside>
   </div>
 
-  <!-- PROOF FOOTER -->
+  <!-- PROOF FOOTER (4 boxes, value-anchored) -->
   <div class="proof">
-    <div class="proof-pill">
-      <div class="lbl">Fastest Launch</div>
-      <div class="hed">Hillsborough FR · <em>41 days</em></div>
-      <div class="src">Florida · 1.5M residents</div>
+    <div class="proof-box">
+      <div class="lbl">Network Diversion Rate</div>
+      <div>
+        <div class="num">84<span class="unit">%</span></div>
+        <div class="proof-viz"><div class="fill" style="width:84%"></div></div>
+      </div>
+      <div>
+        <div class="body">of eligible 911 calls diverted from ED transport</div>
+        <div class="micro">Oct 2025 – Mar 2026 · 11-agency network</div>
+      </div>
     </div>
-    <div class="proof-pill">
-      <div class="lbl">First New State</div>
-      <div class="hed">Aurora CO · <em>99 days</em></div>
-      <div class="src">Colorado · 400K residents</div>
+
+    <div class="proof-box">
+      <div class="lbl">Avoided Spending</div>
+      <div>
+        <div class="num"><span class="prefix">~$</span>1,500</div>
+        <div class="proof-cost-bars">
+          <div class="bar-row"><span class="lbl-tag cost-tag">$2,673</span><div class="bar cost"></div></div>
+          <div class="bar-row"><span class="lbl-tag reimb-tag">$1,147</span><div class="bar reimb"></div></div>
+        </div>
+      </div>
+      <div>
+        <div class="body">avoided per non-emergent transport rerouted to virtual care</div>
+        <div class="micro">vs. $2,673 fully-loaded cost · $1,147 reimbursement</div>
+      </div>
     </div>
-    <div class="proof-pill">
-      <div class="lbl">Public Reference</div>
-      <div class="hed">Tucson Fire · <em>2K+ diverted</em></div>
-      <div class="src">KOLD News 13 · Jan 2026</div>
+
+    <div class="proof-box">
+      <div class="lbl">Readiness Protected</div>
+      <div>
+        <div class="num"><span class="prefix">$</span>350<span class="unit">K</span></div>
+      </div>
+      <div>
+        <div class="body">annual cost-of-readiness per truck. <em>Preserved for true emergencies.</em></div>
+        <div class="micro">EMS industry turnover runs 25%+ annually</div>
+      </div>
     </div>
-    <div class="proof-pill">
-      <div class="lbl">Major Metro</div>
-      <div class="hed">Phoenix FD · <em>90 days</em></div>
-      <div class="src">Arizona · 1.6M residents</div>
+
+    <div class="proof-box">
+      <div class="lbl">Named Public Proof</div>
+      <div>
+        <div class="num">2,000<span class="unit">+</span></div>
+      </div>
+      <div>
+        <div class="body">calls diverted at Tucson Fire. <em>First call-volume decrease in 5 years.</em></div>
+        <div class="micro">KOLD News 13 · Jan 2026</div>
+      </div>
     </div>
   </div>
 
@@ -493,168 +559,246 @@
 <script src="https://cdn.jsdelivr.net/npm/d3-selection@3/dist/d3-selection.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
 <script>
-// ============== DATA ==============
+// ===================== DATA =====================
+// 11 agencies. parentMono empty = parent. parentMono filled = subordinate
+// to the parent with that mono.
 const AGENCIES = [
-  { name: "Hillsborough County Fire Rescue", state: "FL", lat: 27.99, lng: -82.30, pop: 1500000, mono: "HCFR", type: "FIRE/EMS", cls: "fire" },
-  { name: "Manatee County",                  state: "FL", lat: 27.49, lng: -82.34, pop: 400000,  mono: "MAN",  type: "MULTI",    cls: "multi" },
-  { name: "Lee County",                      state: "FL", lat: 26.65, lng: -81.95, pop: 800000,  mono: "LEE",  type: "MULTI",    cls: "multi" },
-  { name: "City of Aurora",                  state: "CO", lat: 39.73, lng: -104.83, pop: 400000, mono: "AUR",  type: "FIRE/EMS", cls: "fire" },
-  { name: "City of Phoenix",                 state: "AZ", lat: 33.45, lng: -112.07, pop: 1600000, mono: "PHX", type: "FIRE/EMS", cls: "fire" },
-  { name: "City of Tucson",                  state: "AZ", lat: 32.22, lng: -110.93, pop: 547000,  mono: "TUC", type: "FIRE/EMS", cls: "fire" },
-  { name: "Buckeye Fire-Medical Rescue",     state: "AZ", lat: 33.37, lng: -112.58, pop: 100000,  mono: "BFM", type: "FIRE/EMS", cls: "fire" },
-  { name: "Alameda County (Falck)",          state: "CA", lat: 37.65, lng: -121.91, pop: 1690000, mono: "ALA", type: "EMS",      cls: "ems" },
+  // FL — 3
+  { name: "Hillsborough County Fire Rescue", short: "Hillsborough",  state: "FL", lat: 27.99, lng: -82.30, pop: 1500000, mono: "HCFR", type: "FIRE/EMS", parentMono: "" },
+  { name: "Manatee County",                  short: "Manatee",       state: "FL", lat: 27.49, lng: -82.34, pop: 400000,  mono: "MAN",  type: "MULTI",    parentMono: "" },
+  { name: "Lee County",                      short: "Lee",           state: "FL", lat: 26.65, lng: -81.95, pop: 800000,  mono: "LEE",  type: "MULTI",    parentMono: "" },
+
+  // AZ — 6 (3 parents + 3 subs)
+  { name: "City of Phoenix",                 short: "Phoenix",       state: "AZ", lat: 33.45, lng: -112.07, pop: 1600000, mono: "PHX", type: "FIRE/EMS", parentMono: "" },
+  { name: "Laveen Fire",                     short: "Laveen",        state: "AZ", lat: 33.36, lng: -112.17, pop: 40000,   mono: "LAV", type: "FIRE",     parentMono: "PHX" },
+  { name: "City of Tucson",                  short: "Tucson",        state: "AZ", lat: 32.22, lng: -110.93, pop: 547000,  mono: "TUC", type: "FIRE/EMS", parentMono: "" },
+  { name: "Golder Ranch Fire District",      short: "Golder Ranch",  state: "AZ", lat: 32.42, lng: -110.94, pop: 75000,   mono: "GRF", type: "FIRE",     parentMono: "TUC" },
+  { name: "Northwest Fire District",         short: "Northwest FD",  state: "AZ", lat: 32.42, lng: -111.10, pop: 120000,  mono: "NWF", type: "FIRE",     parentMono: "TUC" },
+  { name: "Buckeye Fire-Medical Rescue",     short: "Buckeye",       state: "AZ", lat: 33.37, lng: -112.58, pop: 100000,  mono: "BFM", type: "FIRE/EMS", parentMono: "" },
+
+  // CO — 1
+  { name: "City of Aurora",                  short: "Aurora",        state: "CO", lat: 39.73, lng: -104.83, pop: 400000,  mono: "AUR", type: "FIRE/EMS", parentMono: "" },
+
+  // CA — 1
+  { name: "Alameda County (Falck)",          short: "Alameda",       state: "CA", lat: 37.65, lng: -121.91, pop: 1690000, mono: "ALA", type: "EMS",      parentMono: "" },
 ];
 
-// Parent-only pins (all 8 are parents in v2; could de-dup later)
-const PINS = AGENCIES;
-
-const HIGHLIGHT_STATES = new Set(["06", "04", "08", "12"]); // CA, AZ, CO, FL (FIPS)
-const STATE_LABEL_AT = {
-  "06": [-119.4, 37.0],  // CA
-  "04": [-111.8, 34.2],  // AZ
-  "08": [-105.5, 39.0],  // CO
-  "12": [-81.6, 28.5],   // FL
+const STATE_FIPS = { CA: "06", AZ: "04", CO: "08", FL: "12" };
+const STATE_ORDER = ["CA", "AZ", "CO", "FL"];
+const STATE_TITLES = { CA: "California", AZ: "Arizona", CO: "Colorado", FL: "Florida" };
+const STATE_FOOT = {
+  FL: "Includes 41-day Hillsborough FR launch",
+  AZ: "Includes Phoenix 90-day deployment",
+  CO: "First MD Ally non-FL state",
+  CA: "Operated by Falck",
 };
-const STATE_NAMES_BY_FIPS = { "06": "CA", "04": "AZ", "08": "CO", "12": "FL" };
 
-const STATE_GROUPS = [
-  { code: "FL", name: "Florida",    color: "var(--accent-gold)" },
-  { code: "AZ", name: "Arizona",    color: "var(--accent-red)" },
-  { code: "CO", name: "Colorado",   color: "var(--accent-teal)" },
-  { code: "CA", name: "California", color: "var(--accent-periwinkle)" },
-];
-
-// ============== RAIL: state-grouped agency list ==============
 function fmtPop(p) {
-  if (p >= 1_000_000) return `${(p/1_000_000).toFixed(1)}M residents`;
-  return `${Math.round(p/1000)}K residents`;
+  if (p >= 1_000_000) return `${(p/1_000_000).toFixed(1)}M`;
+  if (p >= 1_000) return `${Math.round(p/1000)}K`;
+  return String(p);
 }
-function crest(a) {
-  return `<div class="crest ${a.cls}">
-    <span class="mono">${a.mono}</span>
-    <span class="tag">${a.type}</span>
-  </div>`;
-}
-const groupsEl = document.getElementById("state-groups");
-groupsEl.innerHTML = STATE_GROUPS.map(g => {
-  const inState = AGENCIES.filter(a => a.state === g.code);
-  if (!inState.length) return '';
-  return `
-    <div class="state-group">
-      <div class="state-group-head">
-        <span>${g.name}</span>
-        <span class="ct">${inState.length} ${inState.length === 1 ? 'agency' : 'agencies'}</span>
+
+// ===================== SIDE RAIL =====================
+function renderRail() {
+  const el = document.getElementById("state-groups");
+  el.innerHTML = STATE_ORDER.map(stCode => {
+    const inState = AGENCIES.filter(a => a.state === stCode);
+    const parents = inState.filter(a => !a.parentMono);
+    if (!inState.length) return "";
+    const rows = [];
+    parents.forEach(p => {
+      rows.push(`
+        <div class="agency-row parent">
+          <span class="bullet"></span>
+          <span class="name">${p.name}</span>
+          <span class="pop">${fmtPop(p.pop)}</span>
+        </div>
+      `);
+      inState.filter(s => s.parentMono === p.mono).forEach(s => {
+        rows.push(`
+          <div class="agency-row sub">
+            <span class="corner">↳</span>
+            <span class="name">${s.name}</span>
+            <span class="pop">${fmtPop(s.pop)}</span>
+          </div>
+        `);
+      });
+    });
+    return `
+      <div class="state-group">
+        <div class="state-group-head">
+          <span>${STATE_TITLES[stCode]}</span>
+          <span class="ct">${inState.length} ${inState.length === 1 ? "agency" : "agencies"}</span>
+        </div>
+        ${rows.join("")}
       </div>
-      <ul class="agency-list">
-        ${inState.map(a => `
-          <li>
-            ${crest(a)}
-            <div class="agency-meta">
-              <div class="name">${a.name}</div>
-              <div class="pop">${fmtPop(a.pop)}</div>
-            </div>
-            <span class="state-pill">${a.state}</span>
-          </li>
-        `).join('')}
-      </ul>
-    </div>
-  `;
-}).join('');
+    `;
+  }).join("");
+}
+renderRail();
 
-// ============== US MAP ==============
-const W = 860, H = 600;
-const projection = d3.geoAlbersUsa().scale(1100).translate([W/2, H/2 - 10]);
-const path = d3.geoPath(projection);
-const svg = d3.select("#us-map");
+// ===================== 4-STATE CLUSTER MAP =====================
+// Each state gets its own per-state d3 projection fitted to its cell.
+// Tucson cluster (3 pins ~25km apart) and Phoenix cluster (2 pins ~20km
+// apart) use leader lines + side label blocks to avoid overlap.
 
-fetch("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json")
-  .then(r => r.json())
-  .then(us => {
-    const states = topojson.feature(us, us.objects.states).features;
+const TUCSON_CLUSTER = new Set(["TUC", "GRF", "NWF"]);
+const PHOENIX_CLUSTER = new Set(["PHX", "LAV"]);
 
-    // Base states
-    svg.append("g")
-      .selectAll("path")
-      .data(states)
-      .join("path")
-      .attr("d", path)
-      .attr("class", d => HIGHLIGHT_STATES.has(String(d.id).padStart(2,"0")) ? "state-active" : "state-default");
+function buildCells(usTopoData) {
+  const cellRow = document.getElementById("cell-row");
+  cellRow.innerHTML = "";
 
-    // State labels (on highlighted states only)
-    svg.append("g")
-      .selectAll("text")
-      .data(states.filter(d => HIGHLIGHT_STATES.has(String(d.id).padStart(2,"0"))))
-      .join("text")
-      .attr("class", "state-label")
-      .attr("transform", d => {
-        const lonlat = STATE_LABEL_AT[String(d.id).padStart(2,"0")];
-        if (!lonlat) return "";
-        const xy = projection(lonlat);
-        return xy ? `translate(${xy[0]},${xy[1]})` : "";
-      })
-      .text(d => STATE_NAMES_BY_FIPS[String(d.id).padStart(2,"0")] || "");
+  const allStates = topojson.feature(usTopoData, usTopoData.objects.states).features;
+  const byFips = new Map(allStates.map(s => [String(s.id).padStart(2, "0"), s]));
 
-    // Pins with halos
+  STATE_ORDER.forEach(stCode => {
+    const fips = STATE_FIPS[stCode];
+    const feature = byFips.get(fips);
+    if (!feature) return;
+
+    const inState = AGENCIES.filter(a => a.state === stCode);
+
+    const cell = document.createElement("div");
+    cell.className = "state-cell";
+    cell.dataset.state = stCode;
+    cell.innerHTML = `
+      <div class="state-cell-head">
+        <span class="name">${STATE_TITLES[stCode]}</span>
+        <span class="ct">${inState.length} ${inState.length === 1 ? "agency" : "agencies"}</span>
+      </div>
+      <svg viewBox="0 0 200 400" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="state-cell-foot">${STATE_FOOT[stCode] || ""}</div>
+    `;
+    cellRow.appendChild(cell);
+
+    const svg = d3.select(cell.querySelector("svg"));
+    const W = 200, H = 400;
+
+    // Per-state projection — fits each state into its cell independently
+    const projection = d3.geoMercator().fitExtent(
+      [[10, 10], [W - 10, H - 10]],
+      feature
+    );
+    const pathGen = d3.geoPath(projection);
+
+    // State shape
+    svg.append("path")
+      .attr("class", "state-shape")
+      .attr("d", pathGen(feature));
+
+    // Pins
     const pinG = svg.append("g");
-    PINS.forEach(a => {
+    inState.forEach(a => {
       const xy = projection([a.lng, a.lat]);
       if (!xy) return;
       pinG.append("circle")
         .attr("class", "pin-halo")
-        .attr("cx", xy[0]).attr("cy", xy[1]).attr("r", 12);
+        .attr("cx", xy[0]).attr("cy", xy[1]).attr("r", 7);
       pinG.append("circle")
         .attr("class", "pin")
-        .attr("cx", xy[0]).attr("cy", xy[1]).attr("r", 6);
+        .attr("cx", xy[0]).attr("cy", xy[1]).attr("r", 3.5);
     });
 
-    // Pin labels: place outside cluster zones with simple offset map
-    const labelOffsets = {
-      "Hillsborough County Fire Rescue": [12, 4],
-      "Manatee County":                  [12, 18],
-      "Lee County":                      [12, 4],
-      "City of Aurora":                  [12, 4],
-      "City of Phoenix":                 [-12, -8],
-      "City of Tucson":                  [12, 4],
-      "Buckeye Fire-Medical Rescue":     [-12, 10],
-      "Alameda County (Falck)":          [-12, -8],
-    };
-    const labelAnchor = {
-      "City of Phoenix": "end",
-      "Buckeye Fire-Medical Rescue": "end",
-      "Alameda County (Falck)": "end",
-    };
-    const labelText = {
-      "Hillsborough County Fire Rescue": "Hillsborough",
-      "Alameda County (Falck)": "Alameda (Falck)",
-      "City of Aurora": "Aurora",
-      "City of Phoenix": "Phoenix",
-      "City of Tucson": "Tucson",
-      "Buckeye Fire-Medical Rescue": "Buckeye",
-    };
-    PINS.forEach(a => {
-      const xy = projection([a.lng, a.lat]);
-      if (!xy) return;
-      const off = labelOffsets[a.name] || [12, 4];
-      svg.append("text")
-        .attr("class", "pin-label")
-        .attr("x", xy[0] + off[0])
-        .attr("y", xy[1] + off[1])
-        .attr("text-anchor", labelAnchor[a.name] || "start")
-        .text(labelText[a.name] || a.name);
-    });
-  })
+    // Labels — solo pins inline, clusters use side blocks with leader lines
+    if (stCode === "AZ") {
+      drawClusterBlock(svg, projection, inState.filter(a => TUCSON_CLUSTER.has(a.mono)), {
+        title: "TUCSON METRO", x: 110, y: 310, anchor: "start",
+      });
+      drawClusterBlock(svg, projection, inState.filter(a => PHOENIX_CLUSTER.has(a.mono)), {
+        title: "PHOENIX METRO", x: 90, y: 50, anchor: "end",
+      });
+      // Buckeye solo
+      const b = inState.find(a => a.mono === "BFM");
+      if (b) drawSoloLabel(svg, projection, b, { dx: -7, dy: 3, anchor: "end" });
+    } else if (stCode === "FL") {
+      // Stack labels along the peninsula
+      drawSoloLabel(svg, projection, inState.find(a => a.mono === "HCFR"), { dx: 7, dy: -2, anchor: "start" });
+      drawSoloLabel(svg, projection, inState.find(a => a.mono === "MAN"),  { dx: 7, dy: 10, anchor: "start" });
+      drawSoloLabel(svg, projection, inState.find(a => a.mono === "LEE"),  { dx: 7, dy: 22, anchor: "start" });
+    } else {
+      // CA, CO each have 1 pin — inline label
+      inState.forEach(a => drawSoloLabel(svg, projection, a, { dx: 7, dy: 3, anchor: "start" }));
+    }
+  });
+}
+
+function drawSoloLabel(svg, projection, agency, opts) {
+  if (!agency) return;
+  const xy = projection([agency.lng, agency.lat]);
+  if (!xy) return;
+  svg.append("text")
+    .attr("class", "pin-label")
+    .attr("x", xy[0] + (opts.dx || 7))
+    .attr("y", xy[1] + (opts.dy || 3))
+    .attr("text-anchor", opts.anchor || "start")
+    .text(agency.short);
+}
+
+function drawClusterBlock(svg, projection, members, opts) {
+  if (!members || !members.length) return;
+  // Compute centroid of cluster pins
+  const pts = members.map(m => projection([m.lng, m.lat])).filter(Boolean);
+  if (!pts.length) return;
+  const cx = pts.reduce((s, p) => s + p[0], 0) / pts.length;
+  const cy = pts.reduce((s, p) => s + p[1], 0) / pts.length;
+
+  const lineH = 11;
+  const titleH = 12;
+  const padX = 6, padY = 5;
+  const boxW = 78;
+  const boxH = titleH + members.length * lineH + padY * 2 - 4;
+  const boxX = opts.anchor === "end" ? opts.x - boxW : opts.x;
+  const boxY = opts.y;
+
+  // Leader line: from cluster centroid to a corner of the box
+  const lineTargetX = opts.anchor === "end" ? boxX + boxW : boxX;
+  const lineTargetY = boxY + boxH / 2;
+  svg.append("path")
+    .attr("class", "leader-line")
+    .attr("d", `M${cx},${cy} L${lineTargetX},${lineTargetY}`);
+
+  // Box
+  svg.append("rect")
+    .attr("class", "cluster-box")
+    .attr("x", boxX).attr("y", boxY)
+    .attr("width", boxW).attr("height", boxH)
+    .attr("rx", 4);
+
+  // Title
+  svg.append("text")
+    .attr("class", "cluster-title")
+    .attr("x", boxX + padX).attr("y", boxY + padY + 8)
+    .text(opts.title);
+
+  // Items
+  members.forEach((m, i) => {
+    const itemY = boxY + padY + titleH + i * lineH + 8;
+    svg.append("circle")
+      .attr("class", "cluster-bullet")
+      .attr("cx", boxX + padX + 2)
+      .attr("cy", itemY - 3)
+      .attr("r", 2);
+    svg.append("text")
+      .attr("class", "cluster-item")
+      .attr("x", boxX + padX + 8)
+      .attr("y", itemY)
+      .text(m.short);
+  });
+}
+
+fetch("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json")
+  .then(r => r.json())
+  .then(buildCells)
   .catch(err => {
     console.error("us-atlas load failed:", err);
-    svg.append("text").attr("x", W/2).attr("y", H/2).attr("text-anchor", "middle")
-      .style("fill", "var(--text-secondary)").style("font-size", "14px").text("Map loading…");
+    document.getElementById("cell-row").innerHTML =
+      '<div style="color:var(--text-secondary); padding:20px; grid-column: span 4">Map loading failed.</div>';
   });
 
-// ============== PDF DOWNLOAD ==============
-// PDF via native browser print. Opens the print dialog; user picks
-// "Save as PDF" (default destination in Chrome). The @media print rules
-// above produce a perfect 1280x900 single-page artifact.
+// ===================== PRINT =====================
 document.getElementById("btn-print").addEventListener("click", () => {
-  // Update the document title so the saved PDF gets a clean default filename.
   const prevTitle = document.title;
   document.title = `MD_Ally_National_Footprint_${new Date().toISOString().slice(0,10)}`;
   window.print();
