@@ -492,6 +492,14 @@
           <div class="status" id="status-outreach"></div>
         </div>
       </div>
+      <div class="action-card" data-action="footprint">
+        <div class="action-icon">🗺️</div>
+        <div>
+          <div class="title">National footprint</div>
+          <div class="desc">"Where do you do telehealth and for whom?" Static map of MD Ally's 8 operating agencies + 4 payer partners. Downloadable as a PDF slide.</div>
+          <div class="status" id="status-footprint"></div>
+        </div>
+      </div>
       <div class="action-card" data-action="link">
         <div class="action-icon">🔗</div>
         <div>
@@ -794,6 +802,16 @@ async function doAction(action) {
   const status = $('status-' + action);
   const card = document.querySelector(`.action-card[data-action="${action}"]`);
   if (card?.classList.contains('disabled')) return;
+
+  if (action === 'footprint') {
+    // Static asset — same for every agency. No brief generation needed.
+    window.open('/footprint/', '_blank', 'noopener');
+    if (status) {
+      status.textContent = '✓ Opened in new tab';
+      setTimeout(() => { if (status) status.textContent = ''; }, 3000);
+    }
+    return;
+  }
 
   if (action === 'link') {
     const url = new URL(window.location.href);
