@@ -911,18 +911,36 @@ function composeOutreachDraft(brief) {
   const dq = brief.intel?.discovery_questions ?? [];
   const ng = brief.intel?.golden_nuggets ?? [];
   const compellingEvent = ng.find(n => n.kind === 'compelling_event');
-  const opener = cs[0] ?? '';
+  let opener = cs[0] ?? '';
   const ask = dq[0] ?? '';
+
+  // The LLM's conversation_starter often opens with "[Name]," or
+  // "[Title] [Name]," (e.g. "Chief Sauve,", "Scott,", "Dr. Johnson,").
+  // Detect that and skip the canonical "Hi [Name]," prefix so we don't
+  // emit a double-greeting like "Hi Scott, Chief Sauve, ...".
+  const TITLE_RE = /^(?:chief|dr\.?|mr\.?|mrs\.?|ms\.?|sir|madam|director|captain|commander|lieutenant|sgt\.?|sergeant|deputy|asst\.?)\s+[A-Z][a-zA-Z'\-]+/i;
+  const NAME_RE = /^[A-Z][a-zA-Z'\-]+,/;
+  const HI_RE = /^(?:hi|hello|hey)\s+[A-Z][a-zA-Z'\-]+,?\s*/i;
+  const startsAddressed =
+    HI_RE.test(opener) ||
+    TITLE_RE.test(opener) ||
+    NAME_RE.test(opener) ||
+    (toName !== "there" && opener.toLowerCase().startsWith(toName.toLowerCase() + ','));
+
+  // If the opener doesn't already address the contact, prepend our own greeting.
+  // If it does, use the opener verbatim (the LLM picked who to address).
+  const greeting = startsAddressed ? null : `Hi ${toName},`;
+
   const subject = compellingEvent
     ? `Quick thought on ${agencyName} — re: ${compellingEvent.text.slice(0, 60).replace(/[.!?,]*$/, '')}…`
     : `Quick thought on ${agencyName}`;
   const body = [
-    `Hi ${toName},`,
-    '',
+    greeting,
+    greeting ? '' : null,
     opener || `Wanted to flag something I think is relevant to ${agencyName}'s operational moment.`,
     '',
-    ask ? `One question I keep coming back to: ${ask}` : '',
-    '',
+    ask ? `One question I keep coming back to: ${ask}` : null,
+    ask ? '' : null,
     `Worth 25 minutes? Here's my Bookings link — pick anything that works.`,
     BOOKING_URL,
     '',
