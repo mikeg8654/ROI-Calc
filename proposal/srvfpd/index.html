@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MD Ally · Discovery Engagement Proposal — SRVFPD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-page: #09233C;
+    --bg-panel: #0F2D4A;
+    --bg-elevated: #15385C;
+    --bg-elevated-2: #1C4570;
+    --stroke-subtle: #244A6E;
+    --stroke-rule: #355E84;
+    --text-primary: #FFFFFF;
+    --text-secondary: #A7BBD5;
+    --text-tertiary: #6E83A2;
+    --accent-gold: #FFAE00;
+    --accent-gold-light: #FFC845;
+    --accent-blue: #249AF4;
+    --accent-blue-light: #7BB8F0;
+    --accent-red: #D25151;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    background: #05172A;
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .toolbar {
+    background: #050B17;
+    color: white;
+    padding: 12px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+    border-bottom: 1px solid var(--stroke-subtle);
+  }
+  .toolbar h1 {
+    font-size: 13px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--text-secondary);
+  }
+  .toolbar h1 strong { color: white; }
+  .toolbar .meta {
+    color: var(--text-tertiary); font-size: 11.5px;
+    margin-left: 12px; font-weight: 500; letter-spacing: 0; text-transform: none;
+  }
+  .toolbar .actions { display: flex; gap: 8px; }
+  .toolbar button, .toolbar a {
+    background: var(--accent-gold); color: var(--bg-page);
+    border: none; padding: 9px 16px; border-radius: 6px;
+    font-family: inherit; font-size: 12px; font-weight: 700;
+    cursor: pointer; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 6px;
+    letter-spacing: 0.02em;
+  }
+  .toolbar a.secondary {
+    background: transparent; color: white;
+    border: 1px solid rgba(255,255,255,0.25);
+  }
+
+  .page {
+    width: 816px;
+    min-height: 1056px;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    margin: 24px auto;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.6);
+    position: relative;
+    display: flex; flex-direction: column;
+  }
+
+  /* HERO */
+  .hero {
+    padding: 28px 40px 22px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: linear-gradient(180deg, #09233C 0%, #05172A 100%);
+    border-bottom: 3px solid var(--accent-gold);
+  }
+  .hero-logo {
+    height: 72px; width: auto;
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.35));
+  }
+  .hero-right { text-align: right; }
+  .hero-eyebrow {
+    font-size: 11px; font-weight: 700;
+    color: var(--accent-gold-light);
+    letter-spacing: 0.28em; text-transform: uppercase;
+  }
+  .hero-h1 {
+    font-size: 26px; font-weight: 800; letter-spacing: -0.015em;
+    color: var(--text-primary); margin-top: 4px;
+  }
+  .hero-meta {
+    font-size: 11px; color: var(--text-secondary);
+    margin-top: 4px;
+  }
+  .hero-meta strong { color: var(--accent-gold-light); font-weight: 700; }
+
+  /* RECIPIENT */
+  .recipient {
+    padding: 24px 40px 18px;
+    border-bottom: 1px solid var(--stroke-subtle);
+  }
+  .recipient-eyebrow {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--text-secondary);
+    margin-bottom: 6px;
+  }
+  .recipient-name {
+    font-size: 26px; font-weight: 800; letter-spacing: -0.015em;
+    color: var(--text-primary); line-height: 1.15;
+  }
+  .recipient-sub {
+    font-size: 13px; color: var(--text-secondary);
+    margin-top: 5px; font-weight: 500;
+  }
+  .recipient-sub strong { color: var(--accent-blue-light); font-weight: 700; }
+  .recipient-to {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--stroke-subtle);
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;
+  }
+  .recipient-to .col .label {
+    font-size: 9.5px; font-weight: 700; letter-spacing: 0.14em;
+    color: var(--text-tertiary); text-transform: uppercase;
+  }
+  .recipient-to .col .who {
+    font-size: 14px; font-weight: 700; color: var(--text-primary);
+    margin-top: 4px; line-height: 1.25;
+  }
+  .recipient-to .col .who-title {
+    font-size: 11.5px; color: var(--text-secondary);
+    margin-top: 2px; font-weight: 500;
+  }
+
+  /* SNAPSHOT */
+  .snapshot {
+    padding: 18px 40px;
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--stroke-subtle);
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .snap-tile { display: flex; flex-direction: column; }
+  .snap-tile .lbl {
+    font-size: 9.5px; font-weight: 700; letter-spacing: 0.14em;
+    color: var(--text-secondary); text-transform: uppercase;
+  }
+  .snap-tile .val {
+    font-size: 22px; font-weight: 900; color: var(--accent-gold);
+    line-height: 1.05; letter-spacing: -0.02em;
+    margin-top: 4px;
+  }
+  .snap-tile .val .unit {
+    font-size: 13px; color: var(--accent-gold-light);
+    font-weight: 700; margin-left: 2px;
+  }
+  .snap-tile .sub {
+    font-size: 10.5px; color: var(--text-tertiary);
+    margin-top: 3px; font-weight: 500;
+  }
+
+  /* CONTEXT */
+  .context {
+    padding: 22px 40px;
+    border-bottom: 1px solid var(--stroke-subtle);
+  }
+  .context h3 {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.18em;
+    color: var(--text-secondary); text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .context p {
+    font-size: 14px; line-height: 1.55;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+  .context p + p { margin-top: 10px; }
+  .context p strong { color: var(--accent-gold-light); font-weight: 700; }
+
+  /* OFFER */
+  .offer {
+    padding: 22px 40px;
+    background: linear-gradient(180deg, var(--bg-panel) 0%, #07182C 100%);
+    border-bottom: 1px solid var(--stroke-subtle);
+  }
+  .offer h3 {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.18em;
+    color: var(--text-secondary); text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .offer-title {
+    font-size: 22px; font-weight: 800; color: var(--accent-gold);
+    letter-spacing: -0.015em;
+    margin-bottom: 6px;
+  }
+  .offer-sub {
+    font-size: 13px; color: var(--text-secondary);
+    font-weight: 600; margin-bottom: 14px;
+  }
+  .offer-list {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
+    margin-bottom: 10px;
+  }
+  .offer-item {
+    background: var(--bg-elevated);
+    border-radius: 8px;
+    padding: 12px 14px;
+    border-left: 3px solid var(--accent-blue);
+  }
+  .offer-item .h {
+    font-size: 12.5px; font-weight: 700; color: var(--text-primary);
+    line-height: 1.2;
+  }
+  .offer-item .d {
+    font-size: 11px; color: var(--text-secondary);
+    margin-top: 4px; line-height: 1.4; font-weight: 500;
+  }
+  .offer-bottom {
+    margin-top: 12px;
+    font-size: 11.5px; color: var(--text-tertiary);
+    font-style: italic;
+  }
+  .offer-bottom strong { color: var(--accent-gold-light); font-style: normal; font-weight: 700; }
+
+  /* PATH FORWARD */
+  .path {
+    padding: 22px 40px;
+    border-bottom: 1px solid var(--stroke-subtle);
+  }
+  .path h3 {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.18em;
+    color: var(--text-secondary); text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .path-track {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+  }
+  .path-step {
+    background: var(--bg-elevated);
+    padding: 12px 14px 10px;
+    border-radius: 8px;
+    border-top: 3px solid var(--accent-gold);
+  }
+  .path-step .step-n {
+    font-size: 9px; font-weight: 800; letter-spacing: 0.14em;
+    color: var(--accent-gold-light); text-transform: uppercase;
+  }
+  .path-step .step-h {
+    font-size: 12.5px; font-weight: 700; color: var(--text-primary);
+    margin-top: 4px; line-height: 1.2;
+  }
+  .path-step .step-d {
+    font-size: 10.5px; color: var(--text-secondary);
+    margin-top: 4px; line-height: 1.35; font-weight: 500;
+  }
+
+  /* PROOF */
+  .proof {
+    padding: 18px 40px 22px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 18px;
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--stroke-subtle);
+  }
+  .proof-card {
+    border-left: 3px solid var(--accent-gold);
+    padding: 4px 0 4px 14px;
+  }
+  .proof-card .src {
+    font-size: 9.5px; font-weight: 700; letter-spacing: 0.12em;
+    color: var(--accent-blue-light); text-transform: uppercase;
+  }
+  .proof-card .q {
+    font-size: 13.5px; font-weight: 600; color: var(--text-primary);
+    margin: 4px 0 4px; line-height: 1.35;
+  }
+  .proof-card .q em { font-style: normal; color: var(--accent-gold-light); }
+  .proof-card .who {
+    font-size: 10.5px; color: var(--text-tertiary);
+    font-weight: 500; letter-spacing: 0.02em;
+  }
+
+  /* FOOTER */
+  .footer {
+    padding: 22px 40px;
+    background: linear-gradient(180deg, #05172A 0%, #03101F 100%);
+    display: grid; grid-template-columns: 1fr auto; gap: 24px;
+    align-items: center;
+  }
+  .footer-text .ask {
+    font-size: 16px; font-weight: 700; color: var(--text-primary);
+    letter-spacing: -0.01em;
+  }
+  .footer-text .sig {
+    font-size: 11.5px; color: var(--text-secondary);
+    margin-top: 4px;
+  }
+  .footer-text .sig strong { color: var(--accent-gold-light); font-weight: 700; }
+  .footer .cta {
+    background: var(--accent-gold); color: var(--bg-page);
+    padding: 14px 22px; border-radius: 8px;
+    font-size: 13px; font-weight: 800; letter-spacing: 0.04em;
+    text-transform: uppercase; text-decoration: none;
+    box-shadow: 0 4px 16px rgba(255,174,0,0.25);
+  }
+
+  /* PRINT */
+  @media print {
+    @page { size: letter portrait; margin: 0; }
+    html, body { width: 8.5in; background: var(--bg-page) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .toolbar { display: none !important; }
+    .page { margin: 0 !important; box-shadow: none !important; width: 100% !important; }
+  }
+
+  [contenteditable="true"] { outline: none; border-radius: 3px; transition: background 0.15s, box-shadow 0.15s; }
+  [contenteditable="true"]:hover {
+    background: rgba(255,174,0,0.08);
+    box-shadow: inset 0 -1px 0 rgba(255,174,0,0.45);
+    cursor: text;
+  }
+  [contenteditable="true"]:focus {
+    background: rgba(255,174,0,0.14);
+    box-shadow: inset 0 -2px 0 var(--accent-gold);
+  }
+  @media print {
+    [contenteditable="true"]:hover, [contenteditable="true"]:focus {
+      background: none !important; box-shadow: none !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <h1><strong>MD Ally</strong> · Proposal Generator
+    <span class="meta">MVP · HubSpot deal 60218142549 (Discovery Engagement variant) · click any text to tailor</span>
+  </h1>
+  <div class="actions">
+    <button id="btn-print">Save as PDF</button>
+    <a href="/proposal/" class="secondary">← Year-1 Partnership variant</a>
+    <a href="/" class="secondary">Agency Intel</a>
+  </div>
+</div>
+
+<div class="page" id="capture">
+
+  <!-- HERO -->
+  <div class="hero">
+    <img class="hero-logo" src="assets/md-ally-logo-white.png" alt="MD Ally">
+    <div class="hero-right">
+      <div class="hero-eyebrow">Discovery Engagement · Under NDA</div>
+      <div class="hero-h1" contenteditable="true">Master Dispatch Analysis Proposal</div>
+      <div class="hero-meta">Prepared <strong contenteditable="true">May 15, 2026</strong> · Working session window <strong contenteditable="true">May 19 – May 30, 2026</strong></div>
+    </div>
+  </div>
+
+  <!-- RECIPIENT -->
+  <div class="recipient">
+    <div class="recipient-eyebrow">Prepared for</div>
+    <div class="recipient-name" contenteditable="true">San Ramon Valley Fire Protection District</div>
+    <div class="recipient-sub">Contra Costa County, California · <strong contenteditable="true">~175,000 residents served</strong> · Self-hosted dispatch (SRV911)</div>
+
+    <div class="recipient-to">
+      <div class="col">
+        <div class="label">Primary Recipient (TO)</div>
+        <div class="who" contenteditable="true">Dr. Malcolm Johnson, MD</div>
+        <div class="who-title" contenteditable="true">Medical Director · spoke with Mike Guadan 2026-05-12</div>
+      </div>
+      <div class="col">
+        <div class="label">Copied (CC)</div>
+        <div class="who" contenteditable="true">Chief Scott Sauve · Interim Dep. Chief Joe Bradley</div>
+        <div class="who-title" contenteditable="true">Originating inquiry 2026-05-11 · stakeholders aligned</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SNAPSHOT -->
+  <div class="snapshot">
+    <div class="snap-tile">
+      <div class="lbl">Population Served</div>
+      <div class="val" contenteditable="true">175K</div>
+      <div class="sub">San Ramon · Danville · Alamo · Diablo</div>
+    </div>
+    <div class="snap-tile">
+      <div class="lbl">Dispatch Model</div>
+      <div class="val" contenteditable="true">Self-Op</div>
+      <div class="sub">SRV911 in-house · not county PSAP</div>
+    </div>
+    <div class="snap-tile">
+      <div class="lbl">Stakeholders Confirmed</div>
+      <div class="val" contenteditable="true">5</div>
+      <div class="sub">Chief, Dep. Chief, Med Dir, 3 Board</div>
+    </div>
+    <div class="snap-tile">
+      <div class="lbl">Conversion Forms</div>
+      <div class="val" contenteditable="true">2</div>
+      <div class="sub">Coordinated · within 24 hours</div>
+    </div>
+  </div>
+
+  <!-- CONTEXT -->
+  <div class="context">
+    <h3>The opening you handed us</h3>
+    <p contenteditable="true">Two inbound conversions in a 24-hour window, from your Fire Chief and your Medical Director, is a clear and well-aligned signal. We took the meeting seriously. Mike Guadan and Dr. Johnson spoke by phone the day after Dr. Johnson's form arrived, and the working theme that emerged was simple: <strong>before either side talks about a partnership, let's look at the data together.</strong></p>
+    <p contenteditable="true">This proposal does not ask SRVFPD to make a vendor decision. It asks for a structured 12 to 24 month working engagement, under NDA, to study your determinant-code-level call data and surface where a non-911 care pathway would meaningfully improve outcomes, reduce truck-hours, and align low-acuity callers with the right setting. We bring the analysis, the public-safety domain expertise, and the comparative benchmarks. You bring the data and the operational context. The output is yours.</p>
+  </div>
+
+  <!-- OFFER -->
+  <div class="offer">
+    <h3>The Engagement</h3>
+    <div class="offer-title" contenteditable="true">12-24 Month Master Dispatch Analysis</div>
+    <div class="offer-sub" contenteditable="true">Determinant-code-level review under mutual NDA · Joint deliverables · Renewable</div>
+
+    <div class="offer-list">
+      <div class="offer-item">
+        <div class="h">Determinant-code segmentation</div>
+        <div class="d">EMD chief complaint and determinant code distribution across 12-24 months. Identifies the low-acuity tail and the Alpha-Omega routable cohort.</div>
+      </div>
+      <div class="offer-item">
+        <div class="h">Truck-hour economics</div>
+        <div class="d">Cost of readiness mapped against utilization. Quantifies the readiness preserved by removing non-emergent transports from the response queue.</div>
+      </div>
+      <div class="offer-item">
+        <div class="h">Disposition modeling</div>
+        <div class="d">Maps each routable cohort to the right alternative setting: clinician-on-camera, Omega-ambulance, rideshare, crisis line, poison control, law non-emergency.</div>
+      </div>
+      <div class="offer-item">
+        <div class="h">Comparative benchmarking</div>
+        <div class="d">SRVFPD performance side-by-side with comparable CA agencies (Falck/Alameda, peer fire-EMS districts). No PII shared, no agency identified.</div>
+      </div>
+    </div>
+
+    <div class="offer-bottom"><strong>Investment scope:</strong> <span contenteditable="true">to be defined jointly during the working session and codified in the engagement agreement. NDA is mutual and pre-signed before any data exchange.</span></div>
+  </div>
+
+  <!-- PATH -->
+  <div class="path">
+    <h3>Path Forward</h3>
+    <div class="path-track">
+      <div class="path-step">
+        <div class="step-n">Step 1 · This week</div>
+        <div class="step-h">Working Session</div>
+        <div class="step-d">30 minute call with Dr. Johnson, Chief Sauve, and Mike. Confirm scope and questions worth studying.</div>
+      </div>
+      <div class="path-step">
+        <div class="step-n">Step 2 · Within 2 weeks</div>
+        <div class="step-h">Mutual NDA</div>
+        <div class="step-d">Pre-signed before any data review. Mutual, time-bound, narrow purpose.</div>
+      </div>
+      <div class="path-step">
+        <div class="step-n">Step 3 · Month 1-2</div>
+        <div class="step-h">Data Exchange</div>
+        <div class="step-d">De-identified determinant-code extract per joint scope. SRVFPD retains all source data.</div>
+      </div>
+      <div class="path-step">
+        <div class="step-n">Step 4 · Quarterly</div>
+        <div class="step-h">Findings Review</div>
+        <div class="step-d">Joint readout to Sauve, Johnson, Bradley, and the board on request. Recommendations only if invited.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROOF -->
+  <div class="proof">
+    <div class="proof-card">
+      <div class="src">CA Peer · Closed-Won NorCal</div>
+      <div class="q">Falck (Alameda County, CA) <em>operates EMS for 1.7M residents</em> and is live with MD Ally. Same state, same regulatory and billing framework, same dispatch posture.</div>
+      <div class="who">Reference call available on request</div>
+    </div>
+    <div class="proof-card">
+      <div class="src">KOLD News 13 · January 2026</div>
+      <div class="q">A western-US fire agency reported <em>2,000+ calls diverted</em> through MD Ally and the first call-volume decrease in five years.</div>
+      <div class="who">Public reference · attribution available</div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-text">
+      <div class="ask" contenteditable="true">Next step: 30 minutes with Dr. Johnson and Chief Sauve to confirm scope and pre-NDA questions.</div>
+      <div class="sig">Prepared by <strong>Mike Guadan</strong>, VP Public Safety Partnerships · MD Ally Technologies · <span contenteditable="true">mike.guadan@mdally.com</span></div>
+    </div>
+    <a class="cta" href="#" target="_blank" rel="noopener">Book Working Session</a>
+  </div>
+
+</div>
+
+<script>
+  document.getElementById('btn-print').addEventListener('click', () => {
+    const prev = document.title;
+    document.title = 'MD_Ally_Discovery_Proposal_SRVFPD_' + new Date().toISOString().slice(0,10);
+    window.print();
+    setTimeout(() => { document.title = prev; }, 500);
+  });
+
+  // Edit persistence — separate namespace so it doesn't collide with the REMSA proposal
+  const EDIT_NS = 'mdally.proposal.srvfpd.edits.v1';
+  function loadEdits() { try { return JSON.parse(localStorage.getItem(EDIT_NS) || '{}'); } catch { return {}; } }
+  function saveEdits(e) { try { localStorage.setItem(EDIT_NS, JSON.stringify(e)); } catch {} }
+  document.querySelectorAll('[contenteditable="true"]').forEach((el, i) => {
+    const key = 'p' + i;
+    const edits = loadEdits();
+    if (key in edits) el.textContent = edits[key];
+    el.addEventListener('input', () => {
+      const next = loadEdits();
+      next[key] = el.textContent;
+      saveEdits(next);
+    });
+  });
+</script>
+</body>
+</html>
