@@ -341,6 +341,16 @@
     font-weight: 700;
     flex-shrink: 0;
   }
+  .agency-row .type-tag {
+    font-size: 8.5px; font-weight: 800;
+    letter-spacing: 0.08em;
+    color: var(--accent-teal-light);
+    background: rgba(36,154,244,0.14);
+    border: 1px solid rgba(36,154,244,0.45);
+    padding: 1px 5px; border-radius: 3px;
+    flex-shrink: 0;
+    text-transform: uppercase;
+  }
 
   /* PROOF FOOTER (148) — 3 wider value-anchored boxes, per-client editable */
   .proof {
@@ -589,8 +599,8 @@
 const AGENCIES = [
   // FL — 3
   { name: "Hillsborough County Fire Rescue", short: "Hillsborough",  state: "FL", lat: 27.99, lng: -82.30, pop: 1500000, mono: "HCFR", type: "FIRE/EMS", parentMono: "" },
-  { name: "Manatee County",                  short: "Manatee",       state: "FL", lat: 27.49, lng: -82.34, pop: 400000,  mono: "MAN",  type: "MULTI",    parentMono: "" },
-  { name: "Lee County",                      short: "Lee",           state: "FL", lat: 26.65, lng: -81.95, pop: 800000,  mono: "LEE",  type: "MULTI",    parentMono: "" },
+  { name: "Manatee County",                  short: "Manatee",       state: "FL", lat: 27.49, lng: -82.34, pop: 400000,  mono: "MAN",  type: "EMS",      parentMono: "" },
+  { name: "Lee County",                      short: "Lee",           state: "FL", lat: 26.65, lng: -81.95, pop: 800000,  mono: "LEE",  type: "EMS",      parentMono: "" },
 
   // AZ — 5 (3 parents + 2 subs)
   { name: "City of Phoenix",                 short: "Phoenix",       state: "AZ", lat: 33.45, lng: -112.07, pop: 1600000, mono: "PHX", type: "FIRE/EMS", parentMono: "" },
@@ -613,7 +623,7 @@ const STATE_TITLES = { CA: "California", AZ: "Arizona", CO: "Colorado", FL: "Flo
 const STATE_FOOT = {
   FL: "TERF Deployments",
   AZ: "Supporting MIH / Community Paramedics",
-  CO: "New service area 2026",
+  CO: "Replaced Nurse Triage Program",
   CA: "Field Implementation",
 };
 
@@ -632,10 +642,12 @@ function renderRail() {
     if (!inState.length) return "";
     const rows = [];
     parents.forEach(p => {
+      const typeTag = p.type ? `<span class="type-tag">${p.type}</span>` : "";
       rows.push(`
         <div class="agency-row parent">
           <span class="bullet"></span>
           <span class="name">${p.name}</span>
+          ${typeTag}
           <span class="pop">${fmtPop(p.pop)}</span>
         </div>
       `);
@@ -737,8 +749,9 @@ function buildCells(usTopoData) {
       const b = inState.find(a => a.mono === "BFM");
       if (b) drawSoloLabel(svg, projection, b, { dx: -7, dy: 3, anchor: "end" });
     } else if (stCode === "FL") {
-      // Stack labels along the peninsula
-      drawSoloLabel(svg, projection, inState.find(a => a.mono === "HCFR"), { dx: 7, dy: -2, anchor: "start" });
+      // Stack labels along the peninsula. Hillsborough flipped left (was
+      // clipping the right edge of the cell).
+      drawSoloLabel(svg, projection, inState.find(a => a.mono === "HCFR"), { dx: -7, dy: -2, anchor: "end" });
       drawSoloLabel(svg, projection, inState.find(a => a.mono === "MAN"),  { dx: 7, dy: 10, anchor: "start" });
       drawSoloLabel(svg, projection, inState.find(a => a.mono === "LEE"),  { dx: 7, dy: 22, anchor: "start" });
     } else {
