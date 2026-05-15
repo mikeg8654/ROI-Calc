@@ -18,6 +18,12 @@ const ROOT = __dirname;
 app.get(["/calc", "/calc/"], (_req, res) => {
   res.sendFile(path.join(ROOT, "calc", "index.html"));
 });
+app.get(["/proposal", "/proposal/"], (_req, res) => {
+  res.sendFile(path.join(ROOT, "proposal", "index.html"));
+});
+app.get(["/footprint", "/footprint/"], (_req, res) => {
+  res.sendFile(path.join(ROOT, "footprint", "index.html"));
+});
 
 // 2. Static files from repo root (assets, /calc/*.css if any, etc.)
 app.use(express.static(ROOT, { extensions: ["html"] }));

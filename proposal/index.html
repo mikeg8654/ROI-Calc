@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MD Ally · Proposal — REMSA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* v5.2 brand tokens — must stay in sync with footprint/index.html */
+    --bg-page: #09233C;
+    --bg-panel: #0F2D4A;
+    --bg-elevated: #15385C;
+    --bg-elevated-2: #1C4570;
+    --stroke-subtle: #244A6E;
+    --stroke-rule: #355E84;
+    --text-primary: #FFFFFF;
+    --text-secondary: #A7BBD5;
+    --text-tertiary: #6E83A2;
+    --accent-gold: #FFAE00;
+    --accent-gold-light: #FFC845;
+    --accent-blue: #249AF4;
+    --accent-blue-light: #7BB8F0;
+    --accent-red: #D25151;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    background: #05172A;
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .toolbar {
+    background: #050B17;
+    color: white;
+    padding: 12px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+    border-bottom: 1px solid var(--stroke-subtle);
+  }
+  .toolbar h1 {
+    font-size: 13px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--text-secondary);
+  }
+  .toolbar h1 strong { color: white; }
+  .toolbar .meta { color: var(--text-tertiary); font-size: 11.5px; margin-left: 12px; font-weight: 500; letter-spacing: 0; text-transform: none; }
+  .toolbar .actions { display: flex; gap: 8px; }
+  .toolbar button, .toolbar a {
+    background: var(--accent-gold); color: var(--bg-page);
+    border: none; padding: 9px 16px; border-radius: 6px;
+    font-family: inherit; font-size: 12px; font-weight: 700;
+    cursor: pointer; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 6px;
+    letter-spacing: 0.02em;
+  }
+  .toolbar button:hover, .toolbar a:hover { background: var(--accent-gold-light); }
+  .toolbar a.secondary {
+    background: transparent; color: white;
+    border: 1px solid rgba(255,255,255,0.25);
+  }
+  .toolbar a.secondary:hover { background: rgba(255,255,255,0.08); }
+
+  /* PAGE — print-letter portrait (816 x 1056 = 8.5"x11" @ 96dpi) */
+  .page {
+    width: 816px;
+    min-height: 1056px;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    margin: 24px auto;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.6);
+    position: relative;
+    display: flex; flex-direction: column;
+  }
+
+  /* HERO BAND */
+  .hero {
+    padding: 28px 40px 22px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: linear-gradient(180deg, #09233C 0%, #05172A 100%);
+    border-bottom: 3px solid var(--accent-gold);
+  }
+  .hero-logo {
+    height: 72px; width: auto;
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.35));
+  }
+  .hero-right { text-align: right; }
+  .hero-eyebrow {
+    font-size: 11px; font-weight: 700;
+    color: var(--accent-gold-light);
+    letter-spacing: 0.28em; text-transform: uppercase;
+  }
+  .hero-h1 {
+    font-size: 26px; font-weight: 800; letter-spacing: -0.015em;
+    color: var(--text-primary); margin-top: 4px;
+  }
+  .hero-meta {
+    font-size: 11px; color: var(--text-secondary);
+    margin-top: 4px;
+  }
+  .hero-meta strong { color: var(--accent-gold-light); font-weight: 700; }
+
+  /* RECIPIENT BLOCK */
+  .recipient {
+    padding: 24px 40px 18px;
+    border-bottom: 1px solid var(--stroke-subtle);
+  }
+  .recipient-eyebrow {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--text-secondary);
+    margin-bottom: 6px;
+  }
+  .recipient-name {
+    font-size: 28px; font-weight: 800; letter-spacing: -0.015em;
+    color: var(--text-primary); line-height: 1.15;
+  }
+  .recipient-sub {
+    font-size: 13px; color: var(--text-secondary);
+    margin-top: 5px; font-weight: 500;
+  }
+  .recipient-sub strong { color: var(--accent-blue-light); font-weight: 700; }
+
+  /* SNAPSHOT GRID */
+  .snapshot {
+    padding: 18px 40px;
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--stroke-subtle);
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .snap-tile { display: flex; flex-direction: column; }
+  .snap-tile .lbl {
+    font-size: 9.5px; font-weight: 700; letter-spacing: 0.14em;
+    color: var(--text-secondary); text-transform: uppercase;
+  }
+  .snap-tile .val {
+    font-size: 22px; font-weight: 900; color: var(--accent-gold);
+    line-height: 1.05; letter-spacing: -0.02em;
+    margin-top: 4px;
+  }
+  .snap-tile .val .unit {
+    font-size: 13px; color: var(--accent-gold-light);
+    font-weight: 700; margin-left: 2px;
+  }
+  .snap-tile .sub {
+    font-size: 10.5px; color: var(--text-tertiary);
+    margin-top: 3px; font-weight: 500;
+  }
+
+  /* WHY BLOCK */
+  .why {
+    padding: 22px 40px;
+    border-bottom: 1px solid var(--stroke-subtle);
+  }
+  .why h3 {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.18em;
+    color: var(--text-secondary); text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .why p {
+    font-size: 14.5px; line-height: 1.55;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+  .why p strong { color: var(--accent-gold-light); font-weight: 700; }
+
+  /* INVESTMENT BAND */
+  .invest {
+    padding: 22px 40px;
+    background: linear-gradient(180deg, var(--bg-panel) 0%, #07182C 100%);
+    border-bottom: 1px solid var(--stroke-subtle);
+    display: grid; grid-template-columns: 1.4fr 1fr; gap: 32px;
+  }
+  .invest-main h3 {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.18em;
+    color: var(--text-secondary); text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .invest-amount {
+    font-size: 48px; font-weight: 900; color: var(--accent-gold);
+    line-height: 1; letter-spacing: -0.025em;
+  }
+  .invest-amount .prefix {
+    font-size: 24px; color: var(--accent-gold-light);
+    font-weight: 700; margin-right: 1px;
+    vertical-align: 12px;
+  }
+  .invest-amount .unit {
+    font-size: 16px; color: var(--accent-gold-light);
+    font-weight: 700; margin-left: 6px;
+    letter-spacing: 0.04em;
+  }
+  .invest-detail {
+    font-size: 12.5px; color: var(--text-primary);
+    margin-top: 6px; font-weight: 600;
+  }
+  .invest-detail .muted { color: var(--text-secondary); font-weight: 500; }
+  .invest-side {
+    border-left: 1px solid var(--stroke-subtle);
+    padding-left: 24px;
+  }
+  .invest-side h4 {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+    color: var(--text-secondary); text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .invest-line {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 4px 0;
+    font-size: 11.5px; font-weight: 500;
+    color: var(--text-primary);
+  }
+  .invest-line .v { color: var(--accent-gold-light); font-weight: 700; }
+  .invest-line.tot {
+    border-top: 1px solid var(--stroke-rule);
+    margin-top: 4px; padding-top: 8px;
+    font-weight: 700;
+  }
+
+  /* ROI BAND */
+  .roi {
+    padding: 22px 40px;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
+    border-bottom: 1px solid var(--stroke-subtle);
+  }
+  .roi-box {
+    background: var(--bg-elevated);
+    border-radius: 10px;
+    padding: 16px 18px;
+    border-left: 3px solid var(--accent-blue);
+  }
+  .roi-box .lbl {
+    font-size: 9.5px; font-weight: 700; letter-spacing: 0.14em;
+    color: var(--text-secondary); text-transform: uppercase;
+  }
+  .roi-box .val {
+    font-size: 26px; font-weight: 900; color: var(--accent-gold);
+    line-height: 1; letter-spacing: -0.02em;
+    margin: 6px 0 4px;
+  }
+  .roi-box .val .prefix {
+    font-size: 14px; color: var(--accent-gold-light);
+    font-weight: 700; margin-right: 1px;
+    vertical-align: 5px;
+  }
+  .roi-box .body {
+    font-size: 11.5px; color: var(--text-primary);
+    line-height: 1.4; font-weight: 500;
+  }
+
+  /* TIMELINE */
+  .timeline {
+    padding: 22px 40px;
+    border-bottom: 1px solid var(--stroke-subtle);
+  }
+  .timeline h3 {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.18em;
+    color: var(--text-secondary); text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .timeline-track {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    position: relative;
+  }
+  .timeline-step {
+    background: var(--bg-elevated);
+    padding: 12px 14px 10px;
+    border-radius: 8px;
+    border-top: 3px solid var(--accent-gold);
+    position: relative;
+  }
+  .timeline-step .step-n {
+    font-size: 9px; font-weight: 800; letter-spacing: 0.14em;
+    color: var(--accent-gold-light); text-transform: uppercase;
+  }
+  .timeline-step .step-h {
+    font-size: 12.5px; font-weight: 700; color: var(--text-primary);
+    margin-top: 4px; line-height: 1.2;
+  }
+  .timeline-step .step-d {
+    font-size: 10.5px; color: var(--text-secondary);
+    margin-top: 4px; line-height: 1.35; font-weight: 500;
+  }
+
+  /* PROOF */
+  .proof {
+    padding: 18px 40px 22px;
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px;
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--stroke-subtle);
+  }
+  .proof-card {
+    border-left: 3px solid var(--accent-gold);
+    padding: 4px 0 4px 14px;
+  }
+  .proof-card .src {
+    font-size: 9.5px; font-weight: 700; letter-spacing: 0.12em;
+    color: var(--accent-blue-light); text-transform: uppercase;
+  }
+  .proof-card .q {
+    font-size: 14px; font-weight: 600; color: var(--text-primary);
+    margin: 4px 0 4px; line-height: 1.35;
+  }
+  .proof-card .q em { font-style: normal; color: var(--accent-gold-light); }
+  .proof-card .who {
+    font-size: 10.5px; color: var(--text-tertiary);
+    font-weight: 500; letter-spacing: 0.02em;
+  }
+
+  /* FOOTER CTA */
+  .footer {
+    padding: 22px 40px;
+    background: linear-gradient(180deg, #05172A 0%, #03101F 100%);
+    display: grid; grid-template-columns: 1fr auto; gap: 24px;
+    align-items: center;
+  }
+  .footer-text .ask {
+    font-size: 16px; font-weight: 700; color: var(--text-primary);
+    letter-spacing: -0.01em;
+  }
+  .footer-text .sig {
+    font-size: 11.5px; color: var(--text-secondary);
+    margin-top: 4px;
+  }
+  .footer-text .sig strong { color: var(--accent-gold-light); font-weight: 700; }
+  .footer .cta {
+    background: var(--accent-gold); color: var(--bg-page);
+    padding: 14px 22px; border-radius: 8px;
+    font-size: 13px; font-weight: 800; letter-spacing: 0.04em;
+    text-transform: uppercase; text-decoration: none;
+    box-shadow: 0 4px 16px rgba(255,174,0,0.25);
+  }
+  .footer .cta:hover { background: var(--accent-gold-light); }
+
+  /* PRINT */
+  @media print {
+    @page { size: letter portrait; margin: 0; }
+    html, body { width: 8.5in; background: var(--bg-page) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .toolbar { display: none !important; }
+    .page { margin: 0 !important; box-shadow: none !important; width: 100% !important; }
+  }
+
+  /* Editable affordance on screen, hidden on print */
+  [contenteditable="true"] { outline: none; border-radius: 3px; transition: background 0.15s, box-shadow 0.15s; }
+  [contenteditable="true"]:hover {
+    background: rgba(255,174,0,0.08);
+    box-shadow: inset 0 -1px 0 rgba(255,174,0,0.45);
+    cursor: text;
+  }
+  [contenteditable="true"]:focus {
+    background: rgba(255,174,0,0.14);
+    box-shadow: inset 0 -2px 0 var(--accent-gold);
+  }
+  @media print {
+    [contenteditable="true"]:hover, [contenteditable="true"]:focus {
+      background: none !important; box-shadow: none !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <h1><strong>MD Ally</strong> · Proposal Generator
+    <span class="meta">MVP · HubSpot quote #20260428-174424238 · click any text to tailor</span>
+  </h1>
+  <div class="actions">
+    <button id="btn-print">Save as PDF</button>
+    <a href="/" class="secondary">← Back to Agency Intel</a>
+  </div>
+</div>
+
+<div class="page" id="capture">
+
+  <!-- HERO -->
+  <div class="hero">
+    <img class="hero-logo" src="assets/md-ally-logo-white.png" alt="MD Ally">
+    <div class="hero-right">
+      <div class="hero-eyebrow">Partnership Proposal · Year 1</div>
+      <div class="hero-h1" contenteditable="true">Public Safety Telehealth Program</div>
+      <div class="hero-meta">Quote <strong contenteditable="true">#20260428-174424238</strong> · Prepared <strong contenteditable="true">April 29, 2026</strong> · Valid through <strong contenteditable="true">June 28, 2026</strong></div>
+    </div>
+  </div>
+
+  <!-- RECIPIENT -->
+  <div class="recipient">
+    <div class="recipient-eyebrow">Prepared for</div>
+    <div class="recipient-name" contenteditable="true">Reno Emergency Medical Services (REMSA)</div>
+    <div class="recipient-sub">Washoe County, Nevada · Dispatched by <strong contenteditable="true">REMSA Communications Center</strong> · <span contenteditable="true">~500,000 residents served</span></div>
+  </div>
+
+  <!-- SNAPSHOT -->
+  <div class="snapshot">
+    <div class="snap-tile">
+      <div class="lbl">Annual Calls</div>
+      <div class="val" contenteditable="true">86,965</div>
+      <div class="sub">Dispatched 911 + EMS</div>
+    </div>
+    <div class="snap-tile">
+      <div class="lbl">Alpha · Omega Eligible</div>
+      <div class="val" contenteditable="true">21,607</div>
+      <div class="sub">Low-acuity, telehealth-routable</div>
+    </div>
+    <div class="snap-tile">
+      <div class="lbl">Eligibility Rate</div>
+      <div class="val" contenteditable="true">24.8<span class="unit">%</span></div>
+      <div class="sub">Of total 911 dispatches</div>
+    </div>
+    <div class="snap-tile">
+      <div class="lbl">Uninsured Driver</div>
+      <div class="val" contenteditable="true">Yes</div>
+      <div class="sub">Bad-debt avoidance wedge</div>
+    </div>
+  </div>
+
+  <!-- WHY -->
+  <div class="why">
+    <h3>Why this program, why now</h3>
+    <p contenteditable="true">REMSA already operates a nurse-triage layer. This proposal is not a replacement. It is a <strong>complementary clinician escalation and community-routing layer</strong> that aligns the 21,607 Alpha and Omega callers per year with the right care: clinician-on-camera, Omega-ambulance, rideshare to clinic, mental-health crisis line, poison control, or law-enforcement non-emergency. The result is reduced bad-debt exposure on uninsured low-acuity transports, freed truck-hours for true emergencies, and a measurable community-health story for the board.</p>
+  </div>
+
+  <!-- INVESTMENT -->
+  <div class="invest">
+    <div class="invest-main">
+      <h3>Year-1 Investment</h3>
+      <div class="invest-amount"><span class="prefix">$</span>234,297<span class="unit">USD</span></div>
+      <div class="invest-detail">Annual partnership engagement <span class="muted">· no per-call fees · no usage-based billing</span></div>
+      <div class="invest-detail muted" style="margin-top:8px; font-size:11.5px;">Implementation, integration, clinical staffing, 24/7 service, and outcome reporting included.</div>
+    </div>
+    <div class="invest-side">
+      <h4>Cost Structure</h4>
+      <div class="invest-line"><span>Clinical staffing &amp; coverage</span><span class="v" contenteditable="true">$148,000</span></div>
+      <div class="invest-line"><span>Integration &amp; activation</span><span class="v" contenteditable="true">$42,000</span></div>
+      <div class="invest-line"><span>Reporting &amp; outcomes</span><span class="v" contenteditable="true">$28,000</span></div>
+      <div class="invest-line"><span>Annual program management</span><span class="v" contenteditable="true">$16,297</span></div>
+      <div class="invest-line tot"><span>Total Year 1</span><span class="v">$234,297</span></div>
+    </div>
+  </div>
+
+  <!-- ROI -->
+  <div class="roi">
+    <div class="roi-box">
+      <div class="lbl">Avoided Spending</div>
+      <div class="val"><span class="prefix">~$</span>1,500</div>
+      <div class="body">prevented per non-emergent transport rerouted to the right care setting.</div>
+    </div>
+    <div class="roi-box">
+      <div class="lbl">Readiness Protected</div>
+      <div class="val"><span class="prefix">$</span>350K</div>
+      <div class="body">annual cost-of-readiness per truck. Preserved for true emergencies and high-acuity response.</div>
+    </div>
+    <div class="roi-box">
+      <div class="lbl">Patient Alignment</div>
+      <div class="val" contenteditable="true">21,607</div>
+      <div class="body">callers per year aligned with the right care, the right time, the right place.</div>
+    </div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="timeline">
+    <h3>Implementation · Process to Transfer (not an IT project)</h3>
+    <div class="timeline-track">
+      <div class="timeline-step">
+        <div class="step-n">Week 1–2</div>
+        <div class="step-h">Discovery &amp; Mapping</div>
+        <div class="step-d">Joint workflow review, dispatch protocol alignment, stakeholder onboarding.</div>
+      </div>
+      <div class="timeline-step">
+        <div class="step-n">Week 3–6</div>
+        <div class="step-h">Integration</div>
+        <div class="step-d">Warm-transfer setup, clinician escalation path, training and dry runs.</div>
+      </div>
+      <div class="timeline-step">
+        <div class="step-n">Week 7–10</div>
+        <div class="step-h">Soft Launch</div>
+        <div class="step-d">Live calls, low volume, joint QA, escalation tuning, first outcome report.</div>
+      </div>
+      <div class="timeline-step">
+        <div class="step-n">Week 11–13</div>
+        <div class="step-h">Full Operations</div>
+        <div class="step-d">24/7 coverage live, weekly outcomes, quarterly executive review.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROOF -->
+  <div class="proof">
+    <div class="proof-card">
+      <div class="src">KOLD News 13 · January 2026</div>
+      <div class="q"><em>2,000+ calls diverted</em> at Tucson Fire. First call-volume decrease in five years.</div>
+      <div class="who">Peer reference · Tucson Fire Department</div>
+    </div>
+    <div class="proof-card">
+      <div class="src">Fox 13 Tampa Bay</div>
+      <div class="q">A Florida partner launched with MD Ally in <em>41 days</em>, processing 911 telehealth referrals on day one.</div>
+      <div class="who">Peer reference · public-safety partner</div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-text">
+      <div class="ask" contenteditable="true">Next step: 30 minutes with REMSA leadership to align on workflow + activation date.</div>
+      <div class="sig">Prepared by <strong>Mike Guadan</strong>, VP Public Safety Partnerships · MD Ally Technologies · <span contenteditable="true">mike.guadan@mdally.com</span></div>
+    </div>
+    <a class="cta" href="#" id="btn-book" target="_blank" rel="noopener">Book a Meeting</a>
+  </div>
+
+</div>
+
+<script>
+  document.getElementById('btn-print').addEventListener('click', () => {
+    const prev = document.title;
+    document.title = 'MD_Ally_Proposal_REMSA_' + new Date().toISOString().slice(0,10);
+    window.print();
+    setTimeout(() => { document.title = prev; }, 500);
+  });
+
+  // Per-client inline edit persistence — same namespace pattern as footprint
+  const EDIT_NS = 'mdally.proposal.edits.v1';
+  function loadEdits() { try { return JSON.parse(localStorage.getItem(EDIT_NS) || '{}'); } catch { return {}; } }
+  function saveEdits(e) { try { localStorage.setItem(EDIT_NS, JSON.stringify(e)); } catch {} }
+  document.querySelectorAll('[contenteditable="true"]').forEach((el, i) => {
+    const key = 'p' + i;
+    const edits = loadEdits();
+    if (key in edits) el.textContent = edits[key];
+    el.addEventListener('input', () => {
+      const next = loadEdits();
+      next[key] = el.textContent;
+      saveEdits(next);
+    });
+  });
+</script>
+</body>
+</html>
