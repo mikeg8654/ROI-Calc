@@ -9,22 +9,23 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg-page: #0F1B33;
-    --bg-panel: #14223E;
-    --bg-elevated: #1B2A4A;
-    --bg-elevated-2: #22325A;
-    --stroke-subtle: #2B3A5C;
-    --stroke-rule: #3A4D78;
+    /* mdally.com brand palette */
+    --bg-page: #09233C;          /* brand navy */
+    --bg-panel: #0F2D4A;
+    --bg-elevated: #15385C;
+    --bg-elevated-2: #1C4570;
+    --stroke-subtle: #244A6E;
+    --stroke-rule: #355E84;
     --text-primary: #FFFFFF;
-    --text-secondary: #9FB0CC;
-    --text-tertiary: #6B7CA0;
-    --accent-gold: #E5A817;
-    --accent-gold-light: #F5C13F;
-    --accent-teal: #1FA595;
-    --accent-teal-light: #2DC7B5;
-    --accent-periwinkle: #6B8AFD;
+    --text-secondary: #A7BBD5;
+    --text-tertiary: #6E83A2;
+    --accent-gold: #FFAE00;       /* brand gold */
+    --accent-gold-light: #FFC845;
+    --accent-teal: #249AF4;       /* repurposed: brand blue */
+    --accent-teal-light: #7BB8F0; /* repurposed: brand pale blue */
+    --accent-periwinkle: #97C7EB;
     --accent-muted-gold: #C9A961;
-    --accent-red: #D86B5C;
+    --accent-red: #D25151;        /* brand red */
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body {
@@ -79,48 +80,44 @@
     position: relative;
   }
 
-  /* === GRID: hero 88 + rule 3 + KPI 84 + main 555 + proof 170 = 900 === */
+  /* === GRID: hero 110 + KPI 84 + main 555 + proof 148 = 897 (+3px gold rule) === */
 
-  /* HERO (88) */
+  /* HERO (110) — bigger to seat the MD Ally wordmark */
   .hero {
-    height: 88px;
-    padding: 0 28px;
+    height: 110px;
+    padding: 0 32px;
     display: flex; align-items: center; justify-content: space-between;
-    background: linear-gradient(180deg, #0F1B33 0%, #0B1530 100%);
+    background: linear-gradient(180deg, #09233C 0%, #05172A 100%);
     border-bottom: 3px solid var(--accent-gold);
   }
-  .hero-left { display: flex; align-items: center; gap: 16px; }
-  .hero-mark {
-    width: 52px; height: 52px;
-    background: linear-gradient(135deg, var(--accent-gold) 0%, #C48A0B 100%);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 900; font-size: 18px; color: var(--bg-page);
-    letter-spacing: -0.02em;
-    box-shadow: 0 4px 12px rgba(229,168,23,0.25);
+  .hero-left { display: flex; align-items: center; gap: 22px; }
+  .hero-logo {
+    height: 86px; width: auto;
     flex-shrink: 0;
+    /* logo asset already white on transparent; drop shadow for depth */
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.35));
   }
   .hero-titles h1 {
-    font-size: 26px; font-weight: 800; letter-spacing: -0.015em;
+    font-size: 34px; font-weight: 800; letter-spacing: -0.015em;
     color: var(--text-primary); line-height: 1.05;
   }
   .hero-titles .sub {
-    font-size: 11px; font-weight: 600;
-    color: var(--text-secondary); letter-spacing: 0.12em;
-    text-transform: uppercase; margin-top: 4px;
+    font-size: 13px; font-weight: 600;
+    color: var(--text-secondary); letter-spacing: 0.14em;
+    text-transform: uppercase; margin-top: 6px;
   }
-  .hero-right { text-align: right; }
+  .hero-right { text-align: right; max-width: 460px; }
   .hero-right .question {
-    font-size: 12px; color: var(--text-secondary);
+    font-size: 14px; color: var(--text-secondary);
     font-style: italic; font-weight: 500;
   }
   .hero-right .answer {
-    font-size: 13px; color: var(--accent-gold-light);
-    font-weight: 700; margin-top: 3px;
+    font-size: 16px; color: var(--accent-gold-light);
+    font-weight: 700; margin-top: 5px;
     letter-spacing: 0.02em;
   }
 
-  /* KPI STRIP (84) — 3 tiles, dropped Fastest Launch from prominent placement */
+  /* KPI STRIP (84) — 3 tiles */
   .kpi-strip {
     height: 84px;
     background: var(--bg-panel);
@@ -129,29 +126,29 @@
     grid-template-columns: repeat(3, 1fr);
   }
   .kpi {
-    padding: 14px 32px;
+    padding: 12px 32px;
     border-right: 1px solid var(--stroke-subtle);
     display: flex; flex-direction: column; justify-content: center;
   }
   .kpi:last-child { border-right: none; }
   .kpi .num {
-    font-size: 38px; font-weight: 900;
+    font-size: 44px; font-weight: 900;
     color: var(--accent-gold);
     line-height: 1; letter-spacing: -0.02em;
-    margin-bottom: 4px;
+    margin-bottom: 5px;
   }
   .kpi .num .unit {
-    font-size: 20px; color: var(--accent-gold-light);
+    font-size: 24px; color: var(--accent-gold-light);
     font-weight: 700; margin-left: 2px;
   }
   .kpi .lbl {
-    font-size: 10.5px; font-weight: 700;
+    font-size: 12px; font-weight: 700;
     color: var(--text-secondary);
-    letter-spacing: 0.14em; text-transform: uppercase;
+    letter-spacing: 0.16em; text-transform: uppercase;
   }
   .kpi .sub {
-    font-size: 10.5px; color: var(--text-tertiary);
-    margin-top: 2px; font-weight: 500;
+    font-size: 11.5px; color: var(--text-tertiary);
+    margin-top: 3px; font-weight: 500;
   }
 
   /* MAIN: 4-state cluster map + agency rail (555) */
@@ -210,17 +207,19 @@
     padding: 0 2px;
   }
   .state-cell-head .name {
-    font-size: 13px; font-weight: 800;
+    font-size: 15px; font-weight: 800;
     color: var(--accent-teal-light); letter-spacing: 0.04em;
   }
   .state-cell-head .ct {
-    font-size: 9.5px; font-weight: 700;
+    font-size: 10.5px; font-weight: 700;
     color: var(--text-tertiary); letter-spacing: 0.08em;
   }
   .state-cell-foot {
-    font-size: 8.5px; color: var(--text-tertiary);
-    text-align: center; padding: 4px 2px 0;
-    font-weight: 500; letter-spacing: 0.02em;
+    font-size: 10.5px; color: var(--accent-gold-light);
+    text-align: center; padding: 6px 2px 0;
+    font-weight: 700; letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1.25;
   }
   .state-cell-foot em {
     font-style: normal;
@@ -275,23 +274,36 @@
     display: flex; flex-direction: column;
   }
   .rail-h {
-    font-size: 10.5px; font-weight: 700;
+    font-size: 12px; font-weight: 700;
     letter-spacing: 0.18em; text-transform: uppercase;
     color: var(--text-secondary);
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     display: flex; align-items: baseline; justify-content: space-between;
   }
   .rail-h .count { color: var(--accent-gold); font-weight: 800; letter-spacing: 0; }
 
+  /* Column header row inside rail */
+  .rail-cols {
+    display: flex; align-items: center;
+    padding: 4px 2px 6px;
+    border-bottom: 1px solid var(--stroke-subtle);
+    margin-bottom: 6px;
+    font-size: 9.5px; font-weight: 700;
+    color: var(--text-tertiary);
+    letter-spacing: 0.14em; text-transform: uppercase;
+  }
+  .rail-cols .col-agency { flex: 1; }
+  .rail-cols .col-pop { flex-shrink: 0; }
+
   .state-group { margin-bottom: 8px; }
   .state-group:last-child { margin-bottom: 0; }
   .state-group-head {
-    font-size: 10px; font-weight: 800;
+    font-size: 11px; font-weight: 800;
     letter-spacing: 0.16em; text-transform: uppercase;
     color: var(--accent-teal-light);
-    padding: 4px 0 6px;
+    padding: 4px 0 5px;
     border-bottom: 1.5px solid var(--accent-gold);
-    margin-bottom: 6px;
+    margin-bottom: 5px;
     display: flex; align-items: baseline; justify-content: space-between;
   }
   .state-group-head .ct {
@@ -299,8 +311,8 @@
   }
   .agency-row {
     display: flex; align-items: center; gap: 8px;
-    padding: 4px 2px;
-    font-size: 12px;
+    padding: 3px 2px;
+    font-size: 12.5px;
   }
   .agency-row .bullet {
     width: 6px; height: 6px;
@@ -313,33 +325,34 @@
   }
   .agency-row.sub {
     padding-left: 18px;
-    font-size: 11px;
+    font-size: 11.5px;
   }
   .agency-row.sub .bullet { display: none; }
   .agency-row.sub .corner {
     color: var(--accent-teal); font-weight: 700;
-    font-size: 11px; margin-right: 4px;
+    font-size: 11.5px; margin-right: 4px;
   }
   .agency-row.sub .name {
     color: rgba(255,255,255,0.72); font-weight: 600;
     flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   .agency-row .pop {
-    font-size: 10px; color: var(--text-tertiary);
+    font-size: 11px; color: var(--accent-gold-light);
+    font-weight: 700;
     flex-shrink: 0;
   }
 
-  /* PROOF FOOTER (170) — 4 bigger value-anchored boxes */
+  /* PROOF FOOTER (148) — 3 wider value-anchored boxes, per-client editable */
   .proof {
-    height: 170px;
-    background: linear-gradient(180deg, var(--bg-panel) 0%, #0E1A30 100%);
+    height: 148px;
+    background: linear-gradient(180deg, var(--bg-panel) 0%, #07182C 100%);
     border-top: 1px solid var(--stroke-subtle);
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     padding: 0;
   }
   .proof-box {
-    padding: 18px 22px;
+    padding: 16px 26px;
     border-right: 1px solid var(--stroke-subtle);
     display: flex; flex-direction: column;
     justify-content: space-between;
@@ -349,38 +362,38 @@
   .proof-box::before {
     content: '';
     position: absolute;
-    left: 0; top: 20px; bottom: 20px;
+    left: 0; top: 18px; bottom: 18px;
     width: 3px; background: var(--accent-teal);
     border-radius: 0 2px 2px 0;
   }
   .proof-box .lbl {
-    font-size: 10px; font-weight: 700;
+    font-size: 11.5px; font-weight: 700;
     color: var(--text-secondary);
-    letter-spacing: 0.16em; text-transform: uppercase;
+    letter-spacing: 0.18em; text-transform: uppercase;
   }
   .proof-box .num {
-    font-size: 48px; font-weight: 900;
+    font-size: 46px; font-weight: 900;
     color: var(--accent-gold);
     line-height: 1; letter-spacing: -0.025em;
-    margin: 4px 0;
+    margin: 6px 0 4px;
   }
   .proof-box .num .unit {
-    font-size: 22px; color: var(--accent-gold-light);
+    font-size: 24px; color: var(--accent-gold-light);
     font-weight: 700; margin-left: 1px;
   }
   .proof-box .num .prefix {
-    font-size: 24px; color: var(--accent-gold-light);
+    font-size: 26px; color: var(--accent-gold-light);
     font-weight: 700; margin-right: 1px;
   }
   .proof-box .body {
-    font-size: 12px; font-weight: 600;
+    font-size: 13px; font-weight: 600;
     color: var(--text-primary); line-height: 1.3;
   }
   .proof-box .body em {
     font-style: normal; color: var(--accent-gold-light);
   }
   .proof-box .micro {
-    font-size: 9.5px; color: var(--accent-teal-light);
+    font-size: 10.5px; color: var(--accent-teal-light);
     font-weight: 600; letter-spacing: 0.04em;
     margin-top: 4px;
   }
@@ -414,8 +427,36 @@
   .proof-cost-bars .lbl-tag.cost-tag { color: var(--text-secondary); }
   .proof-cost-bars .lbl-tag.reimb-tag { color: var(--accent-gold-light); }
 
+  /* INLINE-EDIT AFFORDANCE — subtle on screen, invisible on print */
+  [contenteditable="true"] {
+    outline: none;
+    border-radius: 3px;
+    transition: background 0.15s, box-shadow 0.15s;
+  }
+  [contenteditable="true"]:hover {
+    background: rgba(255,174,0,0.08);
+    box-shadow: inset 0 -1px 0 rgba(255,174,0,0.45);
+    cursor: text;
+  }
+  [contenteditable="true"]:focus {
+    background: rgba(255,174,0,0.14);
+    box-shadow: inset 0 -2px 0 var(--accent-gold);
+  }
+  .edit-hint {
+    position: absolute;
+    top: 12px; right: 24px;
+    font-size: 10px; color: var(--text-tertiary);
+    font-weight: 500; letter-spacing: 0.05em;
+    pointer-events: none;
+  }
+
   /* PRINT — Save as PDF path */
   @media print {
+    [contenteditable="true"]:hover,
+    [contenteditable="true"]:focus {
+      background: none !important; box-shadow: none !important;
+    }
+    .edit-hint { display: none !important; }
     @page { size: 1280px 900px; margin: 0; }
     html, body {
       width: 1280px; height: 900px;
@@ -436,9 +477,10 @@
 <body>
 
 <div class="toolbar">
-  <h1><strong>MD Ally</strong> · National Footprint</h1>
+  <h1><strong>MD Ally</strong> · National Footprint <span style="color: var(--accent-gold-light); font-weight: 500; text-transform: none; letter-spacing: 0; margin-left: 8px;">· click any text to edit for this client</span></h1>
   <div class="actions">
     <button id="btn-print" title="Browser print dialog · choose 'Save as PDF'">Save as PDF</button>
+    <a href="#" id="btn-reset" class="secondary" title="Discard per-client edits">Reset Edits</a>
     <a href="/" class="secondary">← Back to Inquiry</a>
   </div>
 </div>
@@ -448,34 +490,34 @@
   <!-- HERO -->
   <div class="hero">
     <div class="hero-left">
-      <div class="hero-mark">MD</div>
+      <img class="hero-logo" src="assets/md-ally-logo-white.png" alt="MD Ally">
       <div class="hero-titles">
-        <h1>National Footprint</h1>
-        <div class="sub">Public Safety Telehealth · 2026</div>
+        <h1 contenteditable="true" data-edit="hero-title">National Footprint</h1>
+        <div class="sub" contenteditable="true" data-edit="hero-sub">Public Safety Telehealth · 2026</div>
       </div>
     </div>
     <div class="hero-right">
-      <div class="question">"Where do you do telehealth, and for whom?"</div>
-      <div class="answer">12 public safety agencies · 4 states · ~7M residents</div>
+      <div class="question" contenteditable="true" data-edit="hero-question">"Where do you do telehealth, and for whom?"</div>
+      <div class="answer" contenteditable="true" data-edit="hero-answer">11 public safety agencies · 4 states · ~7M residents</div>
     </div>
   </div>
 
   <!-- KPI STRIP (3 tiles) -->
   <div class="kpi-strip">
     <div class="kpi">
-      <div class="num">12</div>
-      <div class="lbl">Operating Agencies</div>
-      <div class="sub">Parent + subordinate</div>
+      <div class="num" contenteditable="true" data-edit="kpi1-num">11</div>
+      <div class="lbl" contenteditable="true" data-edit="kpi1-lbl">Operating Agencies</div>
+      <div class="sub" contenteditable="true" data-edit="kpi1-sub">Parent + subordinate</div>
     </div>
     <div class="kpi">
-      <div class="num">4</div>
-      <div class="lbl">Active States</div>
-      <div class="sub">CA · AZ · CO · FL</div>
+      <div class="num" contenteditable="true" data-edit="kpi2-num">4</div>
+      <div class="lbl" contenteditable="true" data-edit="kpi2-lbl">Active States</div>
+      <div class="sub" contenteditable="true" data-edit="kpi2-sub">CA · AZ · CO · FL</div>
     </div>
     <div class="kpi">
-      <div class="num">~7<span class="unit">M</span></div>
-      <div class="lbl">Population Served</div>
-      <div class="sub">Direct jurisdictional</div>
+      <div class="num" contenteditable="true" data-edit="kpi3-num">~7M</div>
+      <div class="lbl" contenteditable="true" data-edit="kpi3-lbl">Population Served</div>
+      <div class="sub" contenteditable="true" data-edit="kpi3-sub">Direct jurisdictional</div>
     </div>
   </div>
 
@@ -484,7 +526,7 @@
     <div class="map-zone">
       <div class="map-eyebrow">
         <div class="left"><span class="dot"></span>Active Service Map</div>
-        <div class="right">4 states · 12 agencies · <em>live</em></div>
+        <div class="right">4 states · 11 agencies · <em>live</em></div>
       </div>
       <div class="cell-row" id="cell-row">
         <!-- 4 state cells injected by JS -->
@@ -494,60 +536,42 @@
     <aside class="rail">
       <div class="rail-h">
         <span>Operating Agencies</span>
-        <span class="count">12</span>
+        <span class="count">11</span>
+      </div>
+      <div class="rail-cols">
+        <span class="col-agency">Agency</span>
+        <span class="col-pop">Population Served</span>
       </div>
       <div id="state-groups"></div>
     </aside>
   </div>
 
-  <!-- PROOF FOOTER (4 boxes, value-anchored) -->
+  <!-- PROOF FOOTER (3 boxes, value-anchored, fully editable per client) -->
   <div class="proof">
     <div class="proof-box">
-      <div class="lbl">Network Diversion Rate</div>
+      <div class="lbl" contenteditable="true" data-edit="proof1-lbl">Avoided Spending</div>
+      <div class="num" contenteditable="true" data-edit="proof1-num">~$1,500</div>
       <div>
-        <div class="num">84<span class="unit">%</span></div>
-        <div class="proof-viz"><div class="fill" style="width:84%"></div></div>
-      </div>
-      <div>
-        <div class="body">of eligible 911 calls diverted from ED transport</div>
-        <div class="micro">Oct 2025 – Mar 2026 · 12-agency network</div>
+        <div class="body" contenteditable="true" data-edit="proof1-body">avoided per non-emergent transport rerouted to virtual care</div>
+        <div class="micro" contenteditable="true" data-edit="proof1-micro">vs. $2,673 fully-loaded cost · $1,147 reimbursement</div>
       </div>
     </div>
 
     <div class="proof-box">
-      <div class="lbl">Avoided Spending</div>
+      <div class="lbl" contenteditable="true" data-edit="proof2-lbl">Readiness Protected</div>
+      <div class="num" contenteditable="true" data-edit="proof2-num">$350K</div>
       <div>
-        <div class="num"><span class="prefix">~$</span>1,500</div>
-        <div class="proof-cost-bars">
-          <div class="bar-row"><span class="lbl-tag cost-tag">$2,673</span><div class="bar cost"></div></div>
-          <div class="bar-row"><span class="lbl-tag reimb-tag">$1,147</span><div class="bar reimb"></div></div>
-        </div>
-      </div>
-      <div>
-        <div class="body">avoided per non-emergent transport rerouted to virtual care</div>
-        <div class="micro">vs. $2,673 fully-loaded cost · $1,147 reimbursement</div>
+        <div class="body" contenteditable="true" data-edit="proof2-body">annual cost-of-readiness per truck. Preserved for true emergencies.</div>
+        <div class="micro" contenteditable="true" data-edit="proof2-micro">EMS industry turnover runs 25%+ annually</div>
       </div>
     </div>
 
     <div class="proof-box">
-      <div class="lbl">Readiness Protected</div>
+      <div class="lbl" contenteditable="true" data-edit="proof3-lbl">Named Public Proof</div>
+      <div class="num" contenteditable="true" data-edit="proof3-num">2,000+</div>
       <div>
-        <div class="num"><span class="prefix">$</span>350<span class="unit">K</span></div>
-      </div>
-      <div>
-        <div class="body">annual cost-of-readiness per truck. <em>Preserved for true emergencies.</em></div>
-        <div class="micro">EMS industry turnover runs 25%+ annually</div>
-      </div>
-    </div>
-
-    <div class="proof-box">
-      <div class="lbl">Named Public Proof</div>
-      <div>
-        <div class="num">2,000<span class="unit">+</span></div>
-      </div>
-      <div>
-        <div class="body">calls diverted at Tucson Fire. <em>First call-volume decrease in 5 years.</em></div>
-        <div class="micro">KOLD News 13 · Jan 2026</div>
+        <div class="body" contenteditable="true" data-edit="proof3-body">calls diverted at Tucson Fire. First call-volume decrease in 5 years.</div>
+        <div class="micro" contenteditable="true" data-edit="proof3-micro">KOLD News 13 · Jan 2026</div>
       </div>
     </div>
   </div>
@@ -568,13 +592,12 @@ const AGENCIES = [
   { name: "Manatee County",                  short: "Manatee",       state: "FL", lat: 27.49, lng: -82.34, pop: 400000,  mono: "MAN",  type: "MULTI",    parentMono: "" },
   { name: "Lee County",                      short: "Lee",           state: "FL", lat: 26.65, lng: -81.95, pop: 800000,  mono: "LEE",  type: "MULTI",    parentMono: "" },
 
-  // AZ — 6 (3 parents + 3 subs)
+  // AZ — 5 (3 parents + 2 subs)
   { name: "City of Phoenix",                 short: "Phoenix",       state: "AZ", lat: 33.45, lng: -112.07, pop: 1600000, mono: "PHX", type: "FIRE/EMS", parentMono: "" },
   { name: "Laveen Fire",                     short: "Laveen",        state: "AZ", lat: 33.36, lng: -112.17, pop: 40000,   mono: "LAV", type: "FIRE",     parentMono: "PHX" },
   { name: "City of Tucson",                  short: "Tucson",        state: "AZ", lat: 32.22, lng: -110.93, pop: 547000,  mono: "TUC", type: "FIRE/EMS", parentMono: "" },
   { name: "Golder Ranch Fire District",      short: "Golder Ranch",  state: "AZ", lat: 32.42, lng: -110.94, pop: 75000,   mono: "GRF", type: "FIRE",     parentMono: "TUC" },
   { name: "Northwest Fire District",         short: "Northwest FD",  state: "AZ", lat: 32.42, lng: -111.10, pop: 120000,  mono: "NWF", type: "FIRE",     parentMono: "TUC" },
-  { name: "Drexel Heights Fire District",    short: "Drexel Heights",state: "AZ", lat: 32.16, lng: -110.99, pop: 28000,   mono: "DHF", type: "FIRE",     parentMono: "TUC" },
   { name: "Buckeye Fire-Medical Rescue",     short: "Buckeye",       state: "AZ", lat: 33.37, lng: -112.58, pop: 100000,  mono: "BFM", type: "FIRE/EMS", parentMono: "" },
 
   // CO — 1
@@ -588,10 +611,10 @@ const STATE_FIPS = { CA: "06", AZ: "04", CO: "08", FL: "12" };
 const STATE_ORDER = ["CA", "AZ", "CO", "FL"];
 const STATE_TITLES = { CA: "California", AZ: "Arizona", CO: "Colorado", FL: "Florida" };
 const STATE_FOOT = {
-  FL: "Includes 41-day Hillsborough FR launch",
-  AZ: "Includes Phoenix 90-day deployment",
-  CO: "First MD Ally non-FL state",
-  CA: "Operated by Falck",
+  FL: "TERF Deployments",
+  AZ: "Supporting MIH / Community Paramedics",
+  CO: "New service area 2026",
+  CA: "Field Implementation",
 };
 
 function fmtPop(p) {
@@ -644,7 +667,7 @@ renderRail();
 // Tucson cluster (3 pins ~25km apart) and Phoenix cluster (2 pins ~20km
 // apart) use leader lines + side label blocks to avoid overlap.
 
-const TUCSON_CLUSTER = new Set(["TUC", "GRF", "NWF", "DHF"]);
+const TUCSON_CLUSTER = new Set(["TUC", "GRF", "NWF"]);
 const PHOENIX_CLUSTER = new Set(["PHX", "LAV"]);
 
 function buildCells(usTopoData) {
@@ -797,6 +820,51 @@ fetch("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json")
     document.getElementById("cell-row").innerHTML =
       '<div style="color:var(--text-secondary); padding:20px; grid-column: span 4">Map loading failed.</div>';
   });
+
+// ===================== PER-CLIENT INLINE EDITS =====================
+// Every element marked [contenteditable][data-edit] persists to localStorage
+// so a customized footprint survives reloads and PDF re-prints.
+const EDIT_NS = "mdally.footprint.edits.v1";
+
+function loadEdits() {
+  try { return JSON.parse(localStorage.getItem(EDIT_NS) || "{}"); }
+  catch { return {}; }
+}
+function saveEdits(edits) {
+  try { localStorage.setItem(EDIT_NS, JSON.stringify(edits)); } catch {}
+}
+
+function wireEditable() {
+  const edits = loadEdits();
+  document.querySelectorAll("[data-edit]").forEach(el => {
+    const key = el.getAttribute("data-edit");
+    if (key in edits && typeof edits[key] === "string") {
+      el.textContent = edits[key];
+    }
+    el.addEventListener("input", () => {
+      const next = loadEdits();
+      next[key] = el.textContent;
+      saveEdits(next);
+    });
+    el.addEventListener("blur", () => {
+      // Trim trailing whitespace on commit
+      if (el.textContent !== el.textContent.trim()) {
+        el.textContent = el.textContent.trim();
+        const next = loadEdits();
+        next[key] = el.textContent;
+        saveEdits(next);
+      }
+    });
+  });
+}
+wireEditable();
+
+document.getElementById("btn-reset").addEventListener("click", (e) => {
+  e.preventDefault();
+  if (!confirm("Discard all per-client edits and reload?")) return;
+  localStorage.removeItem(EDIT_NS);
+  location.reload();
+});
 
 // ===================== PRINT =====================
 document.getElementById("btn-print").addEventListener("click", () => {
