@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MD Ally · Sign in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    background: #09233C;
+    color: #FFFFFF;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(at 20% -10%, rgba(36,154,244,0.10) 0px, transparent 50%),
+                radial-gradient(at 80% 100%, rgba(255,174,0,0.06) 0px, transparent 60%),
+                #05172A;
+    padding: 24px;
+  }
+  .card {
+    width: 100%; max-width: 440px;
+    background: #0F2D4A;
+    border: 1px solid #244A6E;
+    border-radius: 16px;
+    padding: 40px 36px;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.5);
+    border-top: 3px solid #FFAE00;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 28px;
+  }
+  .brand img { height: 56px; width: auto; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3)); }
+  .brand .title {
+    font-size: 14px; font-weight: 700;
+    color: #A7BBD5; letter-spacing: 0.16em; text-transform: uppercase;
+  }
+  .brand .title strong { color: #FFFFFF; }
+  h1 {
+    font-size: 22px; font-weight: 800;
+    color: #FFFFFF; letter-spacing: -0.015em;
+    margin-bottom: 6px;
+  }
+  p.sub {
+    font-size: 13px; color: #A7BBD5;
+    margin-bottom: 22px; line-height: 1.45;
+  }
+  label {
+    display: block;
+    font-size: 11px; font-weight: 700;
+    color: #A7BBD5; letter-spacing: 0.14em;
+    text-transform: uppercase; margin-bottom: 8px;
+  }
+  input[type=password] {
+    width: 100%;
+    padding: 14px 18px;
+    background: #05172A;
+    border: 2px solid #244A6E;
+    border-radius: 10px;
+    color: #FFFFFF;
+    font-size: 16px;
+    font-family: inherit;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    transition: all 0.15s;
+  }
+  input[type=password]:focus {
+    outline: none;
+    border-color: #FFAE00;
+    box-shadow: 0 0 0 4px rgba(255,174,0,0.15);
+  }
+  button[type=submit] {
+    width: 100%;
+    margin-top: 16px;
+    padding: 14px 18px;
+    background: #FFAE00;
+    color: #09233C;
+    border: none;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(255,174,0,0.25);
+    transition: background 0.15s;
+  }
+  button[type=submit]:hover { background: #FFC845; }
+  .err {
+    margin-top: 14px; padding: 10px 14px;
+    background: rgba(210,81,81,0.12);
+    border: 1px solid rgba(210,81,81,0.4);
+    border-radius: 8px;
+    color: #FFB3A8;
+    font-size: 12.5px; font-weight: 500;
+  }
+  .foot {
+    margin-top: 24px;
+    font-size: 11px; color: #6E83A2;
+    text-align: center;
+    letter-spacing: 0.04em;
+  }
+</style>
+</head>
+<body>
+  <form class="card" method="POST" action="/api/login">
+    <div class="brand">
+      <img src="/footprint/assets/md-ally-logo-white.png" alt="MD Ally">
+      <div class="title"><strong>MD Ally</strong> · Internal Tools</div>
+    </div>
+    <h1>Sign in</h1>
+    <p class="sub">Enter the company password to access the MD Ally agency intelligence and proposal tools.</p>
+    <label for="password">Password</label>
+    <input id="password" type="password" name="password" autocomplete="current-password" required autofocus />
+    <button type="submit">Sign in</button>
+    <noscript><div class="foot">Cookies must be enabled.</div></noscript>
+    <div class="foot">Shared internal access · contact Mike Guadan if you need the password.</div>
+  </form>
+  <script>
+    // If redirected back with ?err=1, show error message
+    if (location.search.includes('err=1')) {
+      const card = document.querySelector('.card');
+      const err = document.createElement('div');
+      err.className = 'err';
+      err.textContent = 'Incorrect password. Try again.';
+      card.querySelector('button').insertAdjacentElement('afterend', err);
+    }
+  </script>
+</body>
+</html>
