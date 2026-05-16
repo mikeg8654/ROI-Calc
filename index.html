@@ -67,11 +67,15 @@
   }
   header a.cta:hover { background:#FFC033; }
 
-  /* LAYOUT — 340px rail + 1fr calc iframe */
+  /* LAYOUT — 340px rail + 1fr calc iframe.
+     Capped at 1480px so the iframe doesn't stretch into a void on
+     monitors > 1500px. Centered with margin:auto on huge screens. */
   .layout {
     display:grid;
     grid-template-columns:340px 1fr;
     min-height:calc(100vh - 76px);
+    max-width:1480px;
+    margin:0 auto;
   }
 
   /* LEFT RAIL */

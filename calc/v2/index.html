@@ -34,9 +34,14 @@
     min-height:100vh;
   }
   .canvas {
-    max-width:980px;
+    /* Fill the iframe (or full viewport when loaded standalone) with
+       fluid side padding. The legacy max-width:980px left a wide
+       dead-navy void when this page was iframed into the >1400px
+       landing main column. Capped at 1240px so cards don't stretch
+       absurdly wide when visited standalone on a 4K monitor. */
+    max-width:1240px;
     margin:0 auto;
-    padding:28px 28px 80px;
+    padding:28px clamp(20px, 4vw, 56px) 80px;
   }
 
   /* CARDS */
