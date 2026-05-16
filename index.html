@@ -228,7 +228,6 @@
     <h1>ROI Calculator<small>911 Telehealth · Year-1 Impact</small></h1>
   </div>
   <div class="actions">
-    <a href="https://pulse-production-71ee.up.railway.app/growth/agency" target="_blank" rel="noopener">Agency Intel ↗</a>
     <a href="/footprint/" target="_blank" rel="noopener">National Footprint ↗</a>
     <a class="cta"
        href="https://outlook.office.com/bookwithme/user/81b4be3503e34b2d8911a7ce2a100372@mdally.com?anonymous&ep=signature&ismsaljsauthenabled"
@@ -249,12 +248,14 @@
     <div id="confirm-slot"></div>
 
     <div class="rail-actions" id="rail-actions" style="display:none;">
-      <a class="primary" id="open-in-pulse" href="#" target="_blank" rel="noopener">Open in Pulse Agency Intel ↗</a>
+      <button class="primary" type="button" id="btn-brief">📄 Meeting Intel PDF</button>
+      <button type="button" id="btn-pptx">🎨 Curated Overview PPT</button>
+      <div id="brief-status" style="display:none; font-size:11.5px; color:var(--text-soft); line-height:1.45; padding:4px 2px;"></div>
       <button type="button" id="btn-reset">← Search another</button>
     </div>
 
     <div class="rail-foot">
-      <strong style="color:var(--text-soft);">Sources:</strong> NENA EPRC · CMS NPI · OSM · Census ACS · HubSpot 911/EMS pipeline. Pulse Agency Intel ↗ adds MEDDPIC scaffold, OSINT signal heat, and Meeting Intelligence PDF.
+      <strong style="color:var(--text-soft);">Sources:</strong> NENA EPRC · CMS NPI · OSM · Census ACS · CMS GAPDS · NEMSIS · NHTSA + IAFC fleet operating data.
     </div>
   </aside>
 
@@ -265,13 +266,13 @@
 
 <script>
   const PULSE_API_BASE = window.PULSE_API_BASE || 'https://pulse-production-71ee.up.railway.app';
-  const PULSE_AGENCY_URL = PULSE_API_BASE + '/growth/agency';
-
   const q = document.getElementById('q');
   const typeahead = document.getElementById('typeahead');
   const confirmSlot = document.getElementById('confirm-slot');
   const railActions = document.getElementById('rail-actions');
-  const openInPulse = document.getElementById('open-in-pulse');
+  const btnBrief = document.getElementById('btn-brief');
+  const btnPptx = document.getElementById('btn-pptx');
+  const briefStatusEl = document.getElementById('brief-status');
   const btnReset = document.getElementById('btn-reset');
   const calcFrame = document.getElementById('calc');
 
@@ -368,9 +369,15 @@
       </div>
     `;
     railActions.style.display = 'flex';
-    // Pulse Agency Intel doesn't yet preselect from URL — link to the page;
-    // Mike re-searches there. Cheap to add later if the friction shows up.
-    openInPulse.href = PULSE_AGENCY_URL;
+    // Reset any Meeting-Intel state from a prior pick.
+    if (briefStatusEl) {
+      briefStatusEl.style.display = 'none';
+      briefStatusEl.textContent = '';
+    }
+    btnBrief.disabled = false;
+    btnBrief.textContent = '📄 Meeting Intel PDF';
+    btnPptx.disabled = false;
+    btnPptx.textContent = '🎨 Curated Overview PPT';
 
     // Push agency into the calc iframe. Title-case the name first so the
     // calc's AGENCY NAME input doesn't render OSM all-caps verbatim.
@@ -426,6 +433,66 @@
     setTimeout(() => typeahead.classList.remove('show'), 160);
   });
   btnReset.addEventListener('click', reset);
+
+  // Brief artifact runner — shared by Meeting Intel PDF + Overview PPT.
+  // Same-origin POST to the /api/agency-brief proxy; the server adds the
+  // bearer key from PULSE_BRIEF_KEY env. Pulse builds the brief
+  // synchronously in ~10-30s and returns artifacts.{pdf_url,ppt_url}.
+  async function runBrief(opts) {
+    if (!selectedHit) return;
+    const { artifact, button, urlField, fallbackPath, label } = opts;
+    const otherButton = button === btnBrief ? btnPptx : btnBrief;
+    button.disabled = true;
+    otherButton.disabled = true;
+    const originalLabel = button.textContent;
+    button.textContent = 'Generating…';
+    briefStatusEl.style.display = 'block';
+    briefStatusEl.textContent = `Pulse is pulling intel + drafting the ${label}. About 30s on first run, cached after.`;
+    try {
+      const res = await fetch('/api/agency-brief', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          agency_name: selectedHit.name,
+          requested_artifacts: [artifact],
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || `HTTP ${res.status}`);
+      }
+      const data = await res.json();
+      const path =
+        (data.artifacts && data.artifacts[urlField]) ||
+        (data.brief_id ? `/api/agency-brief/${encodeURIComponent(data.brief_id)}/${fallbackPath}` : null) ||
+        (data.id ? `/api/agency-brief/${encodeURIComponent(data.id)}/${fallbackPath}` : null);
+      if (!path) throw new Error(`Brief response missing artifacts.${urlField}`);
+      window.open(path, '_blank', 'noopener');
+      briefStatusEl.textContent = `✓ ${label} opened in a new tab.`;
+      button.textContent = `↻ Regenerate ${label}`;
+    } catch (err) {
+      briefStatusEl.textContent = '⚠ ' + (err && err.message ? err.message : String(err));
+      button.textContent = originalLabel;
+    } finally {
+      button.disabled = false;
+      otherButton.disabled = false;
+    }
+  }
+
+  btnBrief.addEventListener('click', () => runBrief({
+    artifact: 'meeting_intel_pdf',
+    urlField: 'pdf_url',
+    fallbackPath: 'pdf',
+    button: btnBrief,
+    label: 'Meeting Intel PDF',
+  }));
+  btnPptx.addEventListener('click', () => runBrief({
+    artifact: 'overview_pptx',
+    urlField: 'ppt_url',
+    fallbackPath: 'pptx',
+    button: btnPptx,
+    label: 'Curated Overview PPT',
+  }));
 
   // If the URL has ?agency= or ?name= (e.g. deeplink from Pulse), preselect it.
   (function bootFromUrl() {

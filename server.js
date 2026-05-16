@@ -132,6 +132,92 @@ app.get(["/footprint", "/footprint/"], (_req, res) => {
   res.sendFile(path.join(ROOT, "footprint", "index.html"));
 });
 
+// --- 3.5 Pulse /api/agency-brief proxy (employee-facing Meeting Intel) ---
+//
+// Pulse's brief endpoint is bearer-key gated. Rather than exposing the key
+// to the browser, we proxy server-side: the frontend hits same-origin
+// /api/agency-brief, this server attaches X-Pulse-Brief-Key from env, and
+// forwards to Pulse. Keeps the key off the client + means the only auth
+// the employee needs is the (optional) roi-calc password gate above.
+//
+// Requires PULSE_BRIEF_KEY on the Railway service. Without it, the proxy
+// responds 503 so the UI can surface a clear "not configured" message.
+
+const PULSE_API_BASE =
+  process.env.PULSE_API_BASE ||
+  "https://pulse-production-71ee.up.railway.app";
+
+async function proxyAgencyBrief(req, res, pulsePath) {
+  const key = process.env.PULSE_BRIEF_KEY;
+  if (!key) {
+    res.status(503).json({
+      error:
+        "Meeting Intel is not configured on this server (PULSE_BRIEF_KEY missing).",
+    });
+    return;
+  }
+  try {
+    const init = {
+      method: req.method,
+      headers: {
+        "Content-Type": "application/json",
+        "X-Pulse-Brief-Key": key,
+      },
+    };
+    if (["POST", "PUT", "PATCH"].includes(req.method) && req.body) {
+      init.body = JSON.stringify(req.body);
+    }
+    const upstream = await fetch(`${PULSE_API_BASE}${pulsePath}`, init);
+    const ct = upstream.headers.get("content-type") || "";
+    res.status(upstream.status);
+    if (ct) res.setHeader("Content-Type", ct);
+    const cd = upstream.headers.get("content-disposition");
+    if (cd) res.setHeader("Content-Disposition", cd);
+    res.setHeader("Cache-Control", "no-store");
+    if (ct.includes("application/json")) {
+      const data = await upstream.json();
+      res.json(data);
+    } else {
+      const buf = Buffer.from(await upstream.arrayBuffer());
+      res.send(buf);
+    }
+  } catch (err) {
+    res.status(502).json({
+      error: "Upstream Pulse unavailable: " + (err && err.message ? err.message : String(err)),
+    });
+  }
+}
+
+app.post("/api/agency-brief", (req, res) =>
+  proxyAgencyBrief(req, res, "/api/agency-brief"),
+);
+app.get("/api/agency-brief", (req, res) => {
+  const briefId = req.query.brief_id;
+  if (!briefId) {
+    res.status(400).json({ error: "brief_id required" });
+    return;
+  }
+  proxyAgencyBrief(
+    req,
+    res,
+    `/api/agency-brief?brief_id=${encodeURIComponent(String(briefId))}`,
+  );
+});
+app.get("/api/agency-brief/:id/pdf", (req, res) =>
+  proxyAgencyBrief(
+    req,
+    res,
+    `/api/agency-brief/${encodeURIComponent(req.params.id)}/pdf`,
+  ),
+);
+app.get("/api/agency-brief/:id/pptx", (req, res) =>
+  proxyAgencyBrief(
+    req,
+    res,
+    `/api/agency-brief/${encodeURIComponent(req.params.id)}/pptx`,
+  ),
+);
+
 // --- 4. Static files from repo root ---
 
 app.use(express.static(ROOT, { extensions: ["html"] }));
