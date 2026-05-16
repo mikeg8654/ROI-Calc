@@ -820,10 +820,43 @@
   document.getElementById('btn-print').addEventListener('click', () => window.print());
 
   // Boot from URL params (the outer landing's Agency Lookup picks an
-  // agency and reloads this iframe with ?name=&pop=).
+  // agency and reloads this iframe with ?name=&state=&pop=).
+  //
+  // Population fallback: if the URL didn't carry a pop param, call the
+  // dispatch endpoint with name + state to grab the canonical EPRC PSAP
+  // populationServed. The typeahead often returns an OSM hit (no
+  // population) as the first match, so we can't always rely on
+  // ?pop= being present.
+  async function bootFallbackPopulation(name, state) {
+    const chip = document.getElementById('chip-pop');
+    chip.className = 'chip pending';
+    chip.textContent = 'fetching…';
+    try {
+      const url = `${PULSE_API_BASE}/api/inquiry/dispatch?name=${encodeURIComponent(name)}&state=${encodeURIComponent(state || '')}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const pop = data?.dispatch?.populationServed
+        ?? data?.dispatch_record?.populationServed
+        ?? null;
+      if (pop && !popEl.value) {
+        popEl.value = String(pop);
+        chip.className = 'chip verified';
+        chip.textContent = '✓ from EPRC';
+        render();
+        return;
+      }
+      chip.className = 'chip';
+      chip.textContent = 'required';
+    } catch {
+      chip.className = 'chip';
+      chip.textContent = 'required';
+    }
+  }
+
   (function boot() {
     const params = new URLSearchParams(window.location.search);
     const name = params.get('name') || params.get('agency') || '';
+    const state = params.get('state') || '';
     const pop = params.get('pop') || '';
     if (name) nameEl.value = name;
     if (pop) {
@@ -833,6 +866,9 @@
     }
     render();
     if (name) validateAgency(name);
+    // Fire-and-forget population fallback. Only runs when no pop was
+    // passed; will no-op if the user has typed one by then.
+    if (name && !pop) bootFallbackPopulation(name, state);
   })();
 </script>
 

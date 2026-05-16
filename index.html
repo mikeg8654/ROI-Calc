@@ -376,6 +376,10 @@
     // calc's AGENCY NAME input doesn't render OSM all-caps verbatim.
     const params = new URLSearchParams();
     params.set('name', prettyName(hit.name));
+    // Pass state so /calc/v2 can fall back to the dispatch endpoint
+    // for population when the typeahead hit doesn't carry it (OSM
+    // entries lack population; the EPRC PSAP record has it).
+    if (hit.state) params.set('state', hit.state);
     if (hit.population) params.set('pop', String(hit.population));
     calcFrame.src = `/calc/v2/?${params.toString()}`;
 
