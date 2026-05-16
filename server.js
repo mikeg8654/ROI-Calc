@@ -123,8 +123,10 @@ app.get(["/calc", "/calc/"], (_req, res) => {
 app.get(["/proposal", "/proposal/"], (_req, res) => {
   res.sendFile(path.join(ROOT, "proposal", "index.html"));
 });
+// Legacy /proposal/srvfpd → permanent redirect to the data-driven URL.
+// Preserves links shared before the proposal generator was unified.
 app.get(["/proposal/srvfpd", "/proposal/srvfpd/"], (_req, res) => {
-  res.sendFile(path.join(ROOT, "proposal", "srvfpd", "index.html"));
+  res.redirect(301, "/proposal/?dealId=60218142549");
 });
 app.get(["/footprint", "/footprint/"], (_req, res) => {
   res.sendFile(path.join(ROOT, "footprint", "index.html"));
