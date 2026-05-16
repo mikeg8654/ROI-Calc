@@ -368,9 +368,10 @@
     // Mike re-searches there. Cheap to add later if the friction shows up.
     openInPulse.href = PULSE_AGENCY_URL;
 
-    // Push agency into the calc iframe.
+    // Push agency into the calc iframe. Title-case the name first so the
+    // calc's AGENCY NAME input doesn't render OSM all-caps verbatim.
     const params = new URLSearchParams();
-    params.set('name', hit.name);
+    params.set('name', prettyName(hit.name));
     if (hit.population) params.set('pop', String(hit.population));
     calcFrame.src = `/calc/?${params.toString()}`;
 
