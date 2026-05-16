@@ -418,11 +418,13 @@
     <span id="meta-strap" class="meta">click any text to tailor</span>
   </h1>
   <div class="actions">
+    <button id="btn-send" title="Create a HubSpot NOTE on this deal with the proposal link">Send to HubSpot</button>
     <button id="btn-print">Save as PDF</button>
     <a href="#" id="btn-reset" class="secondary">Reset Edits</a>
     <a href="/" class="secondary">← Agency Intel</a>
   </div>
 </div>
+<div id="toast" style="position:fixed;bottom:24px;right:24px;background:#1E8E5A;color:white;padding:14px 20px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,0.4);display:none;z-index:1000;max-width:360px;line-height:1.4;"></div>
 
 <div id="proposal-root">
   <div class="page">
@@ -882,6 +884,48 @@ document.getElementById("btn-reset").addEventListener("click", (e) => {
   if (!confirm("Discard per-client edits for this proposal and reload?")) return;
   localStorage.removeItem(EDIT_NS);
   location.reload();
+});
+
+function showToast(text, kind) {
+  const t = document.getElementById("toast");
+  t.style.background = kind === "error" ? "#D25151" : "#1E8E5A";
+  t.textContent = text;
+  t.style.display = "block";
+  clearTimeout(t._h);
+  t._h = setTimeout(() => { t.style.display = "none"; }, 6000);
+}
+
+document.getElementById("btn-send").addEventListener("click", async () => {
+  if (!DEAL_ID) {
+    showToast("Add ?dealId=N to the URL to enable Send-to-HubSpot.", "error");
+    return;
+  }
+  const btn = document.getElementById("btn-send");
+  const prev = btn.textContent;
+  btn.textContent = "Sending…";
+  btn.disabled = true;
+  try {
+    const res = await fetch(`${PULSE_BASE}/api/proposal/send`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        dealId: DEAL_ID,
+        proposalUrl: location.href,
+      }),
+    });
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      showToast(`HubSpot rejected the NOTE: ${res.status} ${body.slice(0,160)}`, "error");
+      return;
+    }
+    const data = await res.json();
+    showToast(`✓ Note saved to HubSpot deal · engagement ${data.engagementId}`, "ok");
+  } catch (err) {
+    showToast(`Network error: ${err?.message ?? err}`, "error");
+  } finally {
+    btn.textContent = prev;
+    btn.disabled = false;
+  }
 });
 
 main();
