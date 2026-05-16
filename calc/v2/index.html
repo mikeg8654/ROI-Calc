@@ -745,6 +745,21 @@
   // Validate agency name async by reusing Pulse /api/inquiry/search.
   // We don't gate the calc on it (population is the load-bearing input),
   // but the chip turns green once an EPRC + NPI match is confirmed.
+  // Match a typeahead hit against the user's query: every "load-bearing"
+  // word in the query (length > 3) must appear somewhere in the hit name.
+  // Catches "san ramon valley fire protection district" matching the
+  // canonical EPRC name "SAN RAMON VALLEY 911" by stripping the trailing
+  // descriptor words.
+  function isConfidentMatch(hitName, q) {
+    if (!hitName || !q) return false;
+    const hn = hitName.toLowerCase();
+    const words = q.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+    if (!words.length) return hn.includes(q.toLowerCase());
+    // At least the first two long words must appear in the hit name.
+    const matched = words.filter(w => hn.includes(w)).length;
+    return matched >= Math.min(2, words.length);
+  }
+
   let validateTimer = null;
   async function validateAgency(q) {
     const chip = document.getElementById('chip-name');
@@ -755,29 +770,56 @@
     }
     chip.className = 'chip pending';
     chip.textContent = 'verifying…';
+
+    // Path A — typeahead search.
     try {
       const res = await fetch(`${PULSE_API_BASE}/api/inquiry/search?q=${encodeURIComponent(q)}&limit=3`);
       const data = await res.json();
-      const hit = (data.items || [])[0];
-      if (hit && hit.name && hit.name.toLowerCase().includes(q.toLowerCase().split(/\s+/)[0])) {
+      const hits = data.items || [];
+      // Prefer the first hit whose name fuzzy-matches the query.
+      const hit = hits.find(h => isConfidentMatch(h.name, q)) || hits[0];
+      if (hit && isConfidentMatch(hit.name, q)) {
         chip.className = 'chip verified';
         chip.textContent = '✓ verified';
-        // Auto-fill population if EPRC has it and user hasn't typed one yet
         const popInput = document.getElementById('in-pop');
         if (hit.population && !popInput.value) {
-          popInput.value = hit.population.toLocaleString();
+          popInput.value = String(hit.population);
           document.getElementById('chip-pop').className = 'chip verified';
           document.getElementById('chip-pop').textContent = '✓ from EPRC';
           render();
         }
-      } else {
-        chip.className = 'chip pending';
-        chip.textContent = 'no match yet';
+        return;
       }
     } catch {
-      chip.className = 'chip';
-      chip.textContent = 'lookup failed';
+      /* fall through to dispatch */
     }
+
+    // Path B — dispatch fallback. Resolves the canonical EPRC PSAP for
+    // a name + (optional) state, even if the typeahead missed.
+    try {
+      const stateGuess = (new URLSearchParams(window.location.search)).get('state') || '';
+      const res = await fetch(`${PULSE_API_BASE}/api/inquiry/dispatch?name=${encodeURIComponent(q)}&state=${encodeURIComponent(stateGuess)}`);
+      const data = await res.json();
+      const psapName = data?.dispatch?.name || data?.dispatch_record?.name;
+      const pop = data?.dispatch?.populationServed ?? data?.dispatch_record?.populationServed ?? null;
+      if (psapName) {
+        chip.className = 'chip verified';
+        chip.textContent = '✓ verified';
+        const popInput = document.getElementById('in-pop');
+        if (pop && !popInput.value) {
+          popInput.value = String(pop);
+          document.getElementById('chip-pop').className = 'chip verified';
+          document.getElementById('chip-pop').textContent = '✓ from EPRC';
+          render();
+        }
+        return;
+      }
+    } catch {
+      /* fall through to no-match */
+    }
+
+    chip.className = 'chip pending';
+    chip.textContent = 'no match yet';
   }
 
   // Wire inputs.
