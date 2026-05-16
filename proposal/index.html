@@ -571,28 +571,35 @@ function renderYear1(data) {
         ` : ""}
       </div>
 
+      ${(() => {
+        const A = data.agency?.record;
+        const popDisplay = A?.populationServed ? fmtPop(A.populationServed) : "…";
+        const popSub = A?.county ? `${pretty(A.county)} County · edit to refine` : "Direct jurisdictional · edit to set";
+        const psapType = A?.psapType ? pretty(A.psapType) : null;
+        return `
       <div class="snapshot">
         <div class="snap-tile">
-          <div class="lbl">Annual Calls</div>
-          <div class="val" contenteditable="true" data-edit="snap1">…</div>
-          <div class="sub">Dispatched 911 + EMS · edit to set</div>
+          <div class="lbl">Population Served</div>
+          <div class="val" contenteditable="true" data-edit="snap1">${popDisplay}</div>
+          <div class="sub">${escapeHtml(popSub)}</div>
         </div>
         <div class="snap-tile">
-          <div class="lbl">Eligible Cohort</div>
-          <div class="val" contenteditable="true" data-edit="snap2">…</div>
-          <div class="sub">Low-acuity, telehealth-routable</div>
+          <div class="lbl">Dispatch Model</div>
+          <div class="val" contenteditable="true" data-edit="snap2">${psapType ?? "…"}</div>
+          <div class="sub">${A?.serviceProvider ? escapeHtml(pretty(A.serviceProvider)) : "Edit to set"}</div>
         </div>
         <div class="snap-tile">
-          <div class="lbl">Eligibility Rate</div>
-          <div class="val" contenteditable="true" data-edit="snap3">…<span class="unit">%</span></div>
-          <div class="sub">Of total 911 dispatches</div>
+          <div class="lbl">EMD Protocol</div>
+          <div class="val" contenteditable="true" data-edit="snap3">${A?.emdProtocol ? escapeHtml(A.emdProtocol) : "…"}</div>
+          <div class="sub">Determinant-code stack</div>
         </div>
         <div class="snap-tile">
           <div class="lbl">Wedge</div>
           <div class="val" contenteditable="true" data-edit="snap4">TBD</div>
           <div class="sub">Bad-debt · MIH · 90-day launch</div>
         </div>
-      </div>
+      </div>`;
+      })()}
 
       <div class="why">
         <h3>Why this program, why now</h3>
@@ -694,16 +701,22 @@ function renderDiscovery(data) {
         ` : ""}
       </div>
 
+      ${(() => {
+        const A = data.agency?.record;
+        const popDisplay = A?.populationServed ? fmtPop(A.populationServed) : "…";
+        const popSub = A?.county ? `${pretty(A.county)} County` : "Direct jurisdictional";
+        const psapType = A?.psapType ? pretty(A.psapType) : null;
+        return `
       <div class="snapshot">
         <div class="snap-tile">
           <div class="lbl">Population</div>
-          <div class="val" contenteditable="true" data-edit="snap1">…</div>
-          <div class="sub">Direct jurisdictional</div>
+          <div class="val" contenteditable="true" data-edit="snap1">${popDisplay}</div>
+          <div class="sub">${escapeHtml(popSub)}</div>
         </div>
         <div class="snap-tile">
           <div class="lbl">Dispatch Model</div>
-          <div class="val" contenteditable="true" data-edit="snap2">…</div>
-          <div class="sub">Edit to set</div>
+          <div class="val" contenteditable="true" data-edit="snap2">${psapType ?? "…"}</div>
+          <div class="sub">${A?.serviceProvider ? escapeHtml(pretty(A.serviceProvider)) : "Edit to refine"}</div>
         </div>
         <div class="snap-tile">
           <div class="lbl">Stakeholders</div>
@@ -711,11 +724,12 @@ function renderDiscovery(data) {
           <div class="sub">Confirmed in HubSpot</div>
         </div>
         <div class="snap-tile">
-          <div class="lbl">Inbound Forms</div>
-          <div class="val" contenteditable="true" data-edit="snap4">…</div>
-          <div class="sub">Coordinated · 24h window</div>
+          <div class="lbl">EMD Protocol</div>
+          <div class="val" contenteditable="true" data-edit="snap4">${A?.emdProtocol ? escapeHtml(A.emdProtocol) : "…"}</div>
+          <div class="sub">Determinant-code stack</div>
         </div>
-      </div>
+      </div>`;
+      })()}
 
       <div class="context">
         <h3>The opening you handed us</h3>
