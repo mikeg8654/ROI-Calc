@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MD Ally · ROI Calculator</title>
+<style>
+  /* v5.2 brand tokens — match footprint + Pulse Agency Intel */
+  :root {
+    --bg-page:#09233C;
+    --bg-deeper:#05172A;
+    --bg-card:#0F2D4A;
+    --bg-card-deep:#0A2138;
+    --stroke:#244A6E;
+    --stroke-soft:#1C4570;
+    --gold:#FFAE00;
+    --gold-soft:#FFD27A;
+    --gold-dim:#A07A1A;
+    --blue:#7BB8F0;
+    --green:#1E8E5A;
+    --green-soft:#8FD7B5;
+    --text-strong:#FFFFFF;
+    --text:#D6DEEC;
+    --text-soft:#A7BBD5;
+    --text-faint:#6E83A2;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body {
+    font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;
+    background:var(--bg-page);
+    color:var(--text-strong);
+    font-size:15px;
+    line-height:1.5;
+    min-height:100vh;
+  }
+  .canvas {
+    max-width:980px;
+    margin:0 auto;
+    padding:28px 28px 80px;
+  }
+
+  /* CARDS */
+  .card {
+    background:var(--bg-card);
+    border:1px solid var(--stroke);
+    border-radius:14px;
+    padding:24px 28px;
+    margin-bottom:18px;
+    position:relative;
+  }
+  .card .eyebrow {
+    font-size:10.5px;
+    font-weight:800;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--text-soft);
+    margin-bottom:6px;
+  }
+  .card h2 {
+    font-size:22px;
+    font-weight:800;
+    letter-spacing:-0.015em;
+    color:var(--text-strong);
+    margin-bottom:14px;
+  }
+
+  /* STEP 1 — inputs */
+  .input-row {
+    display:flex; align-items:stretch; gap:12px;
+    margin-bottom:14px;
+  }
+  .input-row:last-child { margin-bottom:0; }
+  .input-label {
+    flex:0 0 170px;
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--text-soft);
+    padding-top:14px;
+  }
+  .input-wrap {
+    flex:1;
+    position:relative;
+  }
+  .input-wrap input {
+    width:100%;
+    padding:12px 130px 12px 16px;
+    background:var(--bg-card-deep);
+    color:var(--text-strong);
+    font-size:18px;
+    font-weight:600;
+    border:2px solid var(--stroke);
+    border-radius:10px;
+    outline:none;
+    font-family:inherit;
+    letter-spacing:-0.005em;
+    transition:all 0.15s;
+  }
+  .input-wrap input:focus {
+    border-color:var(--gold);
+    box-shadow:0 0 0 3px rgba(255,174,0,0.15);
+  }
+  .input-wrap .chip {
+    position:absolute;
+    right:10px; top:50%;
+    transform:translateY(-50%);
+    font-size:10.5px;
+    font-weight:800;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    padding:5px 10px;
+    border-radius:5px;
+    color:var(--text-soft);
+    background:transparent;
+    border:1px solid var(--stroke);
+  }
+  .input-wrap .chip.verified {
+    color:var(--green-soft);
+    border-color:var(--green);
+    background:rgba(30,142,90,0.12);
+  }
+  .input-wrap .chip.pending {
+    color:var(--gold-soft);
+    border-color:var(--gold);
+    background:rgba(255,174,0,0.10);
+  }
+  .input-foot {
+    font-size:11.5px;
+    color:var(--text-soft);
+    margin-top:6px;
+    line-height:1.45;
+  }
+
+  /* HERO output */
+  .hero {
+    background:linear-gradient(135deg, #0F2D4A 0%, #0A2138 100%);
+    border:1px solid var(--gold);
+    box-shadow:0 0 0 1px rgba(255,174,0,0.08), 0 8px 30px rgba(0,0,0,0.35);
+  }
+  .hero .eyebrow { color:var(--gold-soft); }
+  .hero-grid {
+    display:grid;
+    grid-template-columns:1.6fr 1fr;
+    gap:20px;
+    align-items:end;
+  }
+  .hero-amount {
+    font-size:64px;
+    font-weight:800;
+    color:var(--gold);
+    letter-spacing:-0.03em;
+    line-height:1;
+  }
+  .hero-amount-sub {
+    font-size:13px;
+    color:var(--text-soft);
+    margin-top:6px;
+    font-weight:500;
+  }
+  .hero-ratio {
+    font-size:36px;
+    font-weight:800;
+    color:var(--text-strong);
+    letter-spacing:-0.02em;
+    line-height:1;
+  }
+  .hero-ratio-sub {
+    font-size:12px;
+    color:var(--text-soft);
+    margin-top:5px;
+    font-weight:500;
+  }
+
+  /* IMPACT BULLETS */
+  .impact {
+    margin-top:20px;
+    padding-top:20px;
+    border-top:1px solid var(--stroke);
+  }
+  .impact-title {
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--text-soft);
+    margin-bottom:12px;
+  }
+  .impact-row {
+    display:flex;
+    align-items:flex-start;
+    gap:14px;
+    padding:10px 0;
+    border-bottom:1px solid var(--stroke-soft);
+  }
+  .impact-row:last-child { border-bottom:none; }
+  .impact-row .dot {
+    flex:0 0 32px;
+    height:32px; width:32px;
+    border-radius:8px;
+    background:rgba(255,174,0,0.12);
+    border:1px solid var(--stroke);
+    display:flex; align-items:center; justify-content:center;
+    color:var(--gold);
+    font-weight:800;
+    font-size:14px;
+  }
+  .impact-row .body {
+    flex:1; min-width:0;
+  }
+  .impact-row .v {
+    font-size:18px; font-weight:800; color:var(--text-strong);
+    letter-spacing:-0.005em;
+  }
+  .impact-row .desc {
+    font-size:12.5px; color:var(--text-soft);
+    margin-top:2px;
+  }
+  .impact-row.featured .dot {
+    background:rgba(255,174,0,0.18);
+    border-color:var(--gold);
+  }
+  .impact-row.featured .v {
+    color:var(--gold);
+  }
+  /* "Of that ..." sub-callout: indented + dotted left rail so the reader
+     immediately sees this is a subset of the row above, not additive. */
+  .impact-row.callout {
+    margin-left:24px;
+    padding-left:14px;
+    border-left:2px dotted var(--gold);
+  }
+  .impact-row.callout .dot {
+    background:transparent;
+    border:1px dashed var(--gold);
+    color:var(--gold);
+    font-size:18px;
+    font-weight:700;
+  }
+
+  /* PROGRAM COST card */
+  .cost-grid {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:24px;
+    align-items:center;
+  }
+  .cost-amount {
+    font-size:42px;
+    font-weight:800;
+    color:var(--text-strong);
+    letter-spacing:-0.02em;
+    line-height:1;
+  }
+  .cost-amount-sub {
+    font-size:12px; color:var(--text-soft); margin-top:6px;
+  }
+  .cost-meta {
+    font-size:13px; color:var(--text);
+    line-height:1.6;
+  }
+  .cost-meta b { color:var(--text-strong); font-weight:700; }
+
+  /* OUTREACH copy card */
+  .outreach .eyebrow { color:var(--gold-soft); }
+  .outreach-body {
+    background:var(--bg-card-deep);
+    border:1px dashed var(--stroke);
+    border-radius:10px;
+    padding:18px 20px;
+    font-family:'Inter','Segoe UI',sans-serif;
+    font-size:13.5px;
+    line-height:1.6;
+    color:var(--text);
+    white-space:pre-wrap;
+    margin-top:6px;
+  }
+  .outreach-body b { color:var(--text-strong); font-weight:700; }
+  .outreach-actions {
+    display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;
+  }
+  .btn {
+    padding:11px 18px;
+    border:1px solid var(--stroke);
+    background:var(--bg-card-deep);
+    color:var(--text-strong);
+    border-radius:8px;
+    font-family:inherit;
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+    transition:all 0.15s;
+    display:inline-flex; align-items:center; gap:8px;
+  }
+  .btn:hover { border-color:var(--gold); }
+  .btn.primary {
+    background:var(--gold);
+    border-color:var(--gold);
+    color:var(--bg-deeper);
+    box-shadow:0 4px 14px rgba(255,174,0,0.25);
+  }
+  .btn.primary:hover { background:#FFC033; }
+
+  /* SOURCES FOOTER */
+  .sources {
+    margin-top:20px;
+    font-size:10.5px;
+    color:var(--text-faint);
+    line-height:1.7;
+    letter-spacing:0.02em;
+  }
+  .sources b { color:var(--text-soft); font-weight:700; }
+
+  /* Toast */
+  #toast {
+    position:fixed; bottom:24px; right:24px;
+    background:var(--green); color:white;
+    padding:12px 18px; border-radius:8px;
+    font-size:13px; font-weight:600;
+    box-shadow:0 8px 24px rgba(0,0,0,0.4);
+    display:none; z-index:1000;
+  }
+
+  /* MOBILE */
+  @media (max-width: 720px) {
+    .canvas { padding:16px 14px 60px; }
+    .input-row { flex-direction:column; gap:6px; }
+    .input-label { flex:none; padding-top:0; }
+    .hero-grid { grid-template-columns:1fr; }
+    .hero-amount { font-size:48px; }
+    .cost-grid { grid-template-columns:1fr; gap:14px; }
+  }
+
+  /* PRINT — full-color, no breaks mid-card */
+  @media print {
+    html, body { background:#FFFFFF !important; color:#0F1B33 !important; }
+    .canvas { max-width:none; padding:0 14px; }
+    .card {
+      background:#FFFFFF !important;
+      color:#0F1B33 !important;
+      border:1px solid #D6DCE6 !important;
+      page-break-inside:avoid;
+    }
+    .hero { border:2px solid #FFAE00 !important; }
+    .hero-amount, .impact-row.featured .v { color:#A07A1A !important; }
+    .input-wrap input { background:#F4F6FA !important; color:#0F1B33 !important; }
+    .outreach-body { background:#F4F6FA !important; color:#0F1B33 !important; }
+    #toast { display:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="canvas">
+
+  <!-- STEP 1 — agency confirm -->
+  <div class="card">
+    <div class="eyebrow">Step 1 — Tell us about the agency</div>
+    <h2>Who is this for?</h2>
+
+    <div class="input-row">
+      <div class="input-label">Agency Name</div>
+      <div class="input-wrap">
+        <input id="in-name" type="text" placeholder="San Ramon Valley Fire Protection District" autocomplete="off" spellcheck="false">
+        <div id="chip-name" class="chip">verifying…</div>
+      </div>
+    </div>
+    <div class="input-foot" id="name-foot">
+      Matched against the NENA Emergency Provider Registry Catalog + CMS NPI registry.
+    </div>
+
+    <div class="input-row" style="margin-top:14px;">
+      <div class="input-label">Population Served</div>
+      <div class="input-wrap">
+        <input id="in-pop" type="text" inputmode="numeric" placeholder="82,362">
+        <div id="chip-pop" class="chip">required</div>
+      </div>
+    </div>
+    <div class="input-foot" id="pop-foot">
+      Drives an estimated <b id="foot-calls">28,332</b> medical 911 calls per year at the NEMSIS national average of 344 calls per 1,000 people.
+    </div>
+  </div>
+
+  <!-- HERO OUTPUT -->
+  <div class="card hero">
+    <div class="eyebrow">Year-1 avoided spending · Expected</div>
+    <div class="hero-grid">
+      <div>
+        <div class="hero-amount" id="out-hero">$0</div>
+        <div class="hero-amount-sub">Year-1 agency + community spending avoided after MD Ally goes live.</div>
+      </div>
+      <div>
+        <div class="hero-ratio" id="out-ratio">0 : 1</div>
+        <div class="hero-ratio-sub">Avoided spending per $1 invested in MD Ally.</div>
+      </div>
+    </div>
+
+    <div class="impact">
+      <div class="impact-title">What this means for <span id="out-agency">your agency</span></div>
+
+      <div class="impact-row">
+        <div class="dot">①</div>
+        <div class="body">
+          <div class="v"><span id="out-callers">0</span> callers aligned with the right care</div>
+          <div class="desc">Clinician triage routes low-acuity 911 callers to the right level of care, not a paramedic-staffed engine.</div>
+        </div>
+      </div>
+
+      <div class="impact-row">
+        <div class="dot">②</div>
+        <div class="body">
+          <div class="v"><span id="out-unitdays">0</span> ambulance-days back in service</div>
+          <div class="desc">Hours of staffed unit time returned to true emergencies, converted to equivalent ambulance-days.</div>
+        </div>
+      </div>
+
+      <div class="impact-row">
+        <div class="dot">③</div>
+        <div class="body">
+          <div class="v"><span id="out-agencycost">$0</span> in agency spending avoided</div>
+          <div class="desc">Fully loaded cost per ALS transport (<b>$2,673</b> per CMS GAPDS — labor + vehicle + supplies + overhead) multiplied by diverted calls. This number already includes fleet wear, fuel, and maintenance.</div>
+        </div>
+      </div>
+
+      <div class="impact-row featured callout">
+        <div class="dot">↳</div>
+        <div class="body">
+          <div class="v">Of that, ~<span id="out-fleet">$0</span> is just fleet wear, fuel, and maintenance</div>
+          <div class="desc"><b>Callout, not additive.</b> Resource and fuel prices are rising for every 911 agency. Of the agency spending above, the national-average estimate for the fuel + maintenance + amortized capital-wear slice is about <b>$150 per ALS run</b> (NHTSA Vehicle Operating Cost + IAFC ambulance economics, excluding labor). Engines and ambulances that don't need to roll stay in service longer.</div>
+        </div>
+      </div>
+
+      <div class="impact-row">
+        <div class="dot">④</div>
+        <div class="body">
+          <div class="v"><span id="out-ed">$0</span> in community ED visits avoided</div>
+          <div class="desc">Average outpatient ED visit cost (CMS) avoided when low-acuity callers are routed to clinic, telehealth, or self-care instead of the ED. <b>Additive</b> to the agency number above.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROGRAM COST -->
+  <div class="card">
+    <div class="eyebrow">Year-1 program cost · what MD Ally costs</div>
+    <div class="cost-grid">
+      <div>
+        <div class="cost-amount" id="out-cost">$220K</div>
+        <div class="cost-amount-sub">Year-1 total. Payback in about <b id="out-payback">2 months</b>.</div>
+      </div>
+      <div class="cost-meta">
+        This is a <b>process to transfer</b>, not a resource-intensive IT project. <br>
+        No CAD rip-and-replace. <br>
+        Live in <b>45–60 days</b> with the existing 911 console.
+      </div>
+    </div>
+  </div>
+
+  <!-- OUTREACH -->
+  <div class="card outreach">
+    <div class="eyebrow">Use this in outreach · ready to paste</div>
+    <h2 style="font-size:18px;">Drafted opener for <span id="out-agency-2">your agency</span></h2>
+    <div class="outreach-body" id="out-copy"></div>
+    <div class="outreach-actions">
+      <button class="btn primary" id="btn-copy">📋 Copy to clipboard</button>
+      <a class="btn" target="_blank" rel="noopener" id="btn-book"
+         href="https://outlook.office.com/bookwithme/user/81b4be3503e34b2d8911a7ce2a100372@mdally.com?anonymous&ep=signature&ismsaljsauthenabled">
+        📅 Book a working meeting
+      </a>
+      <button class="btn" id="btn-print">🖨 Save as PDF</button>
+    </div>
+  </div>
+
+  <div class="sources">
+    <b>Public benchmarks used:</b> NENA Emergency Provider Registry Catalog (PSAP identity) ·
+    CMS National Plan and Provider Enumeration System (provider validation) ·
+    NEMSIS National EMS Database (call volume + acuity mix; up to ~30% of 911 medical calls are low-acuity dispatch responses) ·
+    CMS GAPDS (per-transport agency cost) ·
+    CMS outpatient ED cost data (community visit cost) ·
+    NHTSA Vehicle Operating Cost data + IAFC ambulance economics (fleet wear, fuel, maintenance).
+    <br><br>
+    Modeled estimate. Actual quotes scoped during a 15-minute discovery walk-through.
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  // =================================================================
+  // V2 ROI Calculator — simplified company-user UI.
+  //
+  // Two inputs (agency name + population). Public-benchmark math.
+  // Surfaces a fleet-maintenance callout + a ready-to-paste outreach
+  // snippet so a non-sales user can lift the language straight into
+  // an email.
+  //
+  // Math (all coefficients are derived from PUBLIC sources):
+  //   medical_911_per_yr  = pop * 344 / 1000          NEMSIS national avg
+  //   md_ally_eligible    = medical_911 * 0.0224      MD Ally clinician-
+  //                                                   triage-appropriate
+  //                                                   slice of all calls
+  //   diversions          = eligible * 0.714          observed live rate
+  //   truck_hours_returned= diversions * 1.48 hrs/call urban+suburban avg
+  //   unit_days_returned  = truck_hours / 24
+  //   agency_cost_avoided = diversions * $2,673       CMS GAPDS
+  //   fleet_avoided       = diversions * $150         NHTSA + IAFC
+  //                          (subset of agency_cost; shown as a callout)
+  //   ed_cost_avoided     = diversions * $1,593       CMS public proxy
+  //   total_yr1           = agency_cost_avoided + ed_cost_avoided
+  //   program_cost        = $220,000                  typical
+  //   ratio               = total_yr1 / program_cost
+  //   payback_months      = 12 * program_cost / total_yr1
+  // =================================================================
+  const PULSE_API_BASE = window.PULSE_API_BASE || 'https://pulse-production-71ee.up.railway.app';
+
+  const COEFFS = {
+    callsPer1KPerYr: 344,
+    eligibleRate: 0.0224,
+    diversionRate: 0.714,
+    truckHoursPerCall: 1.48,
+    agencyCostPerCall: 2673,
+    fleetCostPerCall: 150,
+    edCostPerCall: 1593,
+    programCostYr1: 220000,
+  };
+
+  function fmtUSD(n) {
+    if (!Number.isFinite(n) || n <= 0) return '$0';
+    if (n >= 1_000_000) return '$' + (n/1_000_000).toFixed(2).replace(/\.0+$/,'') + 'M';
+    if (n >= 100_000) return '$' + Math.round(n/1000) + 'K';
+    if (n >= 10_000) return '$' + (n/1000).toFixed(1).replace(/\.0$/,'') + 'K';
+    return '$' + Math.round(n).toLocaleString();
+  }
+  function fmtNum(n) {
+    if (!Number.isFinite(n) || n <= 0) return '0';
+    return Math.round(n).toLocaleString();
+  }
+  function parseIntLoose(s) {
+    const n = parseInt(String(s ?? '').replace(/[^0-9]/g, ''), 10);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function compute(pop) {
+    if (!pop || pop <= 0) {
+      return {
+        medicalCalls:0, eligible:0, diversions:0,
+        truckHours:0, unitDays:0,
+        agencyCost:0, fleetCost:0, edCost:0,
+        total:0, ratio:0, paybackMonths:0,
+      };
+    }
+    const medicalCalls = pop * COEFFS.callsPer1KPerYr / 1000;
+    const eligible = medicalCalls * COEFFS.eligibleRate;
+    const diversions = eligible * COEFFS.diversionRate;
+    const truckHours = diversions * COEFFS.truckHoursPerCall;
+    const unitDays = truckHours / 24;
+    const agencyCost = diversions * COEFFS.agencyCostPerCall;
+    const fleetCost = diversions * COEFFS.fleetCostPerCall;
+    const edCost = diversions * COEFFS.edCostPerCall;
+    const total = agencyCost + edCost;
+    const ratio = total / COEFFS.programCostYr1;
+    const paybackMonths = total > 0 ? 12 * COEFFS.programCostYr1 / total : 0;
+    return { medicalCalls, eligible, diversions, truckHours, unitDays,
+             agencyCost, fleetCost, edCost, total, ratio, paybackMonths };
+  }
+
+  function paybackLabel(months) {
+    if (!Number.isFinite(months) || months <= 0) return 'n/a';
+    if (months < 1) return 'under a month';
+    if (months < 2) return 'about 1 month';
+    if (months < 12) return 'about ' + Math.round(months) + ' months';
+    return Math.round(months / 12) + '+ years';
+  }
+
+  function buildOutreach(agency, r) {
+    if (!agency) agency = 'your agency';
+    const fleet = fmtUSD(r.fleetCost);
+    const total = fmtUSD(r.total);
+    const callers = fmtNum(r.diversions);
+    const ratioStr = r.ratio > 0 ? Math.round(r.ratio) + ' : 1' : '';
+    return (
+      'Hi [Name],\n\n' +
+      'Resource and fuel costs are through the roof for every 911 agency right now. ' +
+      'Up to 30% of medical 911 calls are low-acuity dispatch responses (NEMSIS national average), ' +
+      'and a meaningful slice are appropriate for clinician triage instead of a paramedic-staffed engine.\n\n' +
+      'For ' + agency + ', that works out to roughly ' + callers + ' callers a year who could be ' +
+      'aligned with the right care, returning about ' + total + ' in Year-1 avoided spending ' +
+      '(agency + community)' + (ratioStr ? ' — roughly ' + ratioStr + ' on the MD Ally program' : '') + '. ' +
+      'To put one slice in plain terms: the national-average fleet-wear + fuel + maintenance share inside that ' +
+      'number is about ' + fleet + ', the part you would feel directly in the fuel tank and the maintenance bay.\n\n' +
+      "We're live in 12 agencies across 4 states. Tucson Fire diverted 2,000+ calls in Year-1 and reported their " +
+      "first call-volume decrease in five years. This is a process to transfer, not a resource-intensive IT " +
+      "project. No CAD rip-and-replace, live in 45-60 days.\n\n" +
+      'Open to a 15-minute walk-through?\n\n' +
+      'Mike Guadan\n' +
+      'VP, Public Safety Partnerships · MD Ally\n' +
+      'https://outlook.office.com/bookwithme/user/81b4be3503e34b2d8911a7ce2a100372@mdally.com'
+    );
+  }
+
+  function render() {
+    const nameInput = document.getElementById('in-name');
+    const popInput = document.getElementById('in-pop');
+    const agency = nameInput.value.trim();
+    const pop = parseIntLoose(popInput.value);
+    const r = compute(pop);
+
+    // Agency name display
+    document.getElementById('out-agency').textContent = agency || 'your agency';
+    document.getElementById('out-agency-2').textContent = agency || 'your agency';
+
+    // Foot-line: estimated medical 911 calls
+    document.getElementById('foot-calls').textContent = pop > 0 ? fmtNum(r.medicalCalls) : '—';
+
+    // Hero
+    document.getElementById('out-hero').textContent = fmtUSD(r.total);
+    document.getElementById('out-ratio').textContent = r.ratio > 0 ? Math.round(r.ratio) + ' : 1' : '— : 1';
+
+    // Impact bullets
+    document.getElementById('out-callers').textContent = fmtNum(r.diversions);
+    document.getElementById('out-unitdays').textContent = fmtNum(r.unitDays);
+    document.getElementById('out-fleet').textContent = fmtUSD(r.fleetCost);
+    document.getElementById('out-agencycost').textContent = fmtUSD(r.agencyCost);
+    document.getElementById('out-ed').textContent = fmtUSD(r.edCost);
+
+    // Cost card
+    document.getElementById('out-cost').textContent = fmtUSD(COEFFS.programCostYr1);
+    document.getElementById('out-payback').textContent = paybackLabel(r.paybackMonths);
+
+    // Outreach copy
+    const copyEl = document.getElementById('out-copy');
+    copyEl.textContent = buildOutreach(agency, r);
+  }
+
+  function showToast(msg, kind) {
+    const t = document.getElementById('toast');
+    t.style.background = kind === 'error' ? '#D25151' : '#1E8E5A';
+    t.textContent = msg;
+    t.style.display = 'block';
+    clearTimeout(t._h);
+    t._h = setTimeout(() => { t.style.display = 'none'; }, 3000);
+  }
+
+  // Validate agency name async by reusing Pulse /api/inquiry/search.
+  // We don't gate the calc on it (population is the load-bearing input),
+  // but the chip turns green once an EPRC + NPI match is confirmed.
+  let validateTimer = null;
+  async function validateAgency(q) {
+    const chip = document.getElementById('chip-name');
+    if (!q || q.length < 3) {
+      chip.className = 'chip';
+      chip.textContent = 'enter agency';
+      return;
+    }
+    chip.className = 'chip pending';
+    chip.textContent = 'verifying…';
+    try {
+      const res = await fetch(`${PULSE_API_BASE}/api/inquiry/search?q=${encodeURIComponent(q)}&limit=3`);
+      const data = await res.json();
+      const hit = (data.items || [])[0];
+      if (hit && hit.name && hit.name.toLowerCase().includes(q.toLowerCase().split(/\s+/)[0])) {
+        chip.className = 'chip verified';
+        chip.textContent = '✓ verified';
+        // Auto-fill population if EPRC has it and user hasn't typed one yet
+        const popInput = document.getElementById('in-pop');
+        if (hit.population && !popInput.value) {
+          popInput.value = hit.population.toLocaleString();
+          document.getElementById('chip-pop').className = 'chip verified';
+          document.getElementById('chip-pop').textContent = '✓ from EPRC';
+          render();
+        }
+      } else {
+        chip.className = 'chip pending';
+        chip.textContent = 'no match yet';
+      }
+    } catch {
+      chip.className = 'chip';
+      chip.textContent = 'lookup failed';
+    }
+  }
+
+  // Wire inputs.
+  const nameEl = document.getElementById('in-name');
+  const popEl = document.getElementById('in-pop');
+
+  nameEl.addEventListener('input', () => {
+    if (validateTimer) clearTimeout(validateTimer);
+    validateTimer = setTimeout(() => validateAgency(nameEl.value.trim()), 300);
+    render();
+  });
+  popEl.addEventListener('input', () => {
+    const chip = document.getElementById('chip-pop');
+    if (popEl.value && parseIntLoose(popEl.value) > 0) {
+      chip.className = 'chip verified';
+      chip.textContent = '✓ entered';
+    } else {
+      chip.className = 'chip';
+      chip.textContent = 'required';
+    }
+    render();
+  });
+
+  // Copy outreach.
+  document.getElementById('btn-copy').addEventListener('click', async () => {
+    const text = document.getElementById('out-copy').textContent;
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast('✓ Outreach copy on your clipboard', 'ok');
+    } catch {
+      // Fallback: select + execCommand
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy');
+      ta.remove();
+      showToast('✓ Outreach copy on your clipboard', 'ok');
+    }
+  });
+
+  document.getElementById('btn-print').addEventListener('click', () => window.print());
+
+  // Boot from URL params (the outer landing's Agency Lookup picks an
+  // agency and reloads this iframe with ?name=&pop=).
+  (function boot() {
+    const params = new URLSearchParams(window.location.search);
+    const name = params.get('name') || params.get('agency') || '';
+    const pop = params.get('pop') || '';
+    if (name) nameEl.value = name;
+    if (pop) {
+      popEl.value = pop.replace(/[^0-9]/g, '');
+      document.getElementById('chip-pop').className = 'chip verified';
+      document.getElementById('chip-pop').textContent = '✓ from EPRC';
+    }
+    render();
+    if (name) validateAgency(name);
+  })();
+</script>
+
+</body>
+</html>

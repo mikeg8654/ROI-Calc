@@ -255,7 +255,7 @@
   </aside>
 
   <main>
-    <iframe id="calc" src="/calc/" title="MD Ally ROI Calculator"></iframe>
+    <iframe id="calc" src="/calc/v2/" title="MD Ally ROI Calculator"></iframe>
   </main>
 </div>
 
@@ -373,7 +373,7 @@
     const params = new URLSearchParams();
     params.set('name', prettyName(hit.name));
     if (hit.population) params.set('pop', String(hit.population));
-    calcFrame.src = `/calc/?${params.toString()}`;
+    calcFrame.src = `/calc/v2/?${params.toString()}`;
 
     // Fetch dispatch entity (best-effort, doesn't block calc reload)
     try {
@@ -402,7 +402,7 @@
     typeahead.classList.remove('show');
     confirmSlot.innerHTML = '';
     railActions.style.display = 'none';
-    calcFrame.src = '/calc/';
+    calcFrame.src = '/calc/v2/';
     q.focus();
   }
 
