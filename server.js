@@ -204,13 +204,18 @@ app.get("/api/agency-brief/:id/pdf", (req, res) =>
     `/api/agency-brief/${encodeURIComponent(req.params.id)}/pdf`,
   ),
 );
-app.get("/api/agency-brief/:id/pptx", (req, res) =>
-  proxyAgencyBrief(
-    req,
-    res,
-    `/api/agency-brief/${encodeURIComponent(req.params.id)}/pptx`,
-  ),
-);
+app.get("/api/agency-brief/:id/pptx", (req, res) => {
+  // Forward query string verbatim so logo_url + skip_branding survive.
+  const qs = new URLSearchParams(req.query).toString();
+  const path = `/api/agency-brief/${encodeURIComponent(req.params.id)}/pptx${qs ? `?${qs}` : ""}`;
+  return proxyAgencyBrief(req, res, path);
+});
+
+// Logo discovery — read-only, no body. Same proxy mechanic.
+app.get("/api/agency-logo", (req, res) => {
+  const qs = new URLSearchParams(req.query).toString();
+  return proxyAgencyBrief(req, res, `/api/agency-logo${qs ? `?${qs}` : ""}`);
+});
 
 // --- 4. Static files from repo root ---
 
