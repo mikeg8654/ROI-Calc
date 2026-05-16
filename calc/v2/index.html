@@ -355,7 +355,7 @@
 
   <!-- STEP 1 — agency confirm -->
   <div class="card">
-    <div class="eyebrow">Step 1 — Tell us about the agency</div>
+    <div class="eyebrow">Step 1: Tell us about the agency</div>
     <h2>Who is this for?</h2>
 
     <div class="input-row">
@@ -418,7 +418,7 @@
         <div class="dot">③</div>
         <div class="body">
           <div class="v"><span id="out-agencycost">$0</span> in agency spending avoided</div>
-          <div class="desc">Fully loaded cost per ALS transport (<b>$2,673</b> per CMS GAPDS — labor + vehicle + supplies + overhead) multiplied by diverted calls. This number already includes fleet wear, fuel, and maintenance.</div>
+          <div class="desc">Fully loaded cost per ALS transport (<b>$2,673</b> per CMS GAPDS: labor + vehicle + supplies + overhead) multiplied by diverted calls. This number already includes fleet wear, fuel, and maintenance.</div>
         </div>
       </div>
 
@@ -585,7 +585,7 @@
       'and a meaningful slice are appropriate for clinician triage instead of a paramedic-staffed engine.\n\n' +
       'For ' + agency + ', that works out to roughly ' + callers + ' callers a year who could be ' +
       'aligned with the right care, returning about ' + total + ' in Year-1 avoided spending ' +
-      '(agency + community)' + (ratioStr ? ' — roughly ' + ratioStr + ' on the MD Ally program' : '') + '. ' +
+      '(agency + community)' + (ratioStr ? ', roughly ' + ratioStr + ' on the MD Ally program' : '') + '. ' +
       'To put one slice in plain terms: the national-average fleet-wear + fuel + maintenance share inside that ' +
       'number is about ' + fleet + ', the part you would feel directly in the fuel tank and the maintenance bay.\n\n' +
       "We're live in 12 agencies across 4 states. Tucson Fire diverted 2,000+ calls in Year-1 and reported their " +
@@ -610,11 +610,11 @@
     document.getElementById('out-agency-2').textContent = agency || 'your agency';
 
     // Foot-line: estimated medical 911 calls
-    document.getElementById('foot-calls').textContent = pop > 0 ? fmtNum(r.medicalCalls) : '—';
+    document.getElementById('foot-calls').textContent = pop > 0 ? fmtNum(r.medicalCalls) : '…';
 
     // Hero
     document.getElementById('out-hero').textContent = fmtUSD(r.total);
-    document.getElementById('out-ratio').textContent = r.ratio > 0 ? Math.round(r.ratio) + ' : 1' : '— : 1';
+    document.getElementById('out-ratio').textContent = r.ratio > 0 ? Math.round(r.ratio) + ' : 1' : '… : 1';
 
     // Impact bullets
     document.getElementById('out-callers').textContent = fmtNum(r.diversions);
