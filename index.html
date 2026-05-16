@@ -332,7 +332,7 @@
         h.type ? h.type : null,
       ].filter(Boolean).join(' · ');
       return `<button type="button" data-idx="${i}">
-        <div class="state-chip">${escapeHtml(h.state||'—')}</div>
+        <div class="state-chip">${escapeHtml(h.state||'')}</div>
         <div style="flex:1; min-width:0;">
           <div class="name">${escapeHtml(prettyName(h.name))}</div>
           <div class="meta">${escapeHtml(meta)}</div>

@@ -428,6 +428,17 @@
 </div>
 <div id="toast" style="position:fixed;bottom:24px;right:24px;background:#1E8E5A;color:white;padding:14px 20px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,0.4);display:none;z-index:1000;max-width:360px;line-height:1.4;"></div>
 
+<!--
+  V2 — Last-Touch Awareness banner.
+
+  Renders only when ?dealId is present + the /api/proposal/touches endpoint
+  returns data. Hidden by default; the bootBanner() call below populates it.
+  Color tier reflects gap.bucket ("fresh" / "stale-7d" / "stale-21d"). Goal:
+  stop double-sends + surface re-engage candidates at the moment Mike opens
+  the proposal page.
+-->
+<div id="touch-banner" style="display:none; max-width:1100px; margin:14px auto 0; padding:14px 20px; border-radius:10px; font-size:13px; font-weight:500; line-height:1.45; align-items:center; gap:14px;"></div>
+
 <div id="proposal-root">
   <div class="page">
     <div class="loading">
@@ -1004,7 +1015,96 @@ document.getElementById("btn-send").addEventListener("click", async () => {
   }
 });
 
+// =============================================================
+// V2 — Last-Touch Awareness banner (read-only HubSpot intel).
+//
+// Fires after main() so the proposal body renders first; the banner
+// fills in async. If the endpoint fails the banner stays hidden — never
+// blocks the page from being usable.
+// =============================================================
+function timeAgo(iso) {
+  if (!iso) return "unknown time";
+  const ms = Date.now() - new Date(iso).getTime();
+  if (ms < 0) return "in the future";
+  const min = Math.floor(ms / 60000);
+  if (min < 1) return "just now";
+  if (min < 60) return min + "m ago";
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return hr + "h ago";
+  const day = Math.floor(hr / 24);
+  if (day < 14) return day + "d ago";
+  const wk = Math.floor(day / 7);
+  return wk + "w ago";
+}
+
+function bannerStyle(bucket) {
+  // fresh = green, stale-7d = gold, stale-21d = red, never = neutral
+  if (bucket === "fresh") {
+    return { bg: "#15412E", border: "#1E8E5A", chip: "#8FD7B5", title: "Recently touched" };
+  }
+  if (bucket === "stale-7d") {
+    return { bg: "#3B2A0E", border: "#FFAE00", chip: "#FFD27A", title: "Going cold" };
+  }
+  if (bucket === "stale-21d") {
+    return { bg: "#3B1818", border: "#D25151", chip: "#FFB3B3", title: "Stale — needs a re-engage" };
+  }
+  return { bg: "#15385C", border: "#7BB8F0", chip: "#A7BBD5", title: "No prior touches on file" };
+}
+
+function kindLabel(k) {
+  if (k === "note") return "NOTE";
+  if (k === "email") return "Email";
+  if (k === "call") return "Call";
+  if (k === "meeting") return "Meeting";
+  return k || "Touch";
+}
+
+async function bootBanner() {
+  if (!DEAL_ID) return;
+  const el = document.getElementById("touch-banner");
+  if (!el) return;
+  let summary;
+  try {
+    const res = await fetch(`${PULSE_BASE}/api/proposal/touches?dealId=${encodeURIComponent(DEAL_ID)}`);
+    if (!res.ok) return;
+    summary = await res.json();
+  } catch {
+    return;
+  }
+  const style = bannerStyle(summary.gap?.bucket);
+  el.style.background = style.bg;
+  el.style.borderLeft = "4px solid " + style.border;
+
+  const latestStr = summary.latest
+    ? kindLabel(summary.latest.kind) + " " + timeAgo(summary.latest.timestamp) +
+      (summary.latest.ownerEmail ? " by " + summary.latest.ownerEmail : "") +
+      (summary.latest.preview ? ": " + escapeHtml(summary.latest.preview) : "")
+    : "No prior engagements logged on this deal.";
+
+  const gap = summary.gap?.daysSinceLast;
+  const gapLine = gap === null
+    ? ""
+    : gap === 0
+      ? "Touched today."
+      : "Last touch " + gap + (gap === 1 ? " day ago." : " days ago.");
+
+  el.innerHTML = `
+    <div style="flex:0 0 auto; padding:6px 10px; background:${style.border}22; border-radius:6px; font-size:10px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:${style.chip};">
+      ${escapeHtml(style.title)}
+    </div>
+    <div style="flex:1; min-width:0;">
+      <div style="color:#FFFFFF; font-weight:600;">${escapeHtml(latestStr)}</div>
+      <div style="color:#A7BBD5; font-size:11.5px; margin-top:2px;">
+        ${escapeHtml(gapLine)}
+        ${summary.counts ? ` <span style="opacity:0.7;">·</span> ${summary.counts.last7d} in last 7d · ${summary.counts.last30d} in last 30d · ${summary.counts.total} total` : ""}
+      </div>
+    </div>
+  `;
+  el.style.display = "flex";
+}
+
 main();
+bootBanner();
 </script>
 </body>
 </html>
