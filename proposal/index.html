@@ -419,6 +419,7 @@
   </h1>
   <div class="actions">
     <button id="btn-send" title="Create a HubSpot NOTE on this deal with the proposal link">Send to HubSpot</button>
+    <button id="btn-outlook" title="Open a draft email in Outlook with the primary contact + CC + a starter body">Draft in Outlook</button>
     <button id="btn-print">Save as PDF</button>
     <a href="#" id="btn-reset" class="secondary">Reset Edits</a>
     <a href="/" class="secondary">← Agency Intel</a>
@@ -858,6 +859,8 @@ async function main() {
       return;
     }
     const data = await res.json();
+    // Stash for action buttons (Draft in Outlook, etc.) that fire after render.
+    window.PROPOSAL_DATA = data;
 
     setMeta(`HubSpot deal ${DEAL_ID} · ${data.proposal_type} variant · click any text to tailor`);
 
@@ -894,6 +897,65 @@ function showToast(text, kind) {
   clearTimeout(t._h);
   t._h = setTimeout(() => { t.style.display = "none"; }, 6000);
 }
+
+// Mike's Microsoft Bookings link — same one used in roi-calc/index.html and
+// the Outlook signature. Lives here as a constant so the mailto-body can
+// embed it without dragging in a config module.
+const BOOKING_URL = "https://outlook.office.com/bookwithme/user/81b4be3503e34b2d8911a7ce2a100372@mdally.com?anonymous&ep=signature&ismsaljsauthenabled";
+
+function buildMailto(data) {
+  const primary = data?.contacts?.primary;
+  const toEmail = primary?.email?.trim();
+  if (!toEmail) return null;
+
+  const ccEmails = (data?.contacts?.cc ?? [])
+    .map(c => c?.email?.trim())
+    .filter(Boolean);
+
+  const agencyName =
+    data?.agency?.record?.name ??
+    data?.company?.name ??
+    data?.deal?.name ??
+    "your agency";
+
+  const firstName = (primary?.name ?? "").split(/\s+/)[0] || "there";
+
+  const subject = `MD Ally for ${agencyName}`;
+  const body = [
+    `${firstName},`,
+    "",
+    `Sharing the proposal we drafted for ${agencyName}: ${location.href}`,
+    "",
+    "Happy to walk through it whenever works for you. If easier, grab a slot here:",
+    BOOKING_URL,
+    "",
+    "Mike Guadan",
+    "VP, Public Safety Partnerships",
+    "MD Ally",
+  ].join("\r\n");
+
+  // mailto encoding: spaces in subject/body become %20; CRLF becomes %0D%0A;
+  // multiple CCs are comma-separated.
+  return "mailto:" + encodeURIComponent(toEmail) +
+    "?subject=" + encodeURIComponent(subject) +
+    (ccEmails.length ? "&cc=" + encodeURIComponent(ccEmails.join(",")) : "") +
+    "&body=" + encodeURIComponent(body);
+}
+
+document.getElementById("btn-outlook").addEventListener("click", () => {
+  const data = window.PROPOSAL_DATA;
+  if (!data) {
+    showToast("Add ?dealId=N to the URL to enable the Outlook draft.", "error");
+    return;
+  }
+  const href = buildMailto(data);
+  if (!href) {
+    showToast("Primary contact has no email on the HubSpot deal. Add one in HubSpot and refresh.", "error");
+    return;
+  }
+  // Use location.href so default mail client (Outlook on Windows) takes over.
+  window.location.href = href;
+});
 
 document.getElementById("btn-send").addEventListener("click", async () => {
   if (!DEAL_ID) {
