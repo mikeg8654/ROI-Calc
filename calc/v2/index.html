@@ -238,6 +238,58 @@
     font-weight:700;
   }
 
+  /* CONSIDERATIONS — collapsible */
+  .considerations {
+    padding:16px 24px;
+    background:var(--bg-card-deep);
+    border:1px solid var(--stroke);
+    border-radius:12px;
+    margin-bottom:18px;
+  }
+  .considerations details summary {
+    list-style:none;
+    cursor:pointer;
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:var(--gold-soft);
+    outline:none;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .considerations details summary::-webkit-details-marker { display:none; }
+  .considerations details summary::before {
+    content:"+";
+    display:inline-flex;
+    align-items:center; justify-content:center;
+    width:18px; height:18px;
+    border:1px solid var(--gold);
+    color:var(--gold);
+    border-radius:4px;
+    font-weight:800;
+    font-size:14px;
+    line-height:1;
+  }
+  .considerations details[open] summary::before { content:"\2212"; }
+  .considerations details[open] summary { margin-bottom:12px; }
+  .consid-body {
+    margin-top:6px; padding-top:14px;
+    border-top:1px solid var(--stroke-soft);
+    font-size:13px; line-height:1.6; color:var(--text);
+  }
+  .consid-body h3 {
+    font-size:13px; font-weight:800; color:var(--text-strong);
+    margin:14px 0 6px;
+    letter-spacing:0.01em;
+  }
+  .consid-body h3:first-child { margin-top:0; }
+  .consid-body ul { margin:6px 0 8px 20px; }
+  .consid-body li { margin-bottom:4px; color:var(--text); }
+  .consid-body b { color:var(--text-strong); font-weight:700; }
+  .consid-body p { margin-bottom:8px; }
+
   /* PROGRAM COST card */
   .cost-grid {
     display:grid;
@@ -440,6 +492,39 @@
     </div>
   </div>
 
+  <!-- CONSIDERATIONS (collapsible — for risk-aware conversations) -->
+  <div class="considerations">
+    <details>
+      <summary>Other considerations (not in the headline above)</summary>
+      <div class="consid-body">
+
+        <h3>Risk and liability exposure (talking point, not modeled)</h3>
+        <p>
+          Each diverted ALS run is one fewer lights-and-siren response through traffic and one fewer high-acuity patient interaction. National-average estimates put the avoided risk exposure at roughly <b>$50 to $125 per diverted call</b>. For <span id="consid-agency">your agency</span> at the modeled diversion volume above, that comes to about <b id="consid-risk">$0</b> per year (midpoint estimate).
+        </p>
+        <p>The components, drawn from public claims data:</p>
+        <ul>
+          <li>Ambulance crash probability and cost (NHTSA Fatality Analysis Reporting System): ~5 per 1M miles, avg incident cost $30K minor to $300K+ severe.</li>
+          <li>EMS litigation claim frequency and average payout (NAEMSP, Page Wolfberg &amp; Wirth EMS legal trend data): roughly 1 in 2,500 transports filed, $100K to $250K average non-fatal settlement.</li>
+          <li>Complaint resolution and internal-investigation overhead (admin time, records, FOIA, depositions).</li>
+        </ul>
+        <p>
+          This sits outside the headline number because agency-specific actuarial exposure varies a lot. It is a defensible talking point with city attorneys, county boards, fire chiefs, and risk and insurance committees.
+        </p>
+
+        <h3>Other inputs not modeled</h3>
+        <ul>
+          <li>Agency-specific medical 911 call volume (we used the NEMSIS national average of 344 calls per 1,000 people served).</li>
+          <li>Urban vs rural truck-hours per call (we used a blended urban and suburban average of 1.48 hours).</li>
+          <li>Local payer mix and reimbursement floor (CMS GAPDS is a national reimbursement proxy).</li>
+          <li>Fleet vehicle age and maintenance burden curve (we used the NHTSA and IAFC national averages).</li>
+        </ul>
+        <p>When the agency provides hard data on these, the model tightens. We can refine in a 15 minute scoping call.</p>
+
+      </div>
+    </details>
+  </div>
+
   <!-- PROGRAM COST -->
   <div class="card">
     <div class="eyebrow">Year-1 program cost · what MD Ally costs</div>
@@ -522,6 +607,11 @@
     fleetCostPerCall: 150,
     edCostPerCall: 1593,
     programCostYr1: 220000,
+    // Risk + liability midpoint (NHTSA crashes + NAEMSP litigation +
+    // complaint admin). Range $50-$125/call; we render the midpoint.
+    // NOT part of the headline math — surfaced only inside the
+    // collapsible "Other considerations" block.
+    riskCostPerCall: 80,
   };
 
   function fmtUSD(n) {
@@ -626,6 +716,12 @@
     // Cost card
     document.getElementById('out-cost').textContent = fmtUSD(COEFFS.programCostYr1);
     document.getElementById('out-payback').textContent = paybackLabel(r.paybackMonths);
+
+    // Considerations (collapsible) — risk-mitigation midpoint estimate.
+    // Lives outside the headline math; rendered only when user expands.
+    const riskMid = r.diversions * COEFFS.riskCostPerCall;
+    document.getElementById('consid-agency').textContent = agency || 'your agency';
+    document.getElementById('consid-risk').textContent = fmtUSD(riskMid);
 
     // Outreach copy
     const copyEl = document.getElementById('out-copy');
