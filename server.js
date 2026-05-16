@@ -148,22 +148,16 @@ const PULSE_API_BASE =
   "https://pulse-production-71ee.up.railway.app";
 
 async function proxyAgencyBrief(req, res, pulsePath) {
+  // When PULSE_BRIEF_KEY is set on this server, we attach it as the
+  // bearer header. Pulse's /api/agency-brief honors this when its own
+  // PULSE_BRIEF_KEY env is set; if Pulse has no key configured, the
+  // endpoint is open and the header is harmless. So missing-env on
+  // either side is fine — don't 503.
   const key = process.env.PULSE_BRIEF_KEY;
-  if (!key) {
-    res.status(503).json({
-      error:
-        "Meeting Intel is not configured on this server (PULSE_BRIEF_KEY missing).",
-    });
-    return;
-  }
   try {
-    const init = {
-      method: req.method,
-      headers: {
-        "Content-Type": "application/json",
-        "X-Pulse-Brief-Key": key,
-      },
-    };
+    const headers = { "Content-Type": "application/json" };
+    if (key) headers["X-Pulse-Brief-Key"] = key;
+    const init = { method: req.method, headers };
     if (["POST", "PUT", "PATCH"].includes(req.method) && req.body) {
       init.body = JSON.stringify(req.body);
     }
