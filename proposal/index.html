@@ -904,7 +904,9 @@ function showToast(text, kind) {
 // embed it without dragging in a config module.
 const BOOKING_URL = "https://outlook.office.com/bookwithme/user/81b4be3503e34b2d8911a7ce2a100372@mdally.com?anonymous&ep=signature&ismsaljsauthenabled";
 
-function buildMailto(data) {
+// Exposed on window so the live Playwright spec can call it without
+// actually firing a mailto: navigation (which would launch Outlook in CI).
+window.buildMailto = function buildMailto(data) {
   const primary = data?.contacts?.primary;
   const toEmail = primary?.email?.trim();
   if (!toEmail) return null;
@@ -941,7 +943,7 @@ function buildMailto(data) {
     "?subject=" + encodeURIComponent(subject) +
     (ccEmails.length ? "&cc=" + encodeURIComponent(ccEmails.join(",")) : "") +
     "&body=" + encodeURIComponent(body);
-}
+};
 
 document.getElementById("btn-ppt").addEventListener("click", () => {
   if (!DEAL_ID) {
