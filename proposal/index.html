@@ -420,6 +420,7 @@
   <div class="actions">
     <button id="btn-send" title="Create a HubSpot NOTE on this deal with the proposal link">Send to HubSpot</button>
     <button id="btn-outlook" title="Open a draft email in Outlook with the primary contact + CC + a starter body">Draft in Outlook</button>
+    <button id="btn-ppt" title="Download a slim branded 4-slide starter deck (.pptx)">Download PPT</button>
     <button id="btn-print">Save as PDF</button>
     <a href="#" id="btn-reset" class="secondary">Reset Edits</a>
     <a href="/" class="secondary">← Agency Intel</a>
@@ -941,6 +942,17 @@ function buildMailto(data) {
     (ccEmails.length ? "&cc=" + encodeURIComponent(ccEmails.join(",")) : "") +
     "&body=" + encodeURIComponent(body);
 }
+
+document.getElementById("btn-ppt").addEventListener("click", () => {
+  if (!DEAL_ID) {
+    showToast("Add ?dealId=N to the URL to enable the PPT download.", "error");
+    return;
+  }
+  // GET endpoint returns the .pptx with Content-Disposition: attachment.
+  // location.href triggers the browser's download manager directly; no
+  // need for fetch + blob + anchor.click().
+  window.location.href = `${PULSE_BASE}/api/proposal/ppt?dealId=${encodeURIComponent(DEAL_ID)}`;
+});
 
 document.getElementById("btn-outlook").addEventListener("click", () => {
   const data = window.PROPOSAL_DATA;
